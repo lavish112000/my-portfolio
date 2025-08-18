@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
-import AwsIcon from './assests/Aws';
+
 
 
 // This is a self-contained React component for the entire portfolio website.
@@ -192,7 +192,7 @@ const App = () => {
       ],
       'Cloud': [
         { name: 'GCP', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg' },
-        { name: 'AWS', customIcon: <AwsIcon /> },
+        { name: 'AWS', icon: 'https://img.icons8.com/?size=100&id=wU62u24brJ44&format=png&color=000000' },
         { name: 'Azure', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg' },
       ],
       'Tools': [
@@ -380,7 +380,7 @@ const App = () => {
       ],
       'Cloud': [
         { name: 'GCP', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg' },
-        { name: 'AWS', customIcon: <AwsIcon /> },
+        { name: 'AWS', icon: 'https://img.icons8.com/?size=100&id=wU62u24brJ44&format=png&color=000000' },
         { name: 'Azure', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg' },
       ],
       'Tools': [
