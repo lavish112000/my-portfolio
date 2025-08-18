@@ -269,6 +269,13 @@ const App = () => {
     const [isNavbarVisible, setIsNavbarVisible] = useState(true);
     const lastScrollY = useRef(0);
 
+    const handleSkillsetsClick = () => {
+      document.body.classList.add('fade-out');
+      setTimeout(() => {
+        window.location.href = 'stack.html';
+      }, 500);
+    };
+
     const [skillsVisible, setSkillsVisible] = useState({});
     const skillsRef = useRef([]);
     const [projectsVisible, setProjectsVisible] = useState({});
@@ -455,7 +462,7 @@ const App = () => {
 
           {/* Skillset Section */}
           <div id="skills" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
-            <h1 className="text-5xl font-extrabold font-sans text-white mb-8">SKILLSETS</h1>
+            <h1 onClick={handleSkillsetsClick} className="text-5xl font-extrabold font-sans text-white mb-8 cursor-pointer">SKILLSETS</h1>
             <div className="space-y-8">
               {Object.entries(skillsByCategory).map(([category, skills], categoryIndex) => (
                 <div key={category}>
