@@ -619,6 +619,10 @@ const App = () => {
           .animate-float-icon-3 {
             animation: float-up-down 2.4s ease-in-out infinite;
           }
+          body.fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease-out;
+          }
           `}
         </style>
       </div>
