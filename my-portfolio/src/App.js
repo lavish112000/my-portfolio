@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
+import AwsIcon from './assests/Aws';
 
 
 // This is a self-contained React component for the entire portfolio website.
@@ -191,7 +192,7 @@ const App = () => {
       ],
       'Cloud': [
         { name: 'GCP', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg' },
-        { name: 'AWS', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original.svg' },
+        { name: 'AWS', customIcon: <AwsIcon /> },
         { name: 'Azure', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg' },
       ],
       'Tools': [
@@ -245,7 +246,7 @@ const App = () => {
                     if (tech) {
                       return (
                         <div key={tech.name} className="flex items-center space-x-2 bg-gray-700 bg-opacity-50 px-3 py-2 rounded-lg animate-float-icon-1" style={{animationDelay: `${index * 100}ms`}}>
-                          <img src={tech.icon} alt={tech.name} className="w-8 h-8 animate-spin-slow"/>
+                          {tech.customIcon ? tech.customIcon : <img src={tech.icon} alt={tech.name} className="w-8 h-8 animate-spin-slow"/>}
                           <span className="text-white font-bold">{tech.name}</span>
                         </div>
                       );
@@ -379,7 +380,7 @@ const App = () => {
       ],
       'Cloud': [
         { name: 'GCP', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/googlecloud/googlecloud-original.svg' },
-        { name: 'AWS', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original.svg' },
+        { name: 'AWS', customIcon: <AwsIcon /> },
         { name: 'Azure', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg' },
       ],
       'Tools': [
@@ -478,7 +479,7 @@ const App = () => {
                           className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 transform transition-all duration-700 ease-in-out hover:scale-105 ${animationClass}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
-                            <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />
+                            {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
                           </div>
                           <div>
                             <h3 className="text-2xl font-bold text-left">{item.name}</h3>
