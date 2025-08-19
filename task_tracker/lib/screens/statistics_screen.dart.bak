@@ -5,6 +5,8 @@ import 'package:task_tracker/models/task.dart';
 import 'package:task_tracker/models/priority.dart';
 import 'package:task_tracker/utils/app_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:iconsax/iconsax.dart';
+import 'dart:math' as math;
 
 enum TimeRange { today, thisWeek, thisMonth, allTime }
 enum SortBy { completion, priority, dueDate }
@@ -18,129 +20,282 @@ class StatisticsScreen extends StatefulWidget {
   State<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
-class _StatisticsScreenState extends State<StatisticsScreen> {
+class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+  
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOutCubic,
+      ),
+    )..addListener(() {
+        setState(() {});
+      });
+    _animationController.forward();
+  }
+  
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+  
+  Color _getCompletionColor(int percentage) {
+    if (percentage < 30) return Colors.red;
+    if (percentage < 70) return Colors.orange;
+    return Colors.green;
+  }
+  
+  Widget _buildStatItem(String label, String value, Color color, IconData icon) {
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: color.withValues(0.1, 0.1, 0.1, 0.1), // Replaced withOpacity(0.1)
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 16, color: color),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
+      ],
+    );
+  }
   TimeRange _selectedTimeRange = TimeRange.allTime;
   SortBy _selectedSortBy = SortBy.completion;
   
+  // Add animation controller for page transitions
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final taskStats = _calculateTaskStats();
     final priorityStats = _calculatePriorityStats();
     final weeklyStats = _calculateWeeklyStats();
     final filteredTasks = _getFilteredTasks();
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: AppColors.lightBackground,
       appBar: AppBar(
-        title: const Text('Task Statistics'),
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          _buildFilterBar(),
-          const SizedBox(height: 8),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSummaryCards(taskStats),
-                  const SizedBox(height: 24),
-                  _buildCompletionChart(taskStats),
-                  const SizedBox(height: 24),
-                  _buildPriorityChart(priorityStats),
-                  const SizedBox(height: 24),
-                  _buildWeeklyChart(weeklyStats),
-                  const SizedBox(height: 24),
-                  _buildTaskList(filteredTasks),
-                ],
-              ),
-            ),
+        title: const Text(
+          'Task Analytics',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 22,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Iconsax.refresh, size: 22),
+            onPressed: () => setState(() {}),
           ),
         ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFilterBar(),
+            const SizedBox(height: 24),
+            _buildSummaryCards(taskStats),
+            const SizedBox(height: 24),
+            _buildCompletionChart(taskStats),
+            const SizedBox(height: 24),
+            _buildPriorityDistribution(priorityStats),
+            const SizedBox(height: 24),
+            _buildWeeklyChart(),
+            const SizedBox(height: 24),
+            _buildRecentTasks(filteredTasks),
+          ],
+        ),
       ),
     );
   }
   
   Widget _buildFilterBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha(26), // 0.1 * 255 ≈ 26
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text('Time Range: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              ...TimeRange.values.map((range) => Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: FilterChip(
-                  label: Text(_getTimeRangeLabel(range)),
-                  selected: _selectedTimeRange == range,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedTimeRange = range;
-                    });
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.primaryColor.withAlpha(51), // 0.2 * 255 ≈ 51
-                  labelStyle: TextStyle(
-                    color: _selectedTimeRange == range 
-                        ? AppColors.primaryColor 
-                        : Colors.black87,
-                    fontWeight: _selectedTimeRange == range 
-                        ? FontWeight.bold 
-                        : FontWeight.normal,
-                  ),
-                ),
-              )),
-            ],
+          Text(
+            'Filter & Sort',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             children: [
-              const Text('Sort By: ', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              ...SortBy.values.map((sortBy) => Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: FilterChip(
-                  label: Text(_getSortByLabel(sortBy)),
-                  selected: _selectedSortBy == sortBy,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedSortBy = sortBy;
-                    });
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.primaryColor.withAlpha(51), // 0.2 * 255 ≈ 51
-                  labelStyle: TextStyle(
-                    color: _selectedSortBy == sortBy 
-                        ? AppColors.primaryColor 
-                        : Colors.black87,
-                    fontWeight: _selectedSortBy == sortBy 
-                        ? FontWeight.bold 
-                        : FontWeight.normal,
+              Expanded(
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: ButtonTheme(
+                      alignedDropdown: true,
+                      child: DropdownButton<TimeRange>(
+                        value: _selectedTimeRange,
+                        isExpanded: true,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        items: [
+                          _buildFilterItem(TimeRange.today, 'Today', Icons.today),
+                          _buildFilterItem(TimeRange.thisWeek, 'This Week', Icons.calendar_view_week),
+                          _buildFilterItem(TimeRange.thisMonth, 'This Month', Icons.calendar_today),
+                          _buildFilterItem(TimeRange.allTime, 'All Time', Icons.all_inclusive),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedTimeRange = value;
+                            });
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ),
-              )),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: ButtonTheme(
+                    alignedDropdown: true,
+                    child: DropdownButton<SortBy>(
+                      value: _selectedSortBy,
+                      isExpanded: true,
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      items: [
+                        _buildSortItem(SortBy.completion, 'Completion', Icons.check_circle_outline),
+                        _buildSortItem(SortBy.priority, 'Priority', Icons.flag_outlined),
+                        _buildSortItem(SortBy.dueDate, 'Due Date', Icons.calendar_today),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedSortBy = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ],
       ),
     );
   }
-  
+
+  DropdownMenuItem<TimeRange> _buildFilterItem(TimeRange value, String label, IconData icon) {
+    return DropdownMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DropdownMenuItem<SortBy> _buildSortItem(SortBy value, String label, IconData icon) {
+    return DropdownMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.grey.shade600),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getTimeRangeLabel(TimeRange range) {
     switch (range) {
       case TimeRange.today:
@@ -221,240 +376,318 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     
     return filteredTasks;
   }
-  }
 
   Widget _buildCompletionChart(Map<String, int> stats) {
-    final total = stats['total']!;
-    final completed = stats['completed']!;
-    final pending = stats['pending']!;
-    
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Task Completion',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: PieChart(
-                      PieChartData(
-                        sections: [
-                          PieChartSectionData(
-                            color: Colors.green,
-                            value: completed.toDouble(),
-                            title: '${(completed / total * 100).toStringAsFixed(1)}%',
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.orange,
-                            value: pending.toDouble(),
-                            title: '${(pending / total * 100).toStringAsFixed(1)}%',
-                            radius: 60,
-                            titleStyle: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 40,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLegendItem(Colors.green, 'Completed', completed),
-                        const SizedBox(height: 8),
-                        _buildLegendItem(Colors.orange, 'Pending', pending),
-                        const SizedBox(height: 8),
-                        _buildLegendItem(Colors.blue, 'Total', total),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    final total = stats['total'] ?? 0;
+    final completed = stats['completed'] ?? 0;
+    final pending = total - completed;
+    final completionPercentage = total > 0 ? (completed / total * 100).toInt() : 0;
+    final animatedValue = _animation.value * completionPercentage;
+    final primaryColor = Theme.of(context).primaryColor;
+    final successColor = Colors.green;
+    final warningColor = Colors.orange;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildPriorityChart(Map<Priority, int> stats) {
-    final data = [
-      _BarData(priority: 'High', count: stats[Priority.high] ?? 0, color: Colors.red),
-      _BarData(priority: 'Medium', count: stats[Priority.medium] ?? 0, color: Colors.orange),
-      _BarData(priority: 'Low', count: stats[Priority.low] ?? 0, color: Colors.green),
-    ];
-
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Tasks by Priority',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: (data.map((e) => e.count).reduce((a, b) => a > b ? a : b) * 1.2).toDouble(),
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    touchTooltipData: BarTouchTooltipData(
-                      tooltipBgColor: Colors.blueGrey,
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        return BarTooltipItem(
-                          '${data[groupIndex].count} tasks\n${data[groupIndex].priority}',
-                          const TextStyle(color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index >= 0 && index < data.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(data[index].priority),
-                            );
-                          }
-                          return const Text('');
-                        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with icon and title
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Iconsax.chart_pie,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Task Completion',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$total Total',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          
+          // Main chart area
+          Row(
+            children: [
+              // Circular progress chart
+              Container(
+                width: 120,
+                height: 120,
+                padding: const EdgeInsets.all(8),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Background circle
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: CircularProgressIndicator(
+                        value: 1.0,
+                        strokeWidth: 10,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.grey.shade200,
+                        ),
                       ),
                     ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
+                    // Progress circle
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: CircularProgressIndicator(
+                        value: animatedValue / 100,
+                        strokeWidth: 10,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _getCompletionColor(completionPercentage),
+                        ),
+                      ),
                     ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: data.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final item = entry.value;
-                    return BarChartGroupData(
-                      x: index,
-                      barRods: [
-                        BarChartRodData(
-                          toY: item.count.toDouble(),
-                          color: item.color,
-                          width: 30,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(4),
-                            topRight: Radius.circular(4),
+                    // Center text
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${animatedValue.toInt()}%',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Done',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                       ],
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
+              
+              // Legend
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildLegendItem(successColor, 'Completed', completed),
+                    const SizedBox(height: 12),
+                    _buildLegendItem(warningColor, 'Pending', pending),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
+  }
 
-  Widget _buildWeeklyChart(Map<String, int> stats) {
-    final weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Weekly Activity',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(show: true, drawVerticalLine: true, horizontalInterval: 1),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index >= 0 && index < weekDays.length) {
-                            return Text(weekDays[index]);
-                          }
-                          return const Text('');
-                        },
+  Widget _buildPriorityChart(Map<Priority, int> stats) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final List<_BarData> data = [
+      _BarData(
+        priority: 'High', 
+        count: stats[Priority.high] ?? 0, 
+        color: const Color(0xFFFF6B6B),
+        icon: Iconsax.arrow_up_3,
+      ),
+      _BarData(
+        priority: 'Medium', 
+        count: stats[Priority.medium] ?? 0, 
+        color: const Color(0xFFFFD93D),
+        icon: Iconsax.arrow_right_3,
+      ),
+      _BarData(
+        priority: 'Low', 
+        count: stats[Priority.low] ?? 0, 
+        color: const Color(0xFF6BCB77),
+        icon: Iconsax.arrow_down_3,
+      ),
+    ];
+
+    final maxCount = data.map((e) => e.count).reduce((a, b) => a > b ? a : b);
+    final maxY = maxCount == 0 ? 5.0 : maxCount * 1.2;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Iconsax.flag,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Tasks by Priority',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          
+          // Chart
+          SizedBox(
+            height: 220,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxY,
+                            child: Text(
+                              '${value.toInt()}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade600,
+                              ),
+                              textAlign: TextAlign.end,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                      reservedSize: 30,
+                    ),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxY > 5 ? (maxY / 5).ceilToDouble() : 1,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.grey.shade100,
+                    strokeWidth: 1,
+                  ),
+                ),
+                borderData: const FlBorderData(show: false),
+                barGroups: data.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  final height = item.count.toDouble();
+                  
+                  return BarChartGroupData(
+                    x: index,
+                    barRods: [
+                      BarChartRodData(
+                        toY: height,
+                        color: item.color,
+                        width: 28,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(6),
+                          topRight: Radius.circular(6),
+                        ),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: maxY,
+                          color: Colors.grey.shade100,
+                        ),
                       ),
-                    ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
-                    ),
-                  ),
-                  borderData: FlBorderData(
-                    show: true,
-                    border: Border.all(color: const Color(0xff37434d), width: 1),
-                  ),
-                  minX: 0,
-                  maxX: 6,
-                  minY: 0,
-                  maxY: stats.values.reduce((a, b) => a > b ? a : b).toDouble() + 2,
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: weekDays.asMap().entries.map((entry) {
-                        final dayIndex = entry.key;
-                        final day = entry.value;
-                        return FlSpot(
-                          dayIndex.toDouble(),
-                          stats[day]?.toDouble() ?? 0,
-                        );
-                      }).toList(),
-                      isCurved: true,
-                      color: AppColors.primaryColor,
-                      barWidth: 3,
-                      dotData: const FlDotData(show: true),
-                      belowBarData: BarAreaData(
-                        show: true,
+                    ],
+                    showingTooltipIndicators: [0],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          
+          // Legend
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: data.map((item) => _buildPriorityLegendItem(item)).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildPriorityLegendItem(_BarData item) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: item.color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '${item.count} ${item.priority}',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.black54,
+          ),
+        ),
                         gradient: LinearGradient(
                           colors: [
                             AppColors.primaryColor.withAlpha((AppColors.primaryColor.alpha * 0.3).toInt()),
@@ -470,93 +703,422 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ],
         ),
       ),
-    );
+    )
   }
 
   Widget _buildLegendItem(Color color, String text, int count) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 16,
-          height: 16,
+          width: 12,
+          height: 12,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
           ),
         ),
-        const SizedBox(width: 8),
-        Text('$text: $count'),
+        const SizedBox(width: 6),
+        Text(
+          '$text: $count',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade700,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSummaryCards(Map<String, int> stats) {
-    final total = stats['total']!;
-    final completed = stats['completed']!;
-    final pending = stats['pending']!;
-    final completionRate = total > 0 ? (completed / total * 100).toStringAsFixed(1) : '0.0';
+  Widget _buildWeeklyChart() {
+    final primaryColor = Theme.of(context).primaryColor;
+    final weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final now = DateTime.now();
+    final currentDay = now.weekday - 1; // 0 = Monday, 6 = Sunday
     
-    return Row(
+    // Sample data - replace with your actual weekly stats
+    final weeklyData = {
+      'Mon': 3,
+      'Tue': 5,
+      'Wed': 2,
+      'Thu': 7,
+      'Fri': 4,
+      'Sat': 1,
+      'Sun': 0,
+    };
+    
+    // Prepare data for the chart
+    final spots = weekDays.asMap().entries.map((entry) {
+      final dayIndex = entry.key;
+      final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dayIndex];
+      final count = weeklyData[dayName]?.toDouble() ?? 0.0;
+      return FlSpot(dayIndex.toDouble(), count);
+    }).toList();
+    
+    // Find max value for scaling
+    final maxY = weeklyData.values.isNotEmpty 
+        ? weeklyData.values.reduce((a, b) => a > b ? a : b).toDouble() 
+        : 5.0;
+    final adjustedMaxY = maxY == 0 ? 5.0 : maxY * 1.2;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Iconsax.calendar_1,
+                  color: primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Weekly Activity',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${weeklyData.values.fold(0, (sum, count) => sum + count)} tasks',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          
+          // Chart
+          SizedBox(
+            height: 200,
+            child: LineChart(
+              LineChartData(
+                minY: 0,
+                maxY: adjustedMaxY,
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: adjustedMaxY > 5 ? (adjustedMaxY / 5).ceilToDouble() : 1,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: Colors.grey.shade100,
+                    strokeWidth: 1,
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= 0 && index < weekDays.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              weekDays[index],
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: index == currentDay 
+                                    ? primaryColor 
+                                    : Colors.grey.shade600,
+                                fontWeight: index == currentDay 
+                                    ? FontWeight.bold 
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          );
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: adjustedMaxY > 5 ? (adjustedMaxY / 5).ceilToDouble() : 1,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) {
+                        if (value % 1 == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Text(
+                              '${value.toInt()}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey.shade600,
+                              ),
+                              textAlign: TextAlign.end,
+                            ),
+                          );
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    tooltipBgColor: Colors.black87,
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((touchedSpot) {
+                        final dayIndex = touchedSpot.x.toInt();
+                        final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][dayIndex];
+                        final count = touchedSpot.y.toInt();
+                        
+                        return LineTooltipItem(
+                          '$dayName\n$count ${count == 1 ? 'task' : 'tasks'}',
+                          const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: spots,
+                    isCurved: true,
+                    color: primaryColor,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: index == currentDay ? 5 : 3,
+                          color: primaryColor,
+                          strokeWidth: index == currentDay ? 2 : 0,
+                          strokeColor: Colors.white,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          primaryColor.withValues(0.2, 0.2, 0.2, 0.2), // Replaced withOpacity(0.2)
+                          primaryColor.withValues(0.05, 0.05, 0.05, 0.05), // Replaced withOpacity(0.05)
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryCards(Map<String, int> stats) {
+    final total = stats['total'] ?? 0;
+    final completed = stats['completed'] ?? 0;
+    final pending = total - completed;
+    final completionRate = total > 0 ? (completed / total * 100).toInt() : 0;
+
+    return Column(
       children: [
-        Expanded(
-          child: _buildSummaryCard(
-            'Total Tasks',
-            total.toString(),
-            Icons.task,
-            AppColors.primaryColor,
-          ),
+        // First row - Total Tasks and Completed
+        Row(
+          children: [
+            _buildStatCard(
+              'Total Tasks',
+              total.toString(),
+              Iconsax.task_square,
+              AppColors.primaryGradient,
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Completed',
+              completed.toString(),
+              Iconsax.tick_circle,
+              [AppColors.successColor, Colors.greenAccent],
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildSummaryCard(
-            'Completed',
-            '$completed ($completionRate%)',
-            Icons.check_circle,
-            Colors.green,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildSummaryCard(
-            'Pending',
-            pending.toString(),
-            Icons.pending_actions,
-            Colors.orange,
-          ),
+        const SizedBox(height: 12),
+        // Second row - Pending and Completion Rate
+        Row(
+          children: [
+            _buildStatCard(
+              'Pending',
+              pending.toString(),
+              Iconsax.clock,
+              [AppColors.warningColor, Colors.orangeAccent],
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              'Completion',
+              '$completionRate%',
+              Iconsax.chart_2,
+              [AppColors.accentColor, const Color(0xFF00B4D8)],
+              isProgress: true,
+              progress: completionRate / 100,
+            ),
+          ],
         ),
       ],
     );
   }
-  
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon, 
+    List<Color> colors, {
+    bool isProgress = false,
+    double progress = 0.0,
+  }) {
+    return Expanded(
+      child: Container(
+        height: 110,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: colors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colors.first.withValues(0.2, 0.2, 0.2, 0.2), // Replaced withOpacity(0.2)
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Decorative elements
+            Positioned(
+              right: -10,
+              top: -10,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(255, 255, 255, 0.1), // Replaced withOpacity(0.1)
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon and title
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(255, 255, 255, 0.2), // Replaced withOpacity(0.2)
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (isProgress)
+                        Text(
+                          value,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                    ],
+                  ),
+                  
+                  const Spacer(),
+                  
+                  // Value and title
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!isProgress)
+                        Text(
+                          value,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color: const Color.fromRGBO(255, 255, 255, 0.9), // Replaced withOpacity(0.9)
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  // Progress bar (only for progress cards)
+                  if (isProgress) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: const Color.fromRGBO(255, 255, 255, 0.3), // Replaced withOpacity(0.3)
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -564,17 +1126,44 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
     );
   }
-  
+
   Widget _buildTaskList(List<Task> tasks) {
     if (tasks.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: Text(
-            'No tasks found for the selected filters',
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-            textAlign: TextAlign.center,
-          ),
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.task_alt_rounded,
+              size: 48,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No tasks found',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Try adjusting your filters or add new tasks',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       );
     }
@@ -582,44 +1171,175 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tasks',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Tasks',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+              Text(
+                '${tasks.length} ${tasks.length == 1 ? 'task' : 'tasks'}',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
-        ListView.builder(
+        const SizedBox(height: 8),
+        ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: tasks.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final task = tasks[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: Checkbox(
-                  value: task.isCompleted,
-                  onChanged: (value) {
-                    // Handle task completion toggle
-                  },
-                  activeColor: AppColors.primaryColor,
+            final isOverdue = task.dueDate != null && 
+                           !task.isCompleted && 
+                           task.dueDate!.isBefore(DateTime.now());
+            
+            return Dismissible(
+              key: Key('task-${task.id}'),
+              background: Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.only(left: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                title: Text(
-                  task.title,
-                  style: TextStyle(
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                alignment: Alignment.centerLeft,
+                child: const Icon(Icons.delete_outline, color: Colors.red),
+              ),
+              secondaryBackground: Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.centerRight,
+                child: const Icon(Icons.archive_outlined, color: Colors.blue),
+              ),
+              confirmDismiss: (direction) async {
+                // Handle swipe actions
+                return false;
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromRGBO(0, 0, 0, 0.05), // Replaced withOpacity(0.05)
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () {
+                      // Handle task tap
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          // Checkbox
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: task.isCompleted 
+                                  ? AppColors.primaryColor.withAlpha(25) 
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: task.isCompleted 
+                                    ? AppColors.primaryColor 
+                                    : Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: task.isCompleted
+                                ? const Icon(
+                                    Icons.check_rounded,
+                                    size: 16,
+                                    color: AppColors.primaryColor,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 16),
+                          // Task details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  task.title,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    decoration: task.isCompleted 
+                                        ? TextDecoration.lineThrough 
+                                        : null,
+                                    color: task.isCompleted 
+                                        ? Colors.grey.shade500 
+                                        : Colors.grey.shade800,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (task.dueDate != null) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_rounded,
+                                        size: 12,
+                                        color: isOverdue 
+                                            ? Colors.red.shade400 
+                                            : Colors.grey.shade500,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        DateFormat('MMM d, y').format(task.dueDate!),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isOverdue 
+                                              ? Colors.red.shade400 
+                                              : Colors.grey.shade600,
+                                          fontWeight: isOverdue 
+                                              ? FontWeight.w500 
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          // Priority indicator
+                          _buildPriorityChip(task.priority),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                subtitle: task.dueDate != null
-                    ? Text(
-                        'Due: ${DateFormat('MMM d, y').format(task.dueDate!)}',
-                        style: TextStyle(
-                          color: task.dueDate!.isBefore(DateTime.now()) && !task.isCompleted
-                              ? Colors.red
-                              : Colors.grey,
-                        ),
-                      )
-                    : null,
-                trailing: _buildPriorityChip(task.priority),
               ),
             );
           },
@@ -651,63 +1371,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
       ),
     );
-  }
-
-  List<Task> _getFilteredTasks() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    // Filter by time range
-    List<Task> filteredTasks = [];
-    for (var box in widget.priorityBoxes) {
-      for (var task in box.tasks) {
-        if (task.dueDate == null) continue;
-        
-        final taskDate = task.dueDate!;
-        final taskDay = DateTime(taskDate.year, taskDate.month, taskDate.day);
-        
-        bool shouldInclude = false;
-        switch (_selectedTimeRange) {
-          case TimeRange.today:
-            shouldInclude = taskDay.isAtSameMomentAs(today);
-            break;
-          case TimeRange.thisWeek:
-            final weekStart = today.subtract(Duration(days: today.weekday - 1));
-            final weekEnd = weekStart.add(const Duration(days: 6));
-            shouldInclude = !taskDay.isBefore(weekStart) && !taskDay.isAfter(weekEnd);
-            break;
-          case TimeRange.thisMonth:
-            final monthStart = DateTime(now.year, now.month, 1);
-            final monthEnd = DateTime(now.year, now.month + 1, 0);
-            shouldInclude = !taskDay.isBefore(monthStart) && !taskDay.isAfter(monthEnd);
-            break;
-          case TimeRange.allTime:
-            shouldInclude = true;
-            break;
-        }
-        
-        if (shouldInclude) {
-          filteredTasks.add(task);
-        }
-      }
-    }
-    
-    // Sort tasks
-    filteredTasks.sort((a, b) {
-      switch (_selectedSortBy) {
-        case SortBy.completion:
-          return a.isCompleted == b.isCompleted ? 0 : a.isCompleted ? 1 : -1;
-        case SortBy.priority:
-          return a.priority.index.compareTo(b.priority.index);
-        case SortBy.dueDate:
-          if (a.dueDate == null && b.dueDate == null) return 0;
-          if (a.dueDate == null) return 1;
-          if (b.dueDate == null) return -1;
-          return a.dueDate!.compareTo(b.dueDate!);
-      }
-    });
-    
-    return filteredTasks;
   }
 
   Map<String, int> _calculateTaskStats() {

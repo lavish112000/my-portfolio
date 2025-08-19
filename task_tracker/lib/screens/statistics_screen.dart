@@ -221,7 +221,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     
     return filteredTasks;
   }
-  }
 
   Widget _buildCompletionChart(Map<String, int> stats) {
     final total = stats['total']!;
@@ -253,7 +252,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           PieChartSectionData(
                             color: Colors.green,
                             value: completed.toDouble(),
-                            title: '${(completed / total * 100).toStringAsFixed(1)}%',
+                            title: total > 0 ? '${(completed / total * 100).toStringAsFixed(1)}%' : '0%',
                             radius: 60,
                             titleStyle: const TextStyle(
                               color: Colors.white,
@@ -263,7 +262,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           PieChartSectionData(
                             color: Colors.orange,
                             value: pending.toDouble(),
-                            title: '${(pending / total * 100).toStringAsFixed(1)}%',
+                            title: total > 0 ? '${(pending / total * 100).toStringAsFixed(1)}%' : '0%',
                             radius: 60,
                             titleStyle: const TextStyle(
                               color: Colors.white,
@@ -438,7 +437,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   minX: 0,
                   maxX: 6,
                   minY: 0,
-                  maxY: stats.values.reduce((a, b) => a > b ? a : b).toDouble() + 2,
+                  maxY: (stats.values.isNotEmpty ? stats.values.reduce((a, b) => a > b ? a : b) : 0).toDouble() + 2,
                   lineBarsData: [
                     LineChartBarData(
                       spots: weekDays.asMap().entries.map((entry) {
@@ -651,63 +650,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
       ),
     );
-  }
-
-  List<Task> _getFilteredTasks() {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    
-    // Filter by time range
-    List<Task> filteredTasks = [];
-    for (var box in widget.priorityBoxes) {
-      for (var task in box.tasks) {
-        if (task.dueDate == null) continue;
-        
-        final taskDate = task.dueDate!;
-        final taskDay = DateTime(taskDate.year, taskDate.month, taskDate.day);
-        
-        bool shouldInclude = false;
-        switch (_selectedTimeRange) {
-          case TimeRange.today:
-            shouldInclude = taskDay.isAtSameMomentAs(today);
-            break;
-          case TimeRange.thisWeek:
-            final weekStart = today.subtract(Duration(days: today.weekday - 1));
-            final weekEnd = weekStart.add(const Duration(days: 6));
-            shouldInclude = !taskDay.isBefore(weekStart) && !taskDay.isAfter(weekEnd);
-            break;
-          case TimeRange.thisMonth:
-            final monthStart = DateTime(now.year, now.month, 1);
-            final monthEnd = DateTime(now.year, now.month + 1, 0);
-            shouldInclude = !taskDay.isBefore(monthStart) && !taskDay.isAfter(monthEnd);
-            break;
-          case TimeRange.allTime:
-            shouldInclude = true;
-            break;
-        }
-        
-        if (shouldInclude) {
-          filteredTasks.add(task);
-        }
-      }
-    }
-    
-    // Sort tasks
-    filteredTasks.sort((a, b) {
-      switch (_selectedSortBy) {
-        case SortBy.completion:
-          return a.isCompleted == b.isCompleted ? 0 : a.isCompleted ? 1 : -1;
-        case SortBy.priority:
-          return a.priority.index.compareTo(b.priority.index);
-        case SortBy.dueDate:
-          if (a.dueDate == null && b.dueDate == null) return 0;
-          if (a.dueDate == null) return 1;
-          if (b.dueDate == null) return -1;
-          return a.dueDate!.compareTo(b.dueDate!);
-      }
-    });
-    
-    return filteredTasks;
   }
 
   Map<String, int> _calculateTaskStats() {
