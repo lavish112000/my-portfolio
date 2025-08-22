@@ -1,0 +1,14 @@
+import React from 'react';
+
+const AwsIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="48"
+    height="48"
+    viewBox="0 0 24 24"
+  >
+    <circle cx="12" cy="12" r="10" fill="#FF9900" />
+  </svg>
+);
+
+export default AwsIcon;

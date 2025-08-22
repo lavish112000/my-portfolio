@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asteroid Blitz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --primary-color: #ff073a;
+            --secondary-color: #00e5ff;
+            --text-color: #ffffff;
+        }
+
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px var(--secondary-color); } 50% { box-shadow: 0 0 35px var(--secondary-color); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        body { 
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            border: 2px solid var(--secondary-color);
+            box-shadow: 0 0 30px var(--secondary-color);
+            cursor: none; /* Hide cursor over game */
+        }
+
+        canvas {
+            display: block;
+            background-color: #000;
+        }
+        
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        #score {
+            font-size: 2em;
+            color: var(--text-color);
+            text-shadow: 0 0 10px var(--secondary-color);
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s;
+            z-index: 10;
+            cursor: default;
+        }
+
+        #game-over-screen {
+            display: none; /* Initially hidden */
+        }
+
+        h2 {
+            font-size: 4em;
+            color: var(--primary-color);
+            text-shadow: 0 0 20px var(--primary-color);
+            margin: 0;
+        }
+
+        p {
+            font-size: 1.5em;
+            margin: 10px 0 30px 0;
+        }
+
+        .action-button {
+            padding: 15px 35px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4em;
+            color: var(--bg-color);
+            background: linear-gradient(45deg, #00e5ff, #00a2ff);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse-glow 2s infinite;
+        }
+        .action-button:hover {
+            transform: scale(1.05);
+            animation-play-state: paused;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="ui-layer">
+            <div id="score">SCORE: 0</div>
+        </div>
+        <div id="start-screen">
+            <h2>ASTEROID BLITZ</h2>
+            <p>Mouse or Arrow Keys to Move | Left Click or Spacebar to Shoot</p>
+            <button id="start-button" class="action-button">Start Game</button>
+        </div>
+        <div id="game-over-screen">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button id="restart-button" class="action-button">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTS ---
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+
+        // --- CANVAS SETUP ---
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // --- SOUND SETUP ---
+        const sounds = {
+            laser: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination(),
+            // FIX: Use PolySynth to prevent scheduling errors on rapid explosions
+            explosion: new Tone.PolySynth(Tone.NoiseSynth, { noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0 } }).toDestination(),
+            gameOver: new Tone.MembraneSynth({ pitchDecay: 0.1, octaves: 5, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.8, sustain: 0.01, release: 1.4 } }).toDestination(),
+            click: new Tone.MetalSynth({ frequency: 400, envelope: { attack: 0.001, decay: 0.1, release: 0.1 }, harmonicity: 3.1, modulationIndex: 16, resonance: 4000, octaves: 1.5 }).toDestination()
+        };
+        
+        // --- GAME STATE & CONFIG ---
+        let player, keys, lasers, asteroids, particles, score, isGameOver;
+        // FIX: Initialize mouse object globally to prevent error on early clicks
+        let mouse = { down: false };
+        let lastLaserTime = 0;
+        const PLAYER_SPEED = 5;
+        const LASER_SPEED = 7;
+        const ASTEROID_SPEED = 1.5;
+        const LASER_COOLDOWN = 150;
+        let starfield = [];
+
+        // --- CLASSES ---
+        class Player {
+            constructor() {
+                this.x = canvas.width / 2;
+                this.y = canvas.height - 60;
+                this.width = 50;
+                this.height = 50;
+                this.engineParticles = [];
+            }
+            draw() {
+                // Engine thruster
+                this.engineParticles.forEach((p, i) => {
+                    p.update();
+                    if (p.alpha <= 0) this.engineParticles.splice(i, 1);
+                });
+
+                // Ship body
+                ctx.fillStyle = '#c0c0c0'; // Silver
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y - this.height / 2);
+                ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
+                ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Cockpit
+                ctx.fillStyle = '#00e5ff';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            update() {
+                if (keys['ArrowLeft'] || keys['KeyA']) this.x -= PLAYER_SPEED;
+                if (keys['ArrowRight'] || keys['KeyD']) this.x += PLAYER_SPEED;
+                if (this.x - this.width / 2 < 0) this.x = this.width / 2;
+                if (this.x + this.width / 2 > canvas.width) this.x = canvas.width - this.width / 2;
+                
+                // Add engine particles
+                this.engineParticles.push(new EngineParticle(this.x, this.y + this.height / 2));
+
+                this.draw();
+            }
+        }
+
+        class Laser {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = 5;
+                this.height = 20;
+                this.color = '#ff073a';
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color;
+            }
+            update() {
+                this.y -= LASER_SPEED;
+                this.draw();
+            }
+        }
+
+        class Asteroid {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = -50;
+                this.radius = Math.random() * 30 + 15;
+                this.speed = Math.random() * ASTEROID_SPEED + 1;
+                this.angle = 0;
+                this.angleSpeed = Math.random() * 0.05 - 0.025;
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.strokeStyle = '#a9a9a9'; // Dark Gray
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, -this.radius);
+                for (let i = 1; i < 8; i++) {
+                    const angle = i * Math.PI / 4;
+                    const radius = this.radius * (0.8 + Math.random() * 0.4);
+                    ctx.lineTo(Math.sin(angle) * radius, -Math.cos(angle) * radius);
+                }
+                ctx.closePath();
+                ctx.stroke();
+                ctx.restore();
+            }
+            update() {
+                this.y += this.speed;
+                this.angle += this.angleSpeed;
+                this.draw();
+            }
+        }
+        
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.radius = Math.random() * 3 + 1;
+                this.color = color || `hsl(${Math.random() * 60 + 200}, 100%, 50%)`;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 5,
+                    y: (Math.random() - 0.5) * 5
+                };
+                this.alpha = 1;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.02;
+                this.draw();
+            }
+        }
+
+        class EngineParticle extends Particle {
+             constructor(x, y) {
+                super(x, y);
+                this.color = `hsl(${Math.random() * 30 + 10}, 100%, 50%)`;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: Math.random() * 3 + 1
+                };
+                this.alpha = 0.8;
+             }
+             update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= 0.05;
+                this.draw();
+             }
+        }
+
+        // --- BACKGROUND ---
+        function createStarfield() {
+            starfield = [];
+            for(let i=0; i < 300; i++) {
+                starfield.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    speed: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+        function drawStarfield() {
+            ctx.fillStyle = 'white';
+            starfield.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fill();
+                star.y += star.speed;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+
+        // --- GAME LOGIC ---
+        function init() {
+            player = new Player();
+            keys = {};
+            mouse.down = false;
+            lasers = [];
+            asteroids = [];
+            particles = [];
+            score = 0;
+            isGameOver = false;
+            scoreEl.textContent = `SCORE: ${score}`;
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            if(starfield.length === 0) createStarfield();
+            gameLoop();
+        }
+        
+        function createExplosion(x, y) {
+            sounds.explosion.triggerAttackRelease("2n");
+            for(let i = 0; i < 30; i++) {
+                particles.push(new Particle(x, y, `hsl(${Math.random() * 60}, 100%, 50%)`));
+            }
+        }
+        
+        function shootLaser() {
+             if (!isGameOver) {
+                lasers.push(new Laser(player.x, player.y - player.height / 2));
+                sounds.laser.triggerAttackRelease("C6", "16n");
+            }
+        }
+
+        function gameLoop() {
+            if (isGameOver) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.shadowBlur = 0;
+
+            drawStarfield();
+            player.update();
+
+            // Handle continuous shooting
+            const now = Date.now();
+            if ((keys['Space'] || mouse.down) && now - lastLaserTime > LASER_COOLDOWN) {
+                shootLaser();
+                lastLaserTime = now;
+            }
+
+            // Lasers
+            lasers.forEach((laser, laserIndex) => {
+                laser.update();
+                if (laser.y < 0) lasers.splice(laserIndex, 1);
+            });
+
+            // Asteroids
+            if (Math.random() < 0.02) asteroids.push(new Asteroid());
+            asteroids.forEach((asteroid, asteroidIndex) => {
+                asteroid.update();
+                if (asteroid.y > canvas.height + 50) asteroids.splice(asteroidIndex, 1);
+
+                // Collision: Player vs Asteroid
+                const distPlayer = Math.hypot(player.x - asteroid.x, player.y - asteroid.y);
+                if(distPlayer - asteroid.radius - player.width / 2 < 1) {
+                    endGame();
+                }
+
+                // Collision: Laser vs Asteroid
+                lasers.forEach((laser, laserIndex) => {
+                    const distLaser = Math.hypot(laser.x - asteroid.x, laser.y - asteroid.y);
+                    if (distLaser - asteroid.radius - laser.height / 2 < 1) {
+                        createExplosion(asteroid.x, asteroid.y);
+                        score += Math.floor(asteroid.radius);
+                        scoreEl.textContent = `SCORE: ${score}`;
+                        asteroids.splice(asteroidIndex, 1);
+                        lasers.splice(laserIndex, 1);
+                    }
+                });
+            });
+            
+            // Particles
+            particles.forEach((p, i) => {
+                if(p.alpha <= 0) particles.splice(i, 1);
+                else p.update();
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            isGameOver = true;
+            sounds.gameOver.triggerAttackRelease("C2", "1n");
+            finalScoreEl.textContent = score;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener('keydown', (e) => { keys[e.code] = true; });
+        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if(player && !isGameOver) {
+                const rect = canvas.getBoundingClientRect();
+                player.x = e.clientX - rect.left;
+            }
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if(e.button === 0) mouse.down = true;
+        });
+        
+        window.addEventListener('mouseup', (e) => {
+            if(e.button === 0) mouse.down = false;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            mouse.down = false;
+        });
+
+        startButton.addEventListener('click', () => {
+            sounds.click.triggerAttackRelease("C5", "8n");
+            init();
+        });
+        restartButton.addEventListener('click', () => {
+            sounds.click.triggerAttackRelease("C5", "8n");
+            init();
+        });
+
+        // Start audio context on first interaction
+        document.body.addEventListener('click', () => Tone.start(), { once: true });
+        
+        // Initial draw of starfield for start screen
+        createStarfield();
+        drawStarfield();
+
+    </script>
+</body>
+</html>
