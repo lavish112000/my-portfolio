@@ -1,53 +1,175 @@
-# Getting Started with Create React App
+# Lavish's Portfolio
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive portfolio website built with React, featuring 3D animations, interactive skill games, and comprehensive analytics integration.
 
-## Available Scripts
+## 🚀 Features
 
-In the project directory, you can run:
+- **3D Landing Page**: Interactive Three.js animations with multilingual greetings
+- **Responsive Design**: Fully responsive across all devices using Tailwind CSS
+- **Skill Games**: Interactive HTML/CSS/JavaScript games for each skill
+- **Project Showcase**: Detailed project cards with impact metrics
+- **Contact Form**: EmailJS integration for seamless contact
+- **PWA Support**: Offline functionality with service worker
+- **Error Boundaries**: Graceful error handling with user-friendly messages
+- **Loading States**: Skeleton loaders for better UX
+- **Google Analytics**: Comprehensive tracking and insights
+- **Testing Suite**: Jest and React Testing Library setup
 
-### `npm start`
+## 🛠️ Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**: React 19, Tailwind CSS
+- **3D Graphics**: Three.js
+- **Email Service**: EmailJS
+- **Testing**: Jest, React Testing Library
+- **Analytics**: Google Analytics 4
+- **PWA**: Service Worker API
+- **Build Tool**: Create React App
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📋 Prerequisites
 
-### `npm test`
+- Node.js (v16 or higher)
+- npm or yarn
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🔧 Installation
 
-### `npm run build`
+1. Clone the repository:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+git clone <your-repo-url>
+cd my-portfolio
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Install dependencies:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm install
+```
 
-### `npm run eject`
+3. Set up environment variables:
+Create a `.env` file in the root directory:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```env
+REACT_APP_GA_TRACKING_ID=G-XXXXXXXXXX
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Replace `G-XXXXXXXXXX` with your actual Google Analytics 4 Measurement ID.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🚀 Running the Application
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Development Mode
 
-## Learn More
+```bash
+npm start
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Opens [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Production Build
 
-### Code Splitting
+```bash
+npm run build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Testing
+
+```bash
+npm test
+```
+
+## 📱 PWA Features
+
+The portfolio includes Progressive Web App capabilities:
+
+- **Offline Support**: Core content cached for offline viewing
+- **Installable**: Can be installed as a standalone app
+- **Fast Loading**: Service worker caches assets for quick loading
+
+## 📊 Analytics Integration
+
+Google Analytics is integrated to track:
+
+- Page views and navigation
+- Project interactions
+- Skill game usage
+- Contact form submissions
+- Social media clicks
+
+## 🧪 Testing
+
+The project includes comprehensive tests:
+
+- Unit tests for components
+- Error boundary testing
+- Skeleton loader testing
+- Analytics function testing
+
+Run tests with:
+
+```bash
+npm test
+```
+
+## 🎮 Skill Games
+
+Interactive games included:
+
+- **HTML Game**: Test your HTML knowledge
+- **CSS Game**: CSS challenge game
+- **JavaScript Game**: JavaScript coding challenges
+- **Python Game**: Python programming quiz
+
+## 📁 Project Structure
+
+```
+src/
+├── components/
+│   ├── ErrorBoundary.js
+│   ├── SkeletonLoader.js
+│   └── ...
+├── analytics.js
+├── App.js
+├── index.js
+├── serviceWorker.js
+└── ...
+```
+
+## 🔒 Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `REACT_APP_GA_TRACKING_ID` | Google Analytics 4 Measurement ID | No |
+
+## 🚀 Deployment
+
+### Netlify Deployment
+
+1. Build the project:
+
+```bash
+npm run build
+```
+
+2. Deploy the `build` folder to Netlify
+
+### Other Platforms
+
+The built files in the `build` folder can be deployed to any static hosting service.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new features
+5. Submit a pull request
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 📞 Contact
+
+Feel free to reach out through the contact form on the website or connect on social media!
 
 ### Analyzing the Bundle Size
 
