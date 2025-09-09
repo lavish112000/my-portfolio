@@ -42,6 +42,7 @@
     "@tailwindcss/postcss": "^4.0.X",
     "autoprefixer": "^10.4.X",
     "postcss": "^8.4.X",
-    "tailwindcss": "^3.3.X"
+    "tailwindcss": "^3.3.X",
+    "webpack-dev-server": "^5.2.2"
   }
 }
