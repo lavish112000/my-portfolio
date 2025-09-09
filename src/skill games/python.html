@@ -7,157 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../public/skill-games/python.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <style>
-        :root {
-            --bg-color: #0c0c1a;
-            --primary-color: #ffc107;
-            --secondary-color: #3a3a5f;
-            --text-color: #e0e0e0;
-            --success-color: #00ff7f;
-            --fail-color: #f44336;
-        }
-
-        /* --- KEYFRAMES --- */
-        @keyframes background-pan { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px var(--primary-color), 0 0 20px var(--primary-color); } 50% { box-shadow: 0 0 25px var(--primary-color), 0 0 35px var(--primary-color); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- GENERAL BODY STYLES --- */
-        body { 
-            margin: 0;
-            font-family: 'Cinzel', serif;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-            animation: background-pan 120s linear infinite;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* --- INTRO/OUTRO/LANDING PAGE STYLES --- */
-        .fullscreen-container {
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; width: 100%; height: 100%; animation: fadeIn 1s ease-in-out;
-        }
-        .text-box {
-            background: rgba(12, 12, 26, 0.8); padding: 40px; border-radius: 15px;
-            border: 1px solid var(--primary-color); box-shadow: 0 0 30px rgba(255, 193, 7, 0.3); max-width: 600px;
-        }
-        .avatar {
-            width: 80px; height: 80px; background-color: var(--primary-color); border-radius: 50%;
-            margin: 0 auto 20px auto; box-shadow: 0 0 25px var(--primary-color); animation: pulse-glow 2s infinite;
-            opacity: 0; animation: fadeInUp 1s ease 0.5s forwards;
-        }
-        .text-box h2 {
-            font-size: 2.5em; color: var(--primary-color); margin: 0 0 15px 0;
-            opacity: 0; animation: fadeInUp 1s ease 1s forwards;
-        }
-        .text-box p {
-            font-size: 1.1em; line-height: 1.6; margin-bottom: 10px;
-            opacity: 0; animation: fadeInUp 1s ease forwards;
-        }
-        .action-button {
-            margin-top: 30px; padding: 15px 35px; font-family: 'Cinzel', serif; font-size: 1.4em; color: var(--bg-color);
-            background: linear-gradient(45deg, #ffdf70, var(--primary-color)); border: none; border-radius: 5px; cursor: pointer;
-            transition: all 0.3s ease; animation: pulse-glow 2s infinite; opacity: 0;
-        }
-        #start-button { animation: fadeInUp 1s ease 4s forwards; }
-        #start-button:hover { transform: scale(1.05); animation-play-state: paused; }
-        #outro-page { display: none; } /* Initially hidden */
-
-        /* --- GAME AREA STYLES --- */
-        #game-area { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; }
-        #game-container {
-            width: 95%; max-width: 1000px; height: 90vh; max-height: 700px; background: rgba(12, 12, 26, 0.85);
-            border: 2px solid var(--primary-color); border-image: linear-gradient(45deg, #ffc107, #fca311) 1;
-            border-radius: 15px; box-shadow: 0 0 40px rgba(255, 193, 7, 0.4); position: relative;
-            display: flex; flex-direction: column; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
-        }
-
-        #info-panel {
-            position: absolute; bottom: 20px; left: 20px; background: rgba(12, 12, 26, 0.7);
-            padding: 12px 16px; border-radius: 10px; border: 1px solid var(--primary-color);
-            max-width: 230px; -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); transition: all 0.4s ease; z-index: 10; overflow: hidden;
-        }
-        #info-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .info-button {
-            width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--primary-color); background: rgba(0,0,0,0.5);
-            color: var(--primary-color); font-size: 1.2em; font-weight: bold; cursor: pointer; display: flex;
-            justify-content: center; align-items: center; padding: 0; line-height: 1; flex-shrink: 0; margin-left: 15px;
-        }
-        #hint-button { display: none; }
-        #info-panel.minimized { max-width: 128px; height: auto; }
-        #info-panel.minimized #level-instruction, #info-panel.minimized #hint-button { display: none; }
-        #info-panel.minimized #info-panel-header { margin-bottom: 0; }
-        h1 { margin: 0; font-size: 1.2em; color: var(--primary-color); }
-        p { margin: 0; font-size: 0.8em; line-height: 1.4; transition: opacity 0.3s ease; }
-
-        #pedestal-area {
-            flex-grow: 1; display: flex; justify-content: center; align-items: center;
-            gap: 20px; padding: 20px; border-bottom: 2px solid var(--secondary-color);
-            background: radial-gradient(ellipse at center, rgba(255,193,7,0.1) 0%, transparent 70%);
-            position: relative; z-index: 1;
-        }
-        .pedestal {
-            width: 180px; height: 80px; background: linear-gradient(145deg, #2a2a4f, #1a1a3e);
-            border: 2px solid #5a5a8f; border-radius: 10px; transition: all 0.3s;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.3);
-            display: flex; justify-content: center; align-items: center;
-        }
-        .pedestal.over { background-color: rgba(255, 193, 7, 0.2); border-color: var(--primary-color); box-shadow: inset 0 0 15px var(--primary-color), 0 0 10px var(--primary-color); }
-        #block-area { height: 150px; display: flex; justify-content: center; align-items: center; gap: 15px; padding: 10px; position: relative; z-index: 1; }
-        .code-block {
-            padding: 20px; background: linear-gradient(45deg, #4a4a7f, #3a3a5f); border: 1px solid var(--primary-color);
-            border-radius: 8px; cursor: grab; -webkit-user-select: none; user-select: none; font-size: 1.1em; text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            text-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        .code-block:hover { transform: scale(1.08) translateY(-5px); box-shadow: 0 0 20px var(--primary-color); }
-        .code-block.dragging { opacity: 0.5; cursor: grabbing; z-index: 1000; }
-        .code-block.success { animation: pulse-glow 0.5s 1; border-color: var(--success-color); }
-        .code-block.fail { animation: shake 0.3s 1; border-color: var(--fail-color); }
-        #controls-area { height: 80px; display: flex; justify-content: center; align-items: center; position: relative; z-index: 1; }
-        #action-button {
-            padding: 15px 35px; font-family: 'Cinzel', serif; font-size: 1.4em; color: var(--bg-color);
-            background: linear-gradient(45deg, #ffdf70, var(--primary-color)); border: none; border-radius: 5px;
-            cursor: pointer; transition: all 0.3s ease; animation: pulse-glow 2s infinite;
-        }
-        #action-button:hover { transform: scale(1.05); animation-play-state: paused; }
-        #message-box {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            padding: 30px 40px; background-color: rgba(12, 12, 26, 0.95); border-radius: 15px;
-            border: 2px solid var(--primary-color); color: #fff; font-size: 1.8em; text-align: center;
-            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 100;
-        }
-
-        /* --- SNAKE CHATBOT STYLES --- */
-        #snake-chatbot-container {
-            position: absolute; top: 20px; left: 20px; z-index: 20;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        #chatbot-canvas { width: 100px; height: 80px; }
-        #chatbot-ui { 
-            margin-top: 10px; max-width: 250px; width: 100%;
-        }
-        #snake-speech-bubble {
-            background: rgba(12, 12, 26, 0.8); border: 1px solid var(--primary-color);
-            border-radius: 10px; padding: 10px; font-size: 0.8em;
-            margin-bottom: 10px; min-height: 40px;
-            opacity: 0; transition: opacity 0.5s;
-            text-align: center;
-        }
-        #chatbot-input {
-            box-sizing: border-box; width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--secondary-color);
-            border-radius: 5px; color: var(--text-color); padding: 8px; font-family: 'Cinzel', serif;
-        }
-    </style>
+</head>
 </head>
 <body>
 
@@ -210,9 +62,9 @@
         <div class="text-box">
             <div class="avatar"></div>
             <h2>Your Quest is Complete!</h2>
-            <p style="animation-delay: 1.5s;">You have mastered the fundamental spells of Python. Your journey as a developer has only just begun.</p>
-            <p style="animation-delay: 2.5s;"><b>An interesting fact:</b> Python was not named after the snake! Its creator, Guido van Rossum, named it after the British comedy group "Monty Python's Flying Circus".</p>
-            <p style="animation-delay: 3.5s;">Thank you for playing!</p>
+            <p>You have mastered the fundamental spells of Python. Your journey as a developer has only just begun.</p>
+            <p><b>An interesting fact:</b> Python was not named after the snake! Its creator, Guido van Rossum, named it after the British comedy group "Monty Python's Flying Circus".</p>
+            <p>Thank you for playing!</p>
         </div>
     </div>
 
