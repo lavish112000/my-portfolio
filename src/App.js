@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
+import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
 
 
 
@@ -85,6 +86,7 @@ const App = () => {
     }
     setSelectedProject(project);
     setCurrentPage('project-details');
+    trackProjectView(project.title);
   };
 
   const handleBackToProjects = () => {
@@ -117,6 +119,9 @@ const App = () => {
         console.log(`No specific page found for skill: ${skillName}`);
         return;
     }
+    
+    // Track skill game interaction
+    trackSkillGameInteraction(skillName.toLowerCase(), 'click');
     
     // Open the HTML file in a new tab with smooth transition
     window.open(targetPath, '_blank');
@@ -327,9 +332,11 @@ const App = () => {
             console.log('SUCCESS!', result.text);
             setSendStatus('success');
             form.current.reset(); // Reset form fields on success
+            trackContactSubmission(true); // Track successful submission
         }, (error) => {
             console.log('FAILED...', error.text);
             setSendStatus('error');
+            trackContactSubmission(false); // Track failed submission
         }).finally(() => {
             setIsSending(false);
         });
@@ -388,6 +395,11 @@ const App = () => {
         setPreviousScrollY(0);
       }
     }, [previousScrollY, setPreviousScrollY]);
+
+    // Track page changes for analytics
+    useEffect(() => {
+      trackPageView(`/${currentPage}`);
+    }, []);
 
     const skillsByCategory = {
       'Languages': [
