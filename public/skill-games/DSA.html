@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive DSA Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #111827; /* Gray 900 */
+            --primary-color: #34d399; /* Emerald 400 */
+            --secondary-color: #a78bfa; /* Violet 400 */
+            --text-color: #d1d5db; /* Gray 300 */
+            --border-color: #4b5563; /* Gray 600 */
+            --panel-bg: #1f2937; /* Gray 800 */
+        }
+
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes highlight-cell { 50% { background-color: var(--secondary-color); transform: scale(1.1); } }
+        @keyframes shift-right { from { transform: translateX(0); } to { transform: translateX(60px); } }
+        @keyframes swap { 50% { transform: translateY(-20px); } }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: white;
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+            color: #9ca3af; /* Gray 400 */
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: #111827;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(52, 211, 153, 0.1);
+        }
+        
+        .viz-controls {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .viz-controls input {
+            background-color: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 6px;
+            width: 60px;
+            color: white;
+        }
+        
+        .viz-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter';
+            font-weight: 500;
+        }
+        .viz-button:disabled {
+            background-color: #4b5563;
+            cursor: not-allowed;
+        }
+
+        /* Specific Viz Styles */
+        #array-viz { flex-direction: column; gap: 20px; }
+        .array-container { display: flex; }
+        .array-cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 5px;
+            position: relative;
+            transition: transform 0.3s ease-in-out;
+        }
+        .array-cell .index {
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.8em;
+            color: #9ca3af;
+        }
+
+        #linked-list-viz { position: relative; }
+        .ll-node {
+            position: absolute;
+            width: 100px;
+            height: 50px;
+            border: 2px solid var(--primary-color);
+            background: var(--panel-bg);
+            border-radius: 5px;
+            display: flex;
+            transition: all 0.3s;
+        }
+        .ll-node.highlight { border-color: var(--secondary-color); transform: scale(1.1); box-shadow: 0 0 15px var(--secondary-color); }
+        .ll-node .data { width: 50%; display: flex; justify-content: center; align-items: center; }
+        .ll-node .pointer { width: 50%; border-left: 1px solid var(--primary-color); position: relative; }
+        .ll-node .pointer::after {
+            content: '';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+        }
+        
+        #stack-queue-viz { gap: 30px; }
+        .structure-container { width: 45%; height: 100%; display: flex; flex-direction: column; align-items: center; }
+        .structure {
+            width: 80px;
+            height: 300px;
+            border: 2px solid var(--primary-color);
+            position: relative;
+        }
+        #stack { border-top: none; }
+        #queue { flex-direction: row; border: none; width: 100%; height: 80px; }
+        .structure-item {
+            width: 76px;
+            height: 40px;
+            background: var(--secondary-color);
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transition: all 0.5s ease-in-out;
+        }
+        #stack .structure-item { left: 0; }
+        #queue .structure-item { top: 0; }
+        
+        #tree-viz { position: relative; }
+        .tree-node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary-color);
+            background: var(--panel-bg);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transition: all 0.5s ease-in-out;
+        }
+        .tree-node.highlight { border-color: var(--secondary-color); transform: scale(1.2); box-shadow: 0 0 15px var(--secondary-color); }
+        
+        #hash-viz { flex-direction: column; gap: 15px; }
+        #hash-input-area { display: flex; gap: 10px; align-items: center; }
+        .hash-table { display: flex; flex-direction: column; width: 80%; }
+        .hash-bucket {
+            border: 1px solid var(--border-color);
+            height: 40px;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        .hash-bucket .index { color: #9ca3af; margin-right: 10px; }
+        .hash-bucket .value { font-family: 'Roboto Mono'; }
+        
+        .sort-viz { flex-direction: column; justify-content: flex-end; gap: 10px; padding-bottom: 40px; }
+        .bar-container { width: 100%; height: 300px; display: flex; justify-content: space-around; align-items: flex-end; }
+        .bar {
+            width: 20px;
+            background-color: var(--primary-color);
+            border: 1px solid var(--bg-color);
+            transition: all 0.3s ease-in-out;
+        }
+        .bar.comparing, .bar.min { background-color: var(--secondary-color); }
+        .bar.sorted { background-color: #f59e0b; } /* Amber 500 */
+
+        #big-o-viz { padding: 40px; }
+        
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+        }
+         .further-exploration h2 { text-align: center; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 2.2em; margin-top: 0; }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column h3 { color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%2334d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
+        .exploration-column a { color: var(--text-color); text-decoration: none; transition: color 0.2s; }
+        .exploration-column a:hover { color: var(--primary-color); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">DSA</span> Visualizer</h1>
+            <p>An interactive guide to the core concepts of Data Structures & Algorithms, the fundamental building blocks of efficient software.</p>
+        </header>
+
+        <!-- SECTION 1: Arrays -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. Arrays</h2>
+                <p>An <strong>Array</strong> is the simplest data structure, storing a collection of items in a contiguous block of memory. Each item is accessible via an index, starting from 0.</p>
+                <p><strong>Pros:</strong> Fast random access (O(1)).<br><strong>Cons:</strong> Slow insertion/deletion in the middle (O(n)), and fixed size in many languages.</p>
+            </div>
+            <div id="array-viz" class="visualization">
+                 <div class="viz-controls">
+                    <button id="array-access-btn" class="viz-button">Access Idx 2</button>
+                    <button id="array-insert-btn" class="viz-button">Insert at 1</button>
+                 </div>
+                 <div id="array-container" class="array-container"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Linked Lists -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. Linked Lists</h2>
+                <p>A <strong>Linked List</strong> stores items in individual "nodes." Each node contains data and a pointer to the next node in the sequence. Unlike arrays, nodes can be scattered in memory.</p>
+                <p><strong>Pros:</strong> Fast insertion/deletion at any point (O(1)).<br><strong>Cons:</strong> Slow access/search (O(n)) as you must traverse the list from the start.</p>
+            </div>
+            <div id="linked-list-viz" class="visualization">
+                <div class="viz-controls">
+                    <button id="ll-traverse-btn" class="viz-button">Traverse</button>
+                 </div>
+                 <svg id="ll-svg" class="absolute w-full h-full pointer-events-none"></svg>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Stacks & Queues -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Stacks & Queues</h2>
+                <p><strong>Stacks</strong> are Last-In, First-Out (LIFO). Think of a stack of plates. The last plate you add is the first one you take off.</p>
+                <p><strong>Queues</strong> are First-In, First-Out (FIFO). Like a line at a store, the first person to get in line is the first one to be served.</p>
+            </div>
+            <div id="stack-queue-viz" class="visualization">
+                <div class="structure-container">
+                    <h3 class="text-lg font-bold">Stack (LIFO)</h3>
+                    <div id="stack" class="structure"></div>
+                    <div class="flex gap-2 mt-2">
+                        <button id="stack-push" class="viz-button">Push</button>
+                        <button id="stack-pop" class="viz-button">Pop</button>
+                    </div>
+                </div>
+                <div class="structure-container">
+                    <h3 class="text-lg font-bold">Queue (FIFO)</h3>
+                    <div id="queue" class="structure"></div>
+                    <div class="flex gap-2 mt-2">
+                        <button id="queue-enq" class="viz-button">Enqueue</button>
+                        <button id="queue-deq" class="viz-button">Dequeue</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Trees -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Trees</h2>
+                <p>A <strong>Binary Search Tree (BST)</strong> is a hierarchical structure where each node has at most two children. The left child's value is always less than the parent's, and the right child's value is always greater.</p>
+                <p><strong>Pros:</strong> Efficient searching, insertion, and deletion (average O(log n)).<br><strong>Cons:</strong> Can become unbalanced, degrading performance to O(n) in the worst case.</p>
+            </div>
+            <div id="tree-viz" class="visualization">
+                <div class="viz-controls">
+                    <input id="tree-input" type="number" value="15" placeholder="Enter a number">
+                    <button id="tree-insert-btn" class="viz-button">Insert</button>
+                    <button id="tree-search-btn" class="viz-button">Search</button>
+                </div>
+                <svg id="tree-svg" class="absolute w-full h-full pointer-events-none"></svg>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Hash Tables -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. Hash Tables</h2>
+                <p>A <strong>Hash Table</strong> (or Hash Map) stores key-value pairs. It uses a hash function to compute an index into an array of buckets, from which the desired value can be found. This allows for extremely fast lookups.</p>
+                <p><strong>Pros:</strong> Very fast insertion, deletion, and retrieval (average O(1)).<br><strong>Cons:</strong> Potential for "collisions" where multiple keys hash to the same index, which can degrade performance.</p>
+            </div>
+            <div id="hash-viz" class="visualization">
+                <div class="viz-controls">
+                    <div id="hash-input-area">
+                        <label for="hash-key-input">Key:</label>
+                        <input id="hash-key-input" type="text" value="name">
+                        <label for="hash-value-input">Value:</label>
+                        <input id="hash-value-input" type="text" value="Alice">
+                        <button id="hash-insert-btn" class="viz-button">Insert</button>
+                    </div>
+                </div>
+                <div id="hash-table" class="hash-table"></div>
+            </div>
+        </section>
+        
+        <!-- SECTION 6: Bubble Sort -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>6. Algorithm: Bubble Sort</h2>
+                <p><strong>Bubble Sort</strong> is a simple sorting algorithm that repeatedly steps through the list, compares adjacent elements, and swaps them if they are in the wrong order. The pass is repeated until the list is sorted.</p>
+                <p><strong>Complexity:</strong> O(n²), making it inefficient for large lists.</p>
+            </div>
+            <div id="bubble-sort-viz" class="visualization sort-viz">
+                 <div class="viz-controls">
+                    <button id="bubble-sort-start-btn" class="viz-button">Sort</button>
+                    <button id="bubble-sort-reset-btn" class="viz-button">Reset</button>
+                 </div>
+                 <div id="bubble-bar-container" class="bar-container"></div>
+            </div>
+        </section>
+        
+        <!-- SECTION 7: Selection Sort -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>7. Algorithm: Selection Sort</h2>
+                <p><strong>Selection Sort</strong> works by repeatedly finding the minimum element from the unsorted part of the list and putting it at the beginning. It maintains two subarrays: the sorted part and the unsorted part.</p>
+                <p><strong>Complexity:</strong> O(n²), similar to Bubble Sort, but often performs fewer swaps.</p>
+            </div>
+            <div id="selection-sort-viz" class="visualization sort-viz">
+                 <div class="viz-controls">
+                    <button id="selection-sort-start-btn" class="viz-button">Sort</button>
+                    <button id="selection-sort-reset-btn" class="viz-button">Reset</button>
+                 </div>
+                 <div id="selection-bar-container" class="bar-container"></div>
+            </div>
+        </section>
+        
+        <!-- SECTION 8: Big O -->
+        <section class="tutorial-section">
+             <div class="explanation">
+                <h2>8. Big O Notation</h2>
+                <p><strong>Big O Notation</strong> is used to describe the performance or complexity of an algorithm. It tells you how the runtime or memory usage of an algorithm grows as the input size (n) grows.</p>
+                <ul>
+                    <li><strong>O(1) - Constant:</strong> Always takes the same time (e.g., Array access).</li>
+                    <li><strong>O(log n) - Logarithmic:</strong> Very efficient; time grows slowly (e.g., BST search).</li>
+                    <li><strong>O(n) - Linear:</strong> Time grows linearly with input size (e.g., searching a list).</li>
+                    <li><strong>O(n²) - Quadratic:</strong> Time grows quadratically (e.g., Bubble Sort).</li>
+                </ul>
+            </div>
+            <div id="big-o-viz" class="visualization">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <!-- Axes -->
+                    <line x1="10" y1="90" x2="90" y2="90" stroke="#9ca3af" stroke-width="0.5"/>
+                    <line x1="10" y1="90" x2="10" y2="10" stroke="#9ca3af" stroke-width="0.5"/>
+                    <text x="50" y="98" font-size="4" fill="#9ca3af" text-anchor="middle">Input Size (n)</text>
+                    <text x="5" y="50" font-size="4" fill="#9ca3af" transform="rotate(-90 5 50)" text-anchor="middle">Time</text>
+                    <!-- Curves -->
+                    <path d="M 10 85 Q 50 84 90 83" stroke="#34d399" stroke-width="1" fill="none" />
+                    <text x="70" y="80" font-size="4" fill="#34d399">O(1)</text>
+                     <path d="M 10 88 Q 50 70 90 50" stroke="#facc15" stroke-width="1" fill="none" />
+                    <text x="70" y="55" font-size="4" fill="#facc15">O(log n)</text>
+                    <path d="M 10 88 L 90 20" stroke="#a78bfa" stroke-width="1" fill="none" />
+                    <text x="70" y="25" font-size="4" fill="#a78bfa">O(n)</text>
+                    <path d="M 10 90 Q 30 80 90 10" stroke="#f87171" stroke-width="1" fill="none" />
+                    <text x="50" y="20" font-size="4" fill="#f87171">O(n²)</text>
+                </svg>
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Journey</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Core Learning & Practice</h3>
+                        <ul>
+                            <li><a href="https://www.geeksforgeeks.org/data-structures/" target="_blank" rel="noopener">GeeksforGeeks</a></li>
+                            <li><a href="https://leetcode.com/explore/" target="_blank" rel="noopener">LeetCode Explore</a></li>
+                            <li><a href="https://www.hackerrank.com/domains/data-structures" target="_blank" rel="noopener">HackerRank</a></li>
+                             <li><a href="https://www.topcoder.com/community/data-science/data-science-tutorials/introduction-to-data-structures" target="_blank" rel="noopener">TopCoder Tutorials</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Reference & Cheatsheets</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.in/data-structures-tutorial/intro/" target="_blank" rel="noopener">W3Schools Data Structures</a></li>
+                            <li><a href="https://www.bigocheatsheet.com/" target="_blank" rel="noopener">Big-O Cheat Sheet</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/data-structures/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                            <li><a href="https://dev.to/t/datastructures" target="_blank" rel="noopener">DEV.to Community</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Visualizers & Tools</h3>
+                        <ul>
+                            <li><a href="https://visualgo.net/en" target="_blank" rel="noopener">VisuAlgo</a></li>
+                            <li><a href="https://www.cs.usfca.edu/~galles/visualization/Algorithms.html" target="_blank" rel="noopener">USFCA Visualizer</a></li>
+                            <li><a href="https://algorithm-visualizer.org/" target="_blank" rel="noopener">Algorithm Visualizer</a></li>
+                            <li><a href="https://structy.net/" target="_blank" rel="noopener">Structy (Courses)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        // --- Viz 1: Arrays ---
+        const arrayContainer = document.getElementById('array-container');
+        let initialArray = [10, 22, 5, 77, 31];
+
+        function drawArray(arr) {
+            arrayContainer.innerHTML = '';
+            arr.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'array-cell';
+                cell.textContent = val;
+                cell.innerHTML += `<span class="index">${i}</span>`;
+                arrayContainer.appendChild(cell);
+            });
+        }
+        drawArray(initialArray);
+        
+        document.getElementById('array-access-btn').onclick = async () => {
+            const cells = arrayContainer.children;
+            if (cells[2]) {
+                cells[2].style.animation = `highlight-cell 1s`;
+                await sleep(1000);
+                cells[2].style.animation = '';
+            }
+        };
+
+        document.getElementById('array-insert-btn').onclick = async () => {
+            drawArray([10, '...', 22, 5, 77, 31]);
+            const cells = arrayContainer.children;
+            for(let i=2; i<cells.length; i++) {
+                cells[i].style.animation = `shift-right 0.5s forwards`;
+            }
+            await sleep(500);
+            drawArray([10, 99, 22, 5, 77, 31]);
+            cells[1].style.animation = 'pop-in 0.5s';
+        };
+
+        // --- Viz 2: Linked List ---
+        const llViz = document.getElementById('linked-list-viz');
+        const llSvg = document.getElementById('ll-svg');
+        const llData = [12, 99, 37];
+        const nodes = [];
+
+        function drawLinkedList() {
+            llViz.querySelectorAll('.ll-node').forEach(n => n.remove());
+            llSvg.innerHTML = '';
+            nodes.length = 0;
+            llData.forEach((val, i) => {
+                const node = document.createElement('div');
+                node.className = 'll-node';
+                node.innerHTML = `<div class="data">${val}</div><div class="pointer"></div>`;
+                const y = llViz.clientHeight / 2 - 25;
+                const x = (llViz.clientWidth / (llData.length + 1)) * (i + 1) - 50;
+                node.style.left = `${x}px`;
+                node.style.top = `${y}px`;
+                llViz.appendChild(node);
+                nodes.push(node);
+            });
+
+            for(let i = 0; i < nodes.length - 1; i++) {
+                const startNode = nodes[i];
+                const endNode = nodes[i+1];
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                const startX = startNode.offsetLeft + 75;
+                const startY = startNode.offsetTop + 25;
+                const endX = endNode.offsetLeft;
+                const endY = endNode.offsetTop + 25;
+                line.setAttribute('x1', startX);
+                line.setAttribute('y1', startY);
+                line.setAttribute('x2', endX);
+                line.setAttribute('y2', endY);
+                line.setAttribute('stroke', 'var(--primary-color)');
+                line.setAttribute('stroke-width', 2);
+                line.setAttribute('marker-end', 'url(#arrow)');
+                llSvg.appendChild(line);
+            }
+        }
+        setTimeout(drawLinkedList, 100);
+        document.getElementById('ll-traverse-btn').onclick = async () => {
+            for(const node of nodes) {
+                node.classList.add('highlight');
+                await sleep(800);
+                node.classList.remove('highlight');
+            }
+        };
+
+
+        // --- Viz 3: Stack/Queue ---
+        const stackEl = document.getElementById('stack');
+        const queueEl = document.getElementById('queue');
+        let stackItems = [1, 2];
+        let queueItems = [1, 2];
+        let nextItem = 3;
+
+        function drawStack() {
+            stackEl.innerHTML = '';
+            stackItems.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'structure-item';
+                el.textContent = item;
+                el.style.bottom = `${i * 40}px`;
+                stackEl.appendChild(el);
+            });
+        }
+        function drawQueue() {
+            queueEl.innerHTML = '';
+            queueItems.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'structure-item';
+                el.textContent = item;
+                el.style.left = `${i * 80}px`;
+                queueEl.appendChild(el);
+            });
+        }
+        drawStack();
+        drawQueue();
+        
+        document.getElementById('stack-push').onclick = () => { if (stackItems.length < 7) { stackItems.push(nextItem++); drawStack(); } };
+        document.getElementById('stack-pop').onclick = () => { if(stackItems.length > 0) { stackItems.pop(); drawStack(); } };
+        document.getElementById('queue-enq').onclick = () => { if (queueItems.length < 4) { queueItems.push(nextItem++); drawQueue(); } };
+        document.getElementById('queue-deq').onclick = () => { if(queueItems.length > 0) { queueItems.shift(); drawQueue(); } };
+        
+
+        // --- Viz 4: Trees (BST) ---
+        const treeViz = document.getElementById('tree-viz');
+        const treeSvg = document.getElementById('tree-svg');
+        let bstRoot = null;
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+                this.x = 0; this.y = 0;
+                this.element = null;
+            }
+        }
+
+        function insertNode(root, value) {
+            if (!root) return new TreeNode(value);
+            if (value < root.value) {
+                root.left = insertNode(root.left, value);
+            } else if (value > root.value) {
+                root.right = insertNode(root.right, value);
+            }
+            return root;
+        }
+
+        function drawTree() {
+            treeViz.querySelectorAll('.tree-node').forEach(n => n.remove());
+            treeSvg.innerHTML = '';
+            if (!bstRoot) return;
+
+            const traverse = (node, x, y, xOffset) => {
+                if (!node) return;
+                node.x = x;
+                node.y = y;
+
+                const el = document.createElement('div');
+                el.className = 'tree-node';
+                el.textContent = node.value;
+                el.style.left = `${x - 25}px`;
+                el.style.top = `${y - 25}px`;
+                treeViz.appendChild(el);
+                node.element = el;
+
+                if (node.left) {
+                    const childX = x - xOffset;
+                    const childY = y + 70;
+                    drawLine(x, y, childX, childY);
+                    traverse(node.left, childX, childY, xOffset / 2);
+                }
+                if (node.right) {
+                    const childX = x + xOffset;
+                    const childY = y + 70;
+                    drawLine(x, y, childX, childY);
+                    traverse(node.right, childX, childY, xOffset / 2);
+                }
+            };
+            traverse(bstRoot, treeViz.clientWidth / 2, 50, treeViz.clientWidth / 4);
+        }
+        
+        function drawLine(x1, y1, x2, y2) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', 'var(--border-color)');
+            line.setAttribute('stroke-width', 2);
+            treeSvg.prepend(line);
+        }
+
+        [50, 30, 70, 20, 40, 60, 80].forEach(val => bstRoot = insertNode(bstRoot, val));
+        drawTree();
+
+        document.getElementById('tree-insert-btn').onclick = async () => {
+            const val = parseInt(document.getElementById('tree-input').value, 10);
+            if(isNaN(val)) return;
+            bstRoot = insertNode(bstRoot, val);
+            drawTree(); // Redraw immediately for now, animation is complex
+        };
+        
+        document.getElementById('tree-search-btn').onclick = async () => {
+            const val = parseInt(document.getElementById('tree-input').value, 10);
+            if(isNaN(val)) return;
+            let current = bstRoot;
+            while(current) {
+                current.element.classList.add('highlight');
+                await sleep(800);
+                if (val === current.value) break;
+                current.element.classList.remove('highlight');
+                current = val < current.value ? current.left : current.right;
+            }
+            await sleep(1500);
+            drawTree(); // To remove highlights
+        };
+
+        // --- Viz 5: Hash Tables ---
+        const hashTableEl = document.getElementById('hash-table');
+        const HASH_SIZE = 8;
+        let hashTable = new Array(HASH_SIZE).fill(null);
+
+        function simpleHash(key) {
+            return key.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % HASH_SIZE;
+        }
+
+        function drawHashTable() {
+            hashTableEl.innerHTML = '';
+            for (let i = 0; i < HASH_SIZE; i++) {
+                const bucket = document.createElement('div');
+                bucket.className = 'hash-bucket';
+                const value = hashTable[i] ? `: '${hashTable[i]}'` : '';
+                bucket.innerHTML = `<span class="index">[${i}]</span><span class="value">${value}</span>`;
+                hashTableEl.appendChild(bucket);
+            }
+        }
+        drawHashTable();
+
+        document.getElementById('hash-insert-btn').onclick = async () => {
+            const key = document.getElementById('hash-key-input').value;
+            const value = document.getElementById('hash-value-input').value;
+            if (!key || !value) return;
+
+            const index = simpleHash(key);
+            hashTable[index] = value;
+            
+            const buckets = hashTableEl.children;
+            buckets[index].style.backgroundColor = 'var(--secondary-color)';
+            await sleep(500);
+            drawHashTable();
+        };
+
+        // --- Generic Sorting Logic ---
+        function createSortBars(containerId) {
+            const container = document.getElementById(containerId);
+            const array = Array.from({length: 15}, () => Math.floor(Math.random() * 90) + 10);
+            container.innerHTML = '';
+            array.forEach(val => {
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${val}%`;
+                container.appendChild(bar);
+            });
+            return array;
+        }
+        
+        let bubbleSortArray = createSortBars('bubble-bar-container');
+        let selectionSortArray = createSortBars('selection-bar-container');
+        let isBubbleSorting = false, isSelectionSorting = false;
+        
+        document.getElementById('bubble-sort-reset-btn').onclick = () => { if (!isBubbleSorting) bubbleSortArray = createSortBars('bubble-bar-container'); };
+        document.getElementById('selection-sort-reset-btn').onclick = () => { if (!isSelectionSorting) selectionSortArray = createSortBars('selection-bar-container'); };
+
+        document.getElementById('bubble-sort-start-btn').onclick = async () => {
+            if (isBubbleSorting) return;
+            isBubbleSorting = true;
+            const bars = document.getElementById('bubble-bar-container').children;
+            for (let i = 0; i < bubbleSortArray.length; i++) {
+                for (let j = 0; j < (bubbleSortArray.length - i - 1); j++) {
+                    bars[j].classList.add('comparing');
+                    bars[j+1].classList.add('comparing');
+                    await sleep(100);
+                    if (bubbleSortArray[j] > bubbleSortArray[j + 1]) {
+                        [bubbleSortArray[j], bubbleSortArray[j+1]] = [bubbleSortArray[j+1], bubbleSortArray[j]];
+                        bars[j].style.height = `${bubbleSortArray[j]}%`;
+                        bars[j+1].style.height = `${bubbleSortArray[j+1]}%`;
+                        await sleep(150);
+                    }
+                    bars[j].classList.remove('comparing');
+                    bars[j+1].classList.remove('comparing');
+                }
+                bars[bubbleSortArray.length - 1 - i].classList.add('sorted');
+            }
+            isBubbleSorting = false;
+        };
+
+        document.getElementById('selection-sort-start-btn').onclick = async () => {
+            if(isSelectionSorting) return;
+            isSelectionSorting = true;
+            const bars = document.getElementById('selection-bar-container').children;
+            let n = selectionSortArray.length;
+
+            for(let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                bars[i].classList.add('comparing');
+                for(let j = i + 1; j < n; j++) {
+                    bars[j].classList.add('comparing');
+                    await sleep(50);
+                     if(selectionSortArray[j] < selectionSortArray[minIdx]) {
+                        if(minIdx !== i) bars[minIdx].classList.remove('min');
+                        minIdx = j;
+                        bars[minIdx].classList.add('min');
+                     }
+                    bars[j].classList.remove('comparing');
+                }
+                
+                [selectionSortArray[i], selectionSortArray[minIdx]] = [selectionSortArray[minIdx], selectionSortArray[i]];
+                bars[i].style.height = `${selectionSortArray[i]}%`;
+                bars[minIdx].style.height = `${selectionSortArray[minIdx]}%`;
+                
+                bars[minIdx].classList.remove('min');
+                bars[i].classList.remove('comparing');
+                bars[i].classList.add('sorted');
+                await sleep(200);
+            }
+            bars[n-1].classList.add('sorted');
+            isSelectionSorting = false;
+        };
+
+
+    </script>
+</body>
+</html>
+
