@@ -46,8 +46,26 @@ canvas {
     box-sizing: border-box;
 }
 
-#score {
-    font-size: 2em;
+#back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1.2em;
+    color: var(--text-color);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    pointer-events: auto;
+    border: 1px solid var(--secondary-color);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#back-button:hover {
+    background: rgba(0, 229, 255, 0.2);
+    transform: scale(1.05);
+}
     color: var(--text-color);
     text-shadow: 0 0 10px var(--secondary-color);
 }
