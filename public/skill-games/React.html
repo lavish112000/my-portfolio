@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive React Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a202c; /* Gray 900 */
+            --primary-color: #61dafb; /* React Blue */
+            --secondary-color: #9f7aea; /* Purple 400 */
+            --text-color: #e2e8f0; /* Gray 200 */
+            --border-color: #4a5568; /* Gray 600 */
+            --panel-bg: #2d3748; /* Gray 800 */
+        }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px var(--primary-color); } 50% { box-shadow: 0 0 25px var(--primary-color); } }
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #02C3BD, #4E148C);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+
+        body::before {
+            display: none;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        #react-logo {
+            width: 100px;
+            height: 100px;
+            animation: spin 20s linear infinite;
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: white;
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 0 auto;
+            color: #ffffff; /* Changed to white */
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: #171923; /* Gray 900 */
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(97, 218, 251, 0.1);
+        }
+        
+        /* Specific Viz Styles */
+        #components-viz { gap: 20px; }
+        #components-code { flex: 1; }
+        #components-preview { flex: 1; border: 1px solid var(--border-color); background: white; border-radius: 5px; padding: 10px; color: #2d3748; }
+        .preview-component { border: 2px dashed #a0aec0; padding: 8px; margin-bottom: 8px; border-radius: 4px; transition: all 0.3s; }
+        .preview-component.hidden { opacity: 0.2; transform: scale(0.95); }
+        .component-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 2px; border-radius: 3px; }
+        .component-toggle:hover { background: rgba(255,255,255,0.1); }
+        
+        #jsx-viz { flex-direction: column; gap: 10px; justify-content: flex-start; }
+        .jsx-block { width: 100%; text-align: left; }
+        #jsx-input {
+            width: 100%;
+            background: #171923;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Roboto Mono', monospace;
+            resize: none;
+        }
+        
+        #state-viz { flex-direction: column; gap: 20px; }
+        #state-button { transition: transform 0.1s; }
+        #state-button:active { transform: scale(0.95); }
+        #state-flow {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-family: 'Roboto Mono', monospace;
+        }
+        #state-value {
+            border: 2px solid var(--primary-color);
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        #state-value.highlight {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        #props-viz { flex-direction: column; gap: 20px; }
+        #props-parent { width: 100%; border: 1px solid var(--border-color); padding: 15px; border-radius: 5px; }
+        #props-child { width: 90%; background: #1a202c; padding: 15px; border-radius: 5px; }
+
+        #vdom-viz { flex-direction: column; gap: 15px; text-align: center; }
+        .dom-tree { border: 1px solid var(--border-color); padding: 10px; border-radius: 5px; width: 45%; }
+        .dom-node { background: #4a5568; padding: 5px; margin: 5px; border-radius: 4px; }
+        .dom-node.changed { background: var(--secondary-color); transition: background-color 0.3s; }
+        .dom-node.updated { animation: pop-in 0.5s; background: var(--primary-color); color: white; }
+        #diff-arrow { opacity: 0; transition: opacity 0.5s; font-size: 2em; }
+        #diff-arrow.visible { opacity: 1; }
+        
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(159, 122, 234, 0.15);
+        }
+        /* ... (further-exploration styles from previous response) ... */
+        .further-exploration h2 { text-align: center; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 2.2em; margin-top: 0; }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column h3 { color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%2361dafb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
+        .exploration-column a { color: var(--text-color); text-decoration: none; transition: color 0.2s; }
+        .exploration-column a:hover { color: var(--primary-color); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <svg id="react-logo" viewBox="-11.5 -10.23174 23 20.46348" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="0" cy="0" r="2.05" fill="#61dafb"/>
+                <g stroke="#61dafb" stroke-width="1" fill="none">
+                    <ellipse rx="11" ry="4.2"/>
+                    <ellipse rx="11" ry="4.2" transform="rotate(60)"/>
+                    <ellipse rx="11" ry="4.2" transform="rotate(120)"/>
+                </g>
+            </svg>
+            <h1>The <span class="highlight">React</span> Reactor</h1>
+            <p>An interactive guide to the JavaScript library for building powerful, fast, and scalable user interfaces.</p>
+        </header>
+
+        <!-- SECTION 1: Components -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. It's All Components</h2>
+                <p>React builds UIs from small, reusable pieces of code called <strong>components</strong>. An app is a tree of components. Click the checkboxes to see how the UI is assembled.</p>
+            </div>
+            <div id="components-viz" class="visualization">
+                <div id="components-code" class="code-block">
+                    function App() {<br>
+                    &nbsp;&nbsp;return (&lt;div&gt;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<label class="component-toggle" data-target="preview-header"><input type="checkbox" checked> &lt;Header /&gt;</label><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<label class="component-toggle" data-target="preview-feed"><input type="checkbox" checked> &lt;PostFeed /&gt;</label><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<label class="component-toggle" data-target="preview-footer"><input type="checkbox" checked> &lt;Footer /&gt;</label><br>
+                    &nbsp;&nbsp;&lt;/div&gt;)<br>
+                    }
+                </div>
+                <div id="components-preview">
+                    <div id="preview-header" class="preview-component">Header</div>
+                    <div id="preview-feed" class="preview-component" style="height: 250px;">PostFeed</div>
+                    <div id="preview-footer" class="preview-component">Footer</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: JSX -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. JSX: JavaScript + XML</h2>
+                <p>React uses <strong>JSX</strong> to write HTML-like markup in JavaScript. This makes component structures intuitive. Try editing the JSX below to see it "compile" live.</p>
+            </div>
+            <div id="jsx-viz" class="visualization">
+                <div class="jsx-block">
+                    <p>You write this JSX:</p>
+                    <textarea id="jsx-input" rows="2" class="code-block" title="You write this JSX">&lt;h1 className="title"&gt;Hello&lt;/h1&gt;</textarea>
+                </div>
+                <div style="font-size: 2em; color: var(--primary-color); margin: 10px 0;">↓</div>
+                <div class="jsx-block">
+                    <p>Babel compiles it to this JavaScript:</p>
+                    <div id="jsx-output" class="code-block">React.createElement('h1', {className: 'title'}, 'Hello')</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: State -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. State & `useState`</h2>
+                <p><strong>State</strong> is data that a component maintains. When a component's state changes, React automatically re-renders the component to reflect the new data. The <code>useState</code> Hook is the primary way to add state to a component.</p>
+            </div>
+            <div id="state-viz" class="visualization">
+                <button id="state-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-xl">Click Me</button>
+                <h2 class="text-5xl font-bold" id="state-output">0</h2>
+                <div id="state-flow">
+                    <div id="state-value">State: 0</div>
+                    <div class="text-2xl text-purple-400">→</div>
+                    <div><code>setState()</code></div>
+                    <div class="text-2xl text-purple-400">→</div>
+                    <div>Re-render</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Props -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Props: Passing Data</h2>
+                <p><strong>Props</strong> (short for properties) allow you to pass data from a parent component down to a child component. This is how you make components configurable and dynamic. Props are read-only.</p>
+            </div>
+            <div id="props-viz" class="visualization">
+                <div id="props-parent">
+                    <label>Parent Component's Message:</label>
+                    <input id="props-input" type="text" value="Hello from Parent!" placeholder="Enter a message" class="w-full bg-gray-900 rounded p-2 mt-2">
+                </div>
+                <div class="text-2xl text-purple-400">↓ props.message ↓</div>
+                <div id="props-child">
+                    <p>Child Component receives:</p>
+                    <p class="text-2xl font-bold text-cyan-400" id="props-output">Hello from Parent!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Virtual DOM -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. The Virtual DOM</h2>
+                <p>React uses a <strong>Virtual DOM</strong> for performance. When state changes, React updates a copy of the DOM in memory, calculates the minimal changes needed, and then updates only those specific parts of the real browser DOM. This avoids slow, full-page re-renders.</p>
+            </div>
+            <div id="vdom-viz" class="visualization">
+                <button id="vdom-button" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">Change Name</button>
+                <div class="flex w-full justify-around items-center">
+                    <div class="dom-tree">
+                        <p>Virtual DOM</p>
+                        <div class="dom-node">&lt;div&gt;</div>
+                        <div class="dom-node" id="vdom-node-1">&lt;p&gt;Name: Alice&lt;/p&gt;</div>
+                        <div class="dom-node">&lt;p&gt;Age: 30&lt;/p&gt;</div>
+                    </div>
+                     <div id="diff-arrow">⇄<br>Diff</div>
+                    <div class="dom-tree">
+                        <p>Real DOM</p>
+                        <div class="dom-node">&lt;div&gt;</div>
+                        <div class="dom-node" id="realdom-node-1">&lt;p&gt;Name: Alice&lt;/p&gt;</div>
+                        <div class="dom-node">&lt;p&gt;Age: 30&lt;/p&gt;</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Journey</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Official & Core Resources</h3>
+                        <ul>
+                            <li><a href="https://react.dev/" target="_blank" rel="noopener">Official React Docs</a></li>
+                            <li><a href="https://nextjs.org/" target="_blank" rel="noopener">Next.js Framework</a></li>
+                            <li><a href="https://reactnative.dev/" target="_blank" rel="noopener">React Native for Mobile</a></li>
+                             <li><a href="https://redux.js.org/" target="_blank" rel="noopener">Redux State Management</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Learning Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/react/" target="_blank" rel="noopener">W3Schools React Tutorial</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/react/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                            <li><a href="https://egghead.io/q/react" target="_blank" rel="noopener">Egghead.io Lessons</a></li>
+                            <li><a href="https://beta.reactjs.org/learn" target="_blank" rel="noopener">The Beta React Docs (New)</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Project Ideas</h3>
+                        <ul>
+                            <li>A simple To-Do list app</li>
+                            <li>A weather app using a free API</li>
+                            <li>A recipe search application</li>
+                            <li>A personal portfolio website</li>
+                            <li>A movie database browser</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // --- Viz 1: Components ---
+        const componentToggles = document.querySelectorAll('.component-toggle input');
+        componentToggles.forEach(toggle => {
+            toggle.addEventListener('change', () => {
+                const targetId = toggle.parentElement.dataset.target;
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    targetEl.classList.toggle('hidden', !toggle.checked);
+                }
+            });
+        });
+
+        // --- Viz 2: JSX ---
+        const jsxInput = document.getElementById('jsx-input');
+        const jsxOutput = document.getElementById('jsx-output');
+        function compileJsx(jsx) {
+            // Simplified simulation of Babel
+            const tagMatch = jsx.match(/<([a-z0-9]+)/);
+            const contentMatch = jsx.match(/>([^<]+)</);
+            
+            const tag = tagMatch ? `'${tagMatch[1]}'` : 'null';
+            const content = contentMatch ? `'${contentMatch[1]}'` : 'null';
+            
+            const propsMatch = jsx.match(/(\w+)="([^"]+)"/);
+            const props = propsMatch ? `{${propsMatch[1]}: '${propsMatch[2]}'}` : 'null';
+
+            return `React.createElement(${tag}, ${props}, ${content})`;
+        }
+        jsxInput.addEventListener('input', () => {
+            jsxOutput.textContent = compileJsx(jsxInput.value);
+        });
+
+
+        // --- Viz 3: State ---
+        const stateButton = document.getElementById('state-button');
+        const stateOutput = document.getElementById('state-output');
+        const stateValue = document.getElementById('state-value');
+        let count = 0;
+        stateButton.addEventListener('click', () => {
+            count++;
+            stateOutput.textContent = count;
+            stateValue.textContent = `State: ${count}`;
+            stateValue.classList.add('highlight');
+            setTimeout(() => stateValue.classList.remove('highlight'), 500);
+        });
+        
+        // --- Viz 4: Props ---
+        const propsInput = document.getElementById('props-input');
+        const propsOutput = document.getElementById('props-output');
+        propsInput.addEventListener('input', () => {
+            propsOutput.textContent = propsInput.value;
+        });
+
+        // --- Viz 5: Virtual DOM ---
+        const vdomButton = document.getElementById('vdom-button');
+        const vdomNode = document.getElementById('vdom-node-1');
+        const realdomNode = document.getElementById('realdom-node-1');
+        const diffArrow = document.getElementById('diff-arrow');
+        let isAlice = true;
+        vdomButton.addEventListener('click', () => {
+            isAlice = !isAlice;
+            const newName = isAlice ? 'Alice' : 'Bob';
+            
+            // 1. Update VDOM
+            vdomNode.textContent = `<p>Name: ${newName}</p>`;
+            vdomNode.classList.add('changed');
+            
+            // 2. Show diffing
+            diffArrow.classList.add('visible');
+            
+            setTimeout(() => {
+                // 3. Update Real DOM
+                realdomNode.textContent = `<p>Name: ${newName}</p>`;
+                realdomNode.classList.add('updated');
+                
+                // Reset state for next click
+                setTimeout(() => {
+                    vdomNode.classList.remove('changed');
+                    realdomNode.classList.remove('updated');
+                    diffArrow.classList.remove('visible');
+                }, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
+
