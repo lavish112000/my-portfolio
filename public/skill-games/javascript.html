@@ -16,6 +16,7 @@
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
         <div id="ui-layer">
+            <div id="back-button" class="back-button">← Back to Portfolio</div>
             <div id="score">SCORE: 0</div>
         </div>
         <div id="start-screen">
@@ -40,6 +41,7 @@
         const finalScoreEl = document.getElementById('final-score');
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
+        const backButton = document.getElementById('back-button');
 
         // --- CANVAS SETUP ---
         canvas.width = 800;
@@ -362,6 +364,9 @@
         restartButton.addEventListener('click', () => {
             sounds.click.triggerAttackRelease("C5", "8n");
             init();
+        });
+        backButton.addEventListener('click', () => {
+            window.close(); // Close the current tab/window
         });
 
         // Start audio context on first interaction
