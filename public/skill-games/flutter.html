@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Flutter Tutorial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #040c18;
+            --primary-color: #0175c2;
+            --secondary-color: #13b9fd;
+            --text-color: #eaeaea;
+            --border-color: rgba(2, 178, 255, 0.3);
+            --code-bg: #0a1929;
+            --panel-bg: rgba(10, 25, 41, 0.7);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            80% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px #ff9800; } 50% { box-shadow: 0 0 25px #ff9800; } }
+        @keyframes flash { 50% { background: rgba(255,255,255,0.8); } }
+        @keyframes flow { to { stroke-dashoffset: 0; } }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #040c18 url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2313b9fd" fill-opacity="0.04"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2-H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: white;
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+            color: #8899a6;
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .code-block .comment { color: #808080; }
+        .code-block .keyword { color: #13b9fd; }
+        .code-block .class { color: #0175c2; }
+        .code-block .string { color: #3ad900; }
+        .code-block .number { color: #ffc107; }
+
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+
+        -webkit-backdrop-filter: blur(10px);
+
+        backdrop-filter: blur(10px);
+
+        border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        /* Specific Viz Styles */
+        .phone-mockup {
+            width: 250px;
+            height: 95%;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+        .phone-mockup::before {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 5px;
+            background: #111;
+            border-radius: 5px;
+            z-index: 2;
+        }
+        .phone-mockup .screen {
+            background: white;
+            flex-grow: 1;
+            border-radius: 30px;
+            padding: 10px;
+            color: black;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #widget-tree-viz { gap: 20px; }
+        #widget-palette { display: flex; flex-direction: column; gap: 10px; }
+        .widget-item { padding: 8px 12px; background: var(--secondary-color); color: white; border-radius: 5px; cursor: grab; text-align: center; transition: transform 0.2s; }
+        .widget-item:hover { transform: scale(1.05); }
+        #widget-tree-screen h4 { margin: 0 0 10px 0; text-align: center; color: #555; }
+        #widget-tree-dropzone { border: 2px dashed #ccc; flex-grow: 1; border-radius: 10px; padding: 5px; display: flex; flex-direction: column; gap: 5px; transition: background-color 0.2s; }
+        #widget-tree-dropzone.over { background-color: rgba(19, 185, 253, 0.1); }
+        .widget-placeholder { background: #e0e0e0; padding: 10px; text-align: center; border-radius: 5px; animation: popIn 0.3s ease-out; }
+
+        #state-viz .screen { display: flex; flex-direction: column; justify-content: space-around; align-items: center; }
+        .state-button { padding: 10px 20px; border-radius: 20px; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s; }
+        .state-button:hover { transform: scale(1.05); }
+        #stateful-btn { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        #counter-span { display: inline-block; transition: transform 0.2s; }
+        #counter-span.updated { transform: scale(1.5); color: var(--secondary-color); }
+
+        #layout-viz { flex-direction: column; gap: 10px; }
+        #layout-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+        #layout-controls button { background: #333; border: none; color: white; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        #layout-controls button.active { background: var(--primary-color); }
+        #layout-display { display: flex; width: 80%; height: 50px; background: #eee; padding: 5px; border-radius: 5px; gap: 5px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .layout-box { background: var(--secondary-color); width: 40px; height: 40px; border-radius: 5px; }
+        
+        #hot-reload-viz { gap: 20px; }
+        #hot-reload-code { flex-grow: 1; font-size: 0.9em; }
+        #hot-reload-btn { position: absolute; bottom: 30px; right: 30px; background: #ff9800; border: none; padding: 10px; border-radius: 50%; cursor: pointer; animation: pulse-glow 2s infinite; }
+        #hot-reload-btn svg { width: 24px; height: 24px; fill: white; }
+        #hot-reload-screen { background: var(--primary-color); transition: background-color 0.2s; color: white; text-align: center; padding-top: 20px; }
+        #hot-reload-screen.reloading { animation: flash 0.3s; }
+
+        #platform-viz { flex-direction: column; }
+        #platform-flow { display: flex; align-items: center; justify-content: center; width: 100%; }
+        .platform-icon, #flutter-code-box { opacity: 0; transform: scale(0.8); transition: opacity 0.5s, transform 0.5s; }
+        .platform-arrow-path { stroke-dasharray: 100; stroke-dashoffset: 100; stroke: var(--secondary-color); stroke-width: 2; }
+        #platform-viz.visible .platform-arrow-path { animation: flow 1s ease-out forwards; }
+        #flutter-code-box { width: 100px; text-align: center; }
+        .platform-endpoints { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding-left: 20px; }
+
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+
+        .further-exploration {
+            text-align: left;
+            background: var(--code-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .further-exploration h2 {
+            text-align: center;
+            color: var(--secondary-color);
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+        .exploration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .exploration-column h3 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .exploration-column ul {
+            list-style: none;
+            padding: 0;
+        }
+        .exploration-column li {
+            margin-bottom: 10px;
+            background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%2313b9fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3cpolyline points="9 11 12 14 22 4"%3e%3c/polyline%3e%3cpath d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"%3e%3c/path%3e%3c/svg%3e') no-repeat left center;
+            padding-left: 30px;
+        }
+        .exploration-column a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .exploration-column a:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">Flutter</span>verse Explorer</h1>
+            <p>An interactive guide to Google's UI toolkit for building beautiful, natively compiled applications for mobile, web, and desktop from a single codebase.</p>
+        </header>
+
+        <!-- SECTION 1: Widgets -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. Everything is a Widget</h2>
+                <p>The core philosophy of Flutter is that your entire UI is composed of <strong>widgets</strong>. Widgets are the building blocks of a Flutter app, describing what their view should look like given their current configuration and state. Your app is a tree of these widgets.</p>
+                <div class="code-block">
+<span class="comment">// A simple widget tree</span>
+<span class="class">Scaffold</span>(
+  body: <span class="class">Column</span>(
+    children: [
+      <span class="class">Text</span>(<span class="string">'Hello, Flutter!'</span>),
+      <span class="class">Icon</span>(Icons.rocket),
+    ],
+  ),
+)
+                </div>
+            </div>
+            <div id="widget-tree-viz" class="visualization">
+                <div id="widget-palette">
+                    <div class="widget-item" draggable="true" data-widget="Text">Text</div>
+                    <div class="widget-item" draggable="true" data-widget="Icon">Icon</div>
+                    <div class="widget-item" draggable="true" data-widget="Container">Container</div>
+                </div>
+                <div class="phone-mockup">
+                    <div id="widget-tree-screen" class="screen">
+                        <h4>My App UI</h4>
+                        <div id="widget-tree-dropzone"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: State -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. Stateless vs. Stateful</h2>
+                <p>Widgets are either stateless or stateful. A <strong><code>StatelessWidget</code></strong> is immutable; it's drawn once with the information it's given and doesn't change. A <strong><code>StatefulWidget</code></strong> can change dynamically. Calling <code>setState()</code> tells Flutter that the widget's internal state has changed, causing it to be redrawn.</p>
+            </div>
+            <div id="state-viz" class="visualization">
+                 <div class="phone-mockup">
+                    <div class="screen">
+                        <div>
+                            <h4>Stateless Button</h4>
+                            <div class="state-button">Like</div>
+                        </div>
+                        <div>
+                            <h4>Stateful Counter</h4>
+                            <div id="stateful-btn" class="state-button">Clicked <span id="counter-span">0</span> times</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Layouts -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Layouts: Rows & Columns</h2>
+                <p>Flutter makes layout simple with widgets like <strong><code>Row</code></strong> and <strong><code>Column</code></strong>. These flexible widgets let you arrange other widgets horizontally or vertically. You can control alignment and spacing with properties like <code>mainAxisAlignment</code>.</p>
+            </div>
+            <div id="layout-viz" class="visualization">
+                <div id="layout-display">
+                    <div class="layout-box"></div>
+                    <div class="layout-box"></div>
+                    <div class="layout-box"></div>
+                </div>
+                <div id="layout-controls">
+                    <button class="active" data-align="flex-start">Start</button>
+                    <button data-align="center">Center</button>
+                    <button data-align="flex-end">End</button>
+                    <button data-align="space-between">Space Between</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Hot Reload -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Hot Reload</h2>
+                <p>One of Flutter's most powerful features is <strong>Hot Reload</strong>. It allows you to inject updated code into a running application almost instantly. You can fix bugs, build UI, and add features without restarting your app, preserving its current state.</p>
+            </div>
+            <div id="hot-reload-viz" class="visualization">
+                <div id="hot-reload-code" class="code-block">
+<span class="comment">// Change the color and hit Reload!</span>
+<span class="keyword">return</span> <span class="class">Container</span>(
+  color: Colors.<select id="hot-reload-color" title="Select color"><option>blue</option><option>red</option><option>green</option></select>
+);
+                </div>
+                 <div class="phone-mockup">
+                    <div id="hot-reload-screen" class="screen">
+                        <h3>Counter: <span id="hot-reload-counter">0</span></h3>
+                    </div>
+                </div>
+                <button id="hot-reload-btn" title="Hot Reload">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"></path></svg>
+                </button>
+            </div>
+        </section>
+        
+        <!-- SECTION 5: Single Codebase -->
+        <section class="tutorial-section">
+             <div class="explanation">
+                <h2>5. One Codebase, Multiple Platforms</h2>
+                <p>The ultimate goal of Flutter is to allow you to build and maintain one application that runs natively on multiple platforms. Your single Dart codebase compiles to ARM code for mobile, and to JavaScript for the web, providing true native performance everywhere.</p>
+            </div>
+            <div id="platform-viz" class="visualization">
+                <div id="platform-flow">
+                    <div id="flutter-code-box" class="platform-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#13B9FD" d="M14.3,1.7l-9.8,9.8l-4.5,0l14.3-14.3L14.3,1.7z M14.3,1.7L14.3,1.7L4.5,11.5l0,4.5l9.8,9.8l9.8-9.8L14.3,1.7z"/></svg>
+                        <p>Dart Code</p>
+                    </div>
+                    <svg height="120" width="100">
+                        <line x1="0" y1="20" x2="100" y2="20" class="platform-arrow-path"/>
+                        <line x1="0" y1="60" x2="100" y2="60" class="platform-arrow-path"/>
+                        <line x1="0" y1="100" x2="100" y2="100" class="platform-arrow-path"/>
+                    </svg>
+                    <div class="platform-endpoints">
+                         <div class="platform-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#999" d="M17,1H7C5.9,1,5,1.9,5,3v18c0,1.1,0.9,2,2,2h10c1.1,0,2-0.9,2-2V3C19,1.9,18.1,1,17,1z M12,21c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S12.83,21,12,21z M16,17H8V5h8V17z"/></svg><p>iOS/Android</p></div>
+                         <div class="platform-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#999" d="M21,3H3C1.9,3,1,3.9,1,5v14c0,1.1,0.9,2,2,2h18c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,19H3V5h18V19z M5,12h2v2H5V12z M9,12h2v2H9V12z M13,12h2v2h-2V12z"/></svg><p>Web</p></div>
+                         <div class="platform-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#999" d="M20,18c1.1,0,2-0.9,2-2V6c0-1.1-0.9-2-2-2H4C2.9,4,2,4.9,2,6v10c0,1.1,0.9,2,2,2H0v2h24v-2H20z M4,6h16v10H4V6z"/></svg><p>Desktop</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Journey</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Official & Community Resources</h3>
+                        <ul>
+                            <li><a href="https://flutter.dev" target="_blank" rel="noopener">Official Flutter Docs</a></li>
+                            <li><a href="https://youtube.com/flutterdev" target="_blank" rel="noopener">Flutter YouTube Channel</a></li>
+                            <li><a href="https://pub.dev" target="_blank" rel="noopener">Pub.dev (Package Manager)</a></li>
+                             <li><a href="https://flutter.dev/community" target="_blank" rel="noopener">Flutter Community Page</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Learning Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/flutter/" target="_blank" rel="noopener">W3Schools Flutter Tutorial</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/flutter/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                            <li><a href="https://codewithandrea.com/tutorials/" target="_blank" rel="noopener">Code with Andrea</a></li>
+                            <li><a href="https://docs.flutter.dev/codelabs" target="_blank" rel="noopener">Official Flutter Codelabs</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Project Ideas</h3>
+                        <ul>
+                            <li>A simple To-Do list app</li>
+                            <li>A weather app using a free API</li>
+                            <li>A basic calculator</li>
+                            <li>A news feed reader</li>
+                            <li>A simple note-taking app</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+
+                    // Special animation for platform viz
+                    if (entry.target.querySelector('#platform-viz')) {
+                        const icons = document.querySelectorAll('.platform-icon');
+                        setTimeout(() => {
+                           icons[0].style.opacity = 1;
+                           icons[0].style.transform = 'scale(1)';
+                        }, 200);
+                        setTimeout(() => {
+                            for(let i = 1; i < icons.length; i++) {
+                                icons[i].style.opacity = 1;
+                                icons[i].style.transform = 'scale(1)';
+                            }
+                        }, 800);
+                    }
+                }
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // --- Viz 1: Widget Tree ---
+        const draggableWidgets = document.querySelectorAll('.widget-item');
+        const dropzone = document.getElementById('widget-tree-dropzone');
+        draggableWidgets.forEach(widget => {
+            widget.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', e.target.dataset.widget);
+            });
+        });
+        dropzone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropzone.classList.add('over');
+        });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('over');
+            const widgetType = e.dataTransfer.getData('text/plain');
+            const newWidget = document.createElement('div');
+            newWidget.className = 'widget-placeholder';
+            newWidget.textContent = widgetType;
+            dropzone.appendChild(newWidget);
+        });
+
+        // --- Viz 2: State ---
+        const counterSpan = document.getElementById('counter-span');
+        const statefulBtn = document.getElementById('stateful-btn');
+        let count = 0;
+        statefulBtn.addEventListener('click', () => {
+            count++;
+            counterSpan.textContent = count;
+            counterSpan.classList.add('updated');
+            setTimeout(() => counterSpan.classList.remove('updated'), 200);
+        });
+
+        // --- Viz 3: Layouts ---
+        const layoutDisplay = document.getElementById('layout-display');
+        const layoutControls = document.querySelectorAll('#layout-controls button');
+        layoutControls.forEach(button => {
+            button.addEventListener('click', () => {
+                layoutControls.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                layoutDisplay.style.justifyContent = button.dataset.align;
+            });
+        });
+
+        // --- Viz 4: Hot Reload ---
+        const hotReloadBtn = document.getElementById('hot-reload-btn');
+        const hotReloadScreen = document.getElementById('hot-reload-screen');
+        const colorSelect = document.getElementById('hot-reload-color');
+        const hotReloadCounter = document.getElementById('hot-reload-counter');
+        let hotReloadCount = 0;
+        setInterval(() => hotReloadCounter.textContent = ++hotReloadCount, 2000);
+
+        hotReloadBtn.addEventListener('click', () => {
+            const selectedColor = colorSelect.value;
+            hotReloadScreen.style.backgroundColor = `var(--${selectedColor === 'blue' ? 'primary' : 'bg'}-color)`;
+            if(selectedColor === 'red') hotReloadScreen.style.backgroundColor = '#d32f2f';
+            if(selectedColor === 'green') hotReloadScreen.style.backgroundColor = '#388e3c';
+
+            hotReloadScreen.classList.add('reloading');
+            setTimeout(() => hotReloadScreen.classList.remove('reloading'), 300);
+        });
+
+
+    </script>
+</body>
+</html>
+
