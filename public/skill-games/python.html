@@ -15,6 +15,7 @@
 
     <!-- LANDING PAGE -->
     <div id="landing-page" class="fullscreen-container">
+        <div id="back-button" class="back-button">← Back to Portfolio</div>
         <div class="text-box">
             <div class="avatar"></div>
             <h2>Welcome, Seeker of Knowledge</h2>
@@ -28,6 +29,7 @@
     <!-- GAME AREA (Initially hidden) -->
     <div id="game-area">
         <div id="game-container">
+            <div id="back-button-game" class="back-button">← Back to Portfolio</div>
             
             <div id="snake-chatbot-container">
                 <canvas id="chatbot-canvas"></canvas>
@@ -84,6 +86,8 @@
         const chatbotCanvas = document.getElementById('chatbot-canvas');
         const chatbotInput = document.getElementById('chatbot-input');
         const speechBubble = document.getElementById('snake-speech-bubble');
+        const backButton = document.getElementById('back-button');
+        const backButtonGame = document.getElementById('back-button-game');
 
         // --- SOUND SETUP ---
         const clickSynth = new Tone.PolySynth(Tone.MetalSynth, { frequency: 400, envelope: { attack: 0.001, decay: 0.1, release: 0.1 }, harmonicity: 3.1, modulationIndex: 16, resonance: 4000, octaves: 1.5 }).toDestination();
@@ -302,6 +306,15 @@
                 }, 1000);
 
             }, { once: true });
+        });
+
+        // Back button event listeners
+        backButton.addEventListener('click', () => {
+            window.close(); // Close the current tab/window
+        });
+
+        backButtonGame.addEventListener('click', () => {
+            window.close(); // Close the current tab/window
         });
 
         actionButton.addEventListener('click', () => {
