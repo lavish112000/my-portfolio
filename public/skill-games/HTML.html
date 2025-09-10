@@ -15,6 +15,7 @@
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
         <div id="ui-layer">
+            <div id="back-button" class="back-button">← Back to Portfolio</div>
             <div id="top-ui">
                 <div id="score">SCORE: 0</div>
                 <div id="combo-meter">COMBO: x1</div>
@@ -43,6 +44,7 @@
         const finalScoreEl = document.getElementById('final-score');
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
+        const backButton = document.getElementById('back-button');
 
         const synth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "fmsine" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 } }).toDestination();
         const kick = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 10, oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.4, sustain: 0.01, release: 1.4, attackCurve: "exponential" } }).toDestination();
@@ -310,6 +312,9 @@
         restartButton.addEventListener('click', () => {
             sounds.click.triggerAttackRelease("C4", "8n");
             init();
+        });
+        backButton.addEventListener('click', () => {
+            window.close(); // Close the current tab/window
         });
 
         canvas.addEventListener('mousedown', (e) => {
