@@ -34,25 +34,25 @@ A modern, responsive portfolio website built with React, featuring 3D animations
 
 1. Clone the repository:
 
-```bash
-git clone <your-repo-url>
-cd my-portfolio
-```
+   ```bash
+   git clone <your-repo-url>
+   cd my-portfolio
+   ```
 
 2. Install dependencies:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 3. Set up environment variables:
-Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory:
 
-```env
-REACT_APP_GA_TRACKING_ID=G-XXXXXXXXXX
-```
+   ```env
+   REACT_APP_GA_TRACKING_ID=G-XXXXXXXXXX
+   ```
 
-Replace `G-XXXXXXXXXX` with your actual Google Analytics 4 Measurement ID.
+   Replace `G-XXXXXXXXXX` with your actual Google Analytics 4 Measurement ID.
 
 ## 🚀 Running the Application
 
@@ -120,7 +120,7 @@ Interactive games included:
 
 ## 📁 Project Structure
 
-```
+```text
 src/
 ├── components/
 │   ├── ErrorBoundary.js
@@ -145,9 +145,9 @@ src/
 
 1. Build the project:
 
-```bash
-npm run build
-```
+   ```bash
+   npm run build
+   ```
 
 2. Deploy the `build` folder to Netlify
 
