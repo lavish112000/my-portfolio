@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
@@ -16,6 +16,7 @@ const App = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [previousScrollY, setPreviousScrollY] = useState(0);
+  const [currentSection, setCurrentSection] = useState(''); // Track current section (skills/projects)
 
   // A list of "Hello" in 10 different languages for the landing page animation
   const hellos = [
@@ -86,11 +87,20 @@ const App = () => {
     }
     setSelectedProject(project);
     setCurrentPage('project-details');
+    setCurrentSection('projects'); // Remember we came from projects section
     trackProjectView(project.title);
   };
 
   const handleBackToProjects = () => {
     setCurrentPage('profile');
+    setSelectedProject(null);
+    // Scroll to projects section after a brief delay to allow page transition
+    setTimeout(() => {
+      const projectsElement = document.getElementById('projects');
+      if (projectsElement) {
+        projectsElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   /**
@@ -99,6 +109,8 @@ const App = () => {
    * @param {string} skillName - The name of the skill that was clicked.
    */
   const handleSkillClick = (skillName) => {
+    setCurrentSection('skills'); // Remember we came from skills section
+
     let targetPath = '';
 
     // Map skill names to their respective HTML file paths (served from public folder)
@@ -162,14 +174,32 @@ const App = () => {
     }, 300); // Delay to allow fade-out animation
   };
 
+  // Handle back navigation from skill games
+  const handleBackFromSkills = useCallback(() => {
+    // Scroll to skills section after a brief delay to allow page transition
+    setTimeout(() => {
+      const skillsElement = document.getElementById('skills');
+      if (skillsElement) {
+        skillsElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  }, []);
+
   // Handle smooth transition when returning from skill games
-  const handleWindowFocus = () => {
+  const handleWindowFocus = useCallback(() => {
     document.body.classList.remove('fade-out');
     document.body.classList.add('fade-in');
     setTimeout(() => {
       document.body.classList.remove('fade-in');
+      // Navigate back to the appropriate section based on where user came from
+      if (currentSection === 'skills') {
+        handleBackFromSkills();
+      } else if (currentSection === 'projects') {
+        handleBackToProjects();
+      }
+      setCurrentSection(''); // Reset the section tracking
     }, 500);
-  };
+  }, [currentSection, handleBackFromSkills]);
 
   // Add event listener for when user returns to the main page
   useEffect(() => {
@@ -177,7 +207,7 @@ const App = () => {
     return () => {
       window.removeEventListener('focus', handleWindowFocus);
     };
-  }, []);
+  }, [handleWindowFocus]);
 
   const HomeAndLandingPage = ({ onTransitionEnd }) => {
     const mountRef = useRef(null);
