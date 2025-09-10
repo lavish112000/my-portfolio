@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Version Control Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000435; /* End of new gradient */
+            --primary-color: #E4B55D; /* Gold from gradient */
+            --secondary-color: #c084fc; /* Purple 400 */
+            --text-color: #d1d5db; /* Gray 300 */
+            --border-color: rgba(228, 181, 93, 0.2);
+            --panel-bg: rgba(31, 41, 55, 0.5); /* Gray 800 with alpha */
+        }
+
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slide-in { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px var(--primary-color); } 50% { box-shadow: 0 0 25px var(--primary-color); } }
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            line-height: 1.7;
+            background: linear-gradient(to bottom, #E4B55D, #755468, #004466, #000435);
+            background-attachment: fixed;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: white;
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+             text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+            color: #e2e8f0;
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s ease-out, scale 0.3s ease-out;
+        }
+        
+        .tutorial-section:hover {
+            transform: translateY(20px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: rgba(2, 6, 23, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 25px rgba(228, 181, 93, 0.1), inset 0 0 10px rgba(228, 181, 93, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .viz-controls {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 10;
+        }
+        .viz-controls input {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 8px;
+            color: white;
+            font-size: 0.9em;
+        }
+        
+        .viz-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter';
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .viz-button:hover { background-color: #a855f7; transform: translateY(-2px); }
+        .viz-button:disabled {
+            background-color: #4b5563;
+            cursor: not-allowed;
+            transform: translateY(0);
+        }
+
+        /* Specific Viz Styles */
+        #timeline-viz { flex-direction: column; gap: 20px; }
+        #timeline-container { width: 90%; height: 6px; background: var(--border-color); border-radius: 3px; position: relative; }
+        .commit-point {
+            width: 20px; height: 20px;
+            background: white; border: 3px solid var(--primary-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .commit-point:hover { transform: translateY(-50%) scale(1.2); box-shadow: 0 0 15px var(--primary-color); }
+        #file-preview { border: 1px solid var(--border-color); background: #111827; padding: 15px; border-radius: 5px; width: 90%; height: 150px; font-family: 'Roboto Mono'; white-space: pre; }
+
+        #repo-viz { gap: 10px; align-items: stretch; }
+        .repo-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 5px;
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .repo-area.over { border-style: solid; border-color: var(--primary-color); background-color: rgba(228, 181, 93, 0.1); }
+        .repo-area h4 { margin: 0 0 10px 0; color: #9ca3af; }
+        .repo-file {
+            background: var(--secondary-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+            width: 80%;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            cursor: grab;
+            font-weight: 500;
+        }
+        .repo-file:active { cursor: grabbing; }
+        
+        #branch-viz, #merge-viz { padding: 40px; }
+        .branch-commit {
+            fill: white;
+            stroke-width: 2;
+            stroke: var(--primary-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .branch-commit:hover { r: 12; }
+        .branch-commit.feature { stroke: var(--secondary-color); }
+        .branch-line {
+            stroke: var(--primary-color);
+            stroke-width: 4;
+            fill: none;
+            stroke-linecap: round;
+        }
+        .branch-line.feature { stroke: var(--secondary-color); }
+        .commit-label { font-size: 8px; fill: white; font-family: 'Roboto Mono'; }
+        
+        #remote-viz { gap: 20px; text-align: center; }
+        .repo-icon { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .repo-icon svg { width: 60px; height: 60px; }
+        .repo-commits { min-height: 150px; width: 150px; border: 1px solid var(--border-color); padding: 5px; border-radius: 5px; }
+        .commit-block {
+            background: var(--primary-color);
+            color: black;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin: 5px auto;
+            animation: pop-in 0.3s;
+        }
+        .arrow-container { display: flex; flex-direction: column; justify-content: space-around; font-size: 2em; }
+
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 0 20px rgba(192, 132, 252, 0.15);
+        }
+        .further-exploration h2 { text-align: center; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 700; font-size: 2.2em; margin-top: 0; }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column h3 { color: var(--secondary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%23E4B55D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
+        .exploration-column a { color: var(--text-color); text-decoration: none; transition: color 0.2s; }
+        .exploration-column a:hover { color: var(--primary-color); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+            .visualization {
+                height: auto;
+                min-height: 400px;
+            }
+            #repo-viz {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">Version Control</span> Voyage</h1>
+            <p>An interactive guide to the essential tools that power modern software development, helping you track changes and collaborate with teams.</p>
+        </header>
+
+        <!-- SECTION 1: What is VC? -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. A Time Machine for Your Work</h2>
+                <p><strong>Version Control</strong> is a system that records changes to a file or set of files over time so that you can recall specific versions later. It's like a "time machine" for your project.</p>
+                <p>Each time you save a "snapshot" of your project, it's called a <strong>commit</strong>. Add a commit message and save a snapshot, then click the points to travel back in time.</p>
+            </div>
+            <div id="timeline-viz" class="visualization">
+                 <div class="viz-controls">
+                    <input type="text" id="commit-msg-input" placeholder="Commit message..." value="Initial commit">
+                    <button id="commit-btn" class="viz-button">Commit</button>
+                 </div>
+                 <div id="file-preview">Version 1: The project begins.</div>
+                 <div id="timeline-container"></div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: The Local Repository -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. The Three Areas of Git</h2>
+                <p>Git doesn't just save files. It has a three-step process:
+                <br>1. <strong>Working Directory:</strong> Your current files.
+                <br>2. <strong>Staging Area:</strong> Files you've marked for the next snapshot. (<code>git add</code>)
+                <br>3. <strong>Repository:</strong> Where the snapshot is permanently saved. (<code>git commit</code>)</p>
+                <p>Drag the file from Working to Staging, then click it to commit.</p>
+            </div>
+            <div id="repo-viz" class="visualization">
+                <div id="working-dir" class="repo-area">
+                    <h4>Working Directory</h4>
+                    <div id="file-a" class="repo-file" draggable="true">index.html</div>
+                </div>
+                <div id="staging-area" class="repo-area">
+                    <h4>Staging Area</h4>
+                </div>
+                <div id="repository" class="repo-area">
+                    <h4>.git Repository</h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Branching -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Branches: Parallel Universes</h2>
+                <p>A <strong>branch</strong> is a parallel version of your project. It allows you to work on a new feature (e.g., "new-header") without affecting the main, stable version of your project (usually called <code>main</code>).</p>
+                <p>You can create branches, add commits to them, and they remain completely isolated until you're ready to combine them.</p>
+            </div>
+            <div id="branch-viz" class="visualization">
+                <div class="viz-controls">
+                    <input type="text" id="branch-name-input" placeholder="Branch name..." value="new-feature">
+                    <button id="branch-btn" class="viz-button">Create Branch</button>
+                    <button id="commit-branch-btn" class="viz-button" disabled>Commit</button>
+                 </div>
+                 <svg id="branch-svg" class="w-full h-full"></svg>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Merging -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Merging: Combining Work</h2>
+                <p>Once your feature is complete on its branch, you can <strong>merge</strong> it back into the <code>main</code> branch. This integrates the new feature into the main project, combining the histories of both branches.</p>
+                <p>This workflow allows teams to work on many features in parallel without getting in each other's way.</p>
+            </div>
+            <div id="merge-viz" class="visualization">
+                 <div class="viz-controls">
+                    <button id="merge-btn" class="viz-button">Merge "feature" into "main"</button>
+                 </div>
+                 <svg id="merge-svg" class="w-full h-full"></svg>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Remote Repositories -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. Remotes: Working with a Team</h2>
+                <p>A <strong>remote repository</strong> (like on GitHub or GitLab) is a shared, central version of your project.
+                <br>• <code>git push</code>: Send your local commits to the remote.
+                <br>• <code>git pull</code>: Get the latest changes from the remote.</p>
+                <p>This is the foundation of collaboration with other developers.</p>
+            </div>
+            <div id="remote-viz" class="visualization">
+                <div class="repo-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-1.621-.621a3 3 0 01-.879-2.122v-1.007M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <p>You</p>
+                    <div id="local-commits" class="repo-commits"></div>
+                    <button id="push-btn" class="viz-button mt-2">Push</button>
+                </div>
+                <div class="arrow-container">
+                    <span>→</span>
+                    <span>←</span>
+                </div>
+                <div class="repo-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>
+                    <p>Remote (GitHub)</p>
+                    <div id="remote-commits" class="repo-commits"></div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Journey</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Official & Core Resources</h3>
+                        <ul>
+                            <li><a href="https://git-scm.com/doc" target="_blank" rel="noopener">Official Git Documentation</a></li>
+                            <li><a href="https://docs.github.com/en" target="_blank" rel="noopener">GitHub Docs</a></li>
+                            <li><a href="https://about.gitlab.com/learn/" target="_blank" rel="noopener">GitLab Learn</a></li>
+                             <li><a href="https://www.atlassian.com/git" target="_blank" rel="noopener">Atlassian Git Tutorials</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Learning Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/git/" target="_blank" rel="noopener">W3Schools Git Tutorial</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/git/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                            <li><a href="https://ohshitgit.com/" target="_blank" rel="noopener">Oh Shit, Git!?!</a></li>
+                            <li><a href="https://learngitbranching.js.org/" target="_blank" rel="noopener">Learn Git Branching (Interactive)</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Reference & Tools</h3>
+                        <ul>
+                            <li><a href="https://education.github.com/git-cheat-sheet-education.pdf" target="_blank" rel="noopener">GitHub Cheat Sheet</a></li>
+                            <li><a href="https://www.git-tower.com/learn/git/ebook" target="_blank" rel="noopener">Git Tower Book</a></li>
+                            <li><a href="https://desktop.github.com/" target="_blank" rel="noopener">GitHub Desktop (GUI)</a></li>
+                            <li><a href="https://www.sourcetreeapp.com/" target="_blank" rel="noopener">Sourcetree (GUI)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        // --- Viz 1: Timeline ---
+        const timelineContainer = document.getElementById('timeline-container');
+        const filePreview = document.getElementById('file-preview');
+        const commitBtn = document.getElementById('commit-btn');
+        const commitMsgInput = document.getElementById('commit-msg-input');
+        const commits = [{ id: 1, content: "Version 1: The project begins.", msg: "Initial commit" }];
+        
+        function drawTimeline() {
+            timelineContainer.innerHTML = '';
+            commits.forEach((commit, i) => {
+                const point = document.createElement('div');
+                point.className = 'commit-point';
+                point.style.left = `${(i / 5) * 100}%`;
+                point.onclick = () => { filePreview.textContent = `Message: ${commit.msg}\n\n${commit.content}`; };
+                timelineContainer.appendChild(point);
+            });
+        }
+        drawTimeline();
+        
+        commitBtn.onclick = () => {
+            if (commits.length < 6) {
+                const newVersion = commits.length + 1;
+                commits.push({ id: newVersion, content: `Version ${newVersion}: Made some changes.`, msg: commitMsgInput.value });
+                drawTimeline();
+                commitMsgInput.value = `Update feature #${newVersion}`;
+            }
+        };
+
+        // --- Viz 2: Repo ---
+        const fileA = document.getElementById('file-a');
+        const workingDir = document.getElementById('working-dir');
+        const stagingArea = document.getElementById('staging-area');
+        const repository = document.getElementById('repository');
+        
+        fileA.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', e.target.id);
+        });
+
+        stagingArea.addEventListener('dragover', (e) => e.preventDefault());
+        stagingArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text');
+            const draggableElement = document.getElementById(id);
+            if (draggableElement.parentElement === workingDir) {
+                stagingArea.appendChild(draggableElement);
+                draggableElement.textContent += ' (staged)';
+                draggableElement.draggable = false;
+                draggableElement.onclick = () => {
+                    const commit = document.createElement('div');
+                    commit.className = 'repo-file';
+                    commit.textContent = `Commit 1: Add index`;
+                    commit.style.background = 'var(--primary-color)';
+                    repository.appendChild(commit);
+                    draggableElement.remove();
+                };
+            }
+        });
+        
+        
+        // --- Viz 3 & 4: Branching & Merging ---
+        const branchSvg = document.getElementById('branch-svg');
+        const mergeSvg = document.getElementById('merge-svg');
+        const branchBtn = document.getElementById('branch-btn');
+        const commitBranchBtn = document.getElementById('commit-branch-btn');
+        const mergeBtn = document.getElementById('merge-btn');
+        const branchNameInput = document.getElementById('branch-name-input');
+        
+        function drawBranchSvg(svg, branchData, isMerged = false) {
+            svg.innerHTML = '';
+            const width = svg.clientWidth;
+            
+            // Draw main branch
+            const main = branchData.main;
+            const mainPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            mainPath.setAttribute('d', `M 20 ${main.y} H ${width - 20}`);
+            mainPath.setAttribute('class', 'branch-line');
+            svg.appendChild(mainPath);
+
+            for(let i=0; i < main.commits; i++) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', 40 + i * 50);
+                circle.setAttribute('cy', main.y);
+                circle.setAttribute('r', 10);
+                circle.setAttribute('class', 'branch-commit');
+                svg.appendChild(circle);
+            }
+
+            // Draw feature branch
+            if (branchData.feature) {
+                const feature = branchData.feature;
+                const startX = 40 + (feature.startCommit - 1) * 50;
+                const endX = startX + feature.commits * 50;
+                
+                let pathD = `M ${startX} ${main.y} C ${startX + 20} ${main.y}, ${startX} ${feature.y}, ${startX + 50} ${feature.y} H ${endX}`;
+                if(isMerged) {
+                    const mergeX = 40 + main.commits * 50;
+                    pathD = `M ${startX} ${main.y} C ${startX + 20} ${main.y}, ${startX} ${feature.y}, ${startX + 50} ${feature.y} H ${endX} C ${endX+20} ${feature.y}, ${endX} ${main.y}, ${mergeX} ${main.y}`;
+                }
+                const featurePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                featurePath.setAttribute('d', pathD);
+                featurePath.setAttribute('class', 'branch-line feature');
+                svg.appendChild(featurePath);
+
+                 for(let i=0; i < feature.commits; i++) {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', startX + 50 + i * 50);
+                    circle.setAttribute('cy', feature.y);
+                    circle.setAttribute('r', 10);
+                    circle.setAttribute('class', 'branch-commit feature');
+                    svg.appendChild(circle);
+                }
+                 const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                 text.setAttribute('x', endX + 10);
+                 text.setAttribute('y', feature.y + 4);
+                 text.setAttribute('class', 'commit-label');
+                 text.textContent = feature.name;
+                 svg.appendChild(text);
+
+                 if (isMerged) {
+                    main.commits++;
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', 40 + (main.commits-1) * 50);
+                    circle.setAttribute('cy', main.y);
+                    circle.setAttribute('r', 10);
+                    circle.setAttribute('class', 'branch-commit');
+                    circle.style.animation = "pulse-glow 1s";
+                    svg.appendChild(circle);
+                 }
+            }
+        }
+        
+        let branchState = { main: { commits: 3, y: 110 } };
+        drawBranchSvg(branchSvg, branchState);
+        drawBranchSvg(mergeSvg, { main: { commits: 3, y: 110 }, feature: { name: 'feature', y: 50, commits: 2, startCommit: 2 } });
+        
+        branchBtn.onclick = () => {
+            branchState.feature = { name: branchNameInput.value, y: 50, commits: 0, startCommit: 2 };
+            drawBranchSvg(branchSvg, branchState);
+            branchBtn.disabled = true;
+            commitBranchBtn.disabled = false;
+        };
+        commitBranchBtn.onclick = () => {
+            if (branchState.feature.commits < 3) {
+                 branchState.feature.commits++;
+                 drawBranchSvg(branchSvg, branchState);
+            }
+        };
+        mergeBtn.onclick = () => {
+             drawBranchSvg(mergeSvg, { main: { commits: 3, y: 110 }, feature: { name: 'feature', y: 50, commits: 2, startCommit: 2 } }, true);
+        };
+        
+        
+        // --- Viz 5: Remotes ---
+        const localCommitsEl = document.getElementById('local-commits');
+        const remoteCommitsEl = document.getElementById('remote-commits');
+        const pushBtn = document.getElementById('push-btn');
+        let localCommits = ['#a3b8c2', '#b2c3d4'];
+        let remoteCommits = [];
+        
+        function drawRemoteCommits() {
+            localCommitsEl.innerHTML = localCommits.map(c => `<div class="commit-block">${c}</div>`).join('');
+            remoteCommitsEl.innerHTML = remoteCommits.map(c => `<div class="commit-block">${c}</div>`).join('');
+        }
+        drawRemoteCommits();
+        
+        pushBtn.onclick = () => {
+            if(localCommits.length > 0) {
+                remoteCommits.push(...localCommits);
+                localCommits = [];
+                drawRemoteCommits();
+            }
+        };
+
+    </script>
+</body>
+</html>
+
