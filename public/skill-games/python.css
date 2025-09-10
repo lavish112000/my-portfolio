@@ -15,19 +15,26 @@
 @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- GENERAL BODY STYLES --- */
-body {
-    margin: 0;
-    font-family: 'Cinzel', serif;
+/* --- BACK BUTTON STYLES --- */
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 1.2em;
     color: var(--text-color);
-    background-color: var(--bg-color);
-    background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
-    animation: background-pan 120s linear infinite;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background: rgba(12, 12, 26, 0.8);
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid var(--primary-color);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.back-button:hover {
+    background: rgba(255, 193, 7, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--primary-color);
 }
 
 /* --- INTRO/OUTRO/LANDING PAGE STYLES --- */
