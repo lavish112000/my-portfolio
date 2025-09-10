@@ -100,14 +100,14 @@ const App = () => {
    */
   const handleSkillClick = (skillName) => {
     let targetPath = '';
-    
+
     // Map skill names to their respective HTML file paths (served from public folder)
     switch (skillName.toLowerCase()) {
       case 'python':
         targetPath = '/skill-games/python.html';
         break;
       case 'java':
-        targetPath = '/skill-games/HTML.html';
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Java as well, or create Java.html
         break;
       case 'javascript':
         targetPath = '/skill-games/javascript.html';
@@ -115,17 +115,69 @@ const App = () => {
       case 'html':
         targetPath = '/skill-games/HTML.html';
         break;
+      case 'apache':
+        targetPath = '/skill-games/Apache.html';
+        break;
+      case 'dsa':
+        targetPath = '/skill-games/DSA.html';
+        break;
+      case 'express.js':
+        targetPath = '/skill-games/ExpressJS.html';
+        break;
+      case 'flutter':
+        targetPath = '/skill-games/flutter.html';
+        break;
+      case 'next.js':
+        targetPath = '/skill-games/NextJS.html';
+        break;
+      case 'node.js':
+        targetPath = '/skill-games/NodeJS.html';
+        break;
+      case 'react':
+        targetPath = '/skill-games/React.html';
+        break;
+      case 'tailwind css':
+        targetPath = '/skill-games/Tailwind.html';
+        break;
+      case 'three.js':
+        targetPath = '/skill-games/ThreeJS.html';
+        break;
+      case 'version control':
+        targetPath = '/skill-games/VersionControl.html';
+        break;
       default:
         console.log(`No specific page found for skill: ${skillName}`);
         return;
     }
-    
+
     // Track skill game interaction
     trackSkillGameInteraction(skillName.toLowerCase(), 'click');
-    
+
+    // Add smooth page transition effect
+    document.body.classList.add('fade-out');
+
     // Open the HTML file in a new tab with smooth transition
-    window.open(targetPath, '_blank');
+    setTimeout(() => {
+      window.open(targetPath, '_blank');
+    }, 300); // Delay to allow fade-out animation
   };
+
+  // Handle smooth transition when returning from skill games
+  const handleWindowFocus = () => {
+    document.body.classList.remove('fade-out');
+    document.body.classList.add('fade-in');
+    setTimeout(() => {
+      document.body.classList.remove('fade-in');
+    }, 500);
+  };
+
+  // Add event listener for when user returns to the main page
+  useEffect(() => {
+    window.addEventListener('focus', handleWindowFocus);
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, []);
 
   const HomeAndLandingPage = ({ onTransitionEnd }) => {
     const mountRef = useRef(null);
@@ -454,7 +506,7 @@ const App = () => {
         <nav
           onMouseEnter={() => setIsNavbarOpen(true)}
           onMouseLeave={() => setIsNavbarOpen(false)}
-          className={`fixed top-0 left-0 right-0 h-[9.6vh] bg-gray-800 bg-opacity-40 backdrop-blur-sm z-50 flex items-center justify-between px-10 border-b border-gray-700 transition-all duration-300 ease-in-out ${isNavbarVisible ? 'translate-y-0' : '-translate-y-full'}`}
+          className={`fixed top-0 left-0 right-0 h-16 bg-gray-800 bg-opacity-90 backdrop-blur-md z-50 flex items-center justify-between px-10 border-b border-gray-700 transition-all duration-300 ease-in-out shadow-lg ${isNavbarVisible ? 'translate-y-0' : '-translate-y-full'}`}
         >
           <button
             onClick={() => containerRef.current.scrollTop = 0}
@@ -471,7 +523,7 @@ const App = () => {
         </nav>
 
         {/* Profile Box container */}
-        <div className="pt-[12vh] p-10 min-h-screen flex flex-col items-center justify-center">
+        <div className="pt-16 p-10 min-h-screen flex flex-col items-center justify-center">
           <div id="top" className={`w-full max-w-7xl mx-auto rounded-xl shadow-2xl p-10 bg-transparent transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="flex flex-col md:flex-row space-y-12 md:space-y-0 md:space-x-12">
 
@@ -503,6 +555,40 @@ const App = () => {
             </div>
           </div>
 
+          {/* Projects Section */}
+          <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
+            <h1 className="text-5xl font-extrabold font-sans text-white mb-8">PROJECTS</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {projectData.map((project, index) => {
+                const isLeft = index % 2 === 0;
+                const animationClass = projectsVisible[index] ? 'translate-x-0 opacity-100' : (isLeft ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0');
+
+                return (
+                  <div
+                    key={project.id}
+                    ref={el => projectsRef.current[index] = el}
+                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover cursor-pointer ${animationClass}`}
+                    onClick={() => onProjectClick(project, containerRef)}
+                  >
+                    <div className="flex flex-col items-center text-center">
+                      {/* Project Box Content */}
+                      <div className="w-full h-64 mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
+                        <img
+                          src={project.image}
+                          alt={project.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': index % 2 === 0 ? '#00FFE9' : '#f042ff'}}></div>
+                      </div>
+                      <h3 className="text-3xl font-bold cursor-pointer">{project.title}</h3>
+                      <p className="text-gray-300">{project.tech}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
           {/* Skillset Section */}
           <div id="skills" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
             <h1 onClick={handleSkillsetsClick} className="text-5xl font-extrabold font-sans text-white mb-8 cursor-pointer">SKILLSETS</h1>
@@ -527,7 +613,7 @@ const App = () => {
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 transform transition-all duration-700 ease-in-out hover:scale-110 hover:bg-opacity-90 hover:shadow-2xl cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 active:scale-95 ${animationClass}`}
+                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
@@ -541,40 +627,6 @@ const App = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-          
-          {/* Projects Section */}
-          <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
-            <h1 className="text-5xl font-extrabold font-sans text-white mb-8">PROJECTS</h1>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {projectData.map((project, index) => {
-                const isLeft = index % 2 === 0;
-                const animationClass = projectsVisible[index] ? 'translate-x-0 opacity-100' : (isLeft ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0');
-
-                return (
-                  <div
-                    key={project.id}
-                    ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 hover:scale-105 ${animationClass}`}
-                    onClick={() => onProjectClick(project, containerRef)}
-                  >
-                    <div className="flex flex-col items-center text-center">
-                      {/* Project Box Content */}
-                      <div className="w-full h-64 mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
-                        <img
-                          src={project.image}
-                          alt={project.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': index % 2 === 0 ? '#00FFE9' : '#f042ff'}}></div>
-                      </div>
-                      <h3 className="text-3xl font-bold cursor-pointer">{project.title}</h3>
-                      <p className="text-gray-300">{project.tech}</p>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
           
@@ -665,7 +717,51 @@ const App = () => {
           }
           body.fade-out {
             opacity: 0;
-            transition: opacity 0.5s ease-out;
+            transform: scale(0.98);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          body.fade-in {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Smooth page transitions */
+          .page-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-enter {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+
+          .page-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-exit {
+            opacity: 1;
+            transform: translateY(0);
+          }
+
+          .page-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Enhanced skill card hover effects */
+          .skill-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .skill-card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
           }
           `}
         </style>
@@ -684,20 +780,20 @@ const App = () => {
       case 'home':
         return (
           <>
-            <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${!showProfile ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`absolute inset-0 page-transition ${!showProfile ? 'page-enter-active' : 'page-exit-active'}`}>
               <HomeAndLandingPage onTransitionEnd={handleTransitionEnd} />
             </div>
-            <div className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${showProfile ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`absolute inset-0 page-transition ${showProfile ? 'page-enter-active' : 'page-exit-active'}`}>
               {showProfile && <ProfilePage onProjectClick={handleProjectClick} previousScrollY={previousScrollY} setPreviousScrollY={setPreviousScrollY} isVisible={showProfile} />}
             </div>
           </>
         );
       case 'profile':
-        return <ProfilePage onProjectClick={handleProjectClick} previousScrollY={previousScrollY} setPreviousScrollY={setPreviousScrollY} isVisible={true} />;
+        return <div className="page-transition page-enter-active"><ProfilePage onProjectClick={handleProjectClick} previousScrollY={previousScrollY} setPreviousScrollY={setPreviousScrollY} isVisible={true} /></div>;
       case 'project-details':
-          return <ProjectDetailsPage project={selectedProject} onBack={handleBackToProjects} />;
+          return <div className="page-transition page-enter-active"><ProjectDetailsPage project={selectedProject} onBack={handleBackToProjects} /></div>;
       default:
-        return <HomeAndLandingPage onTransitionEnd={handleTransitionEnd} />;
+        return <div className="page-transition page-enter-active"><HomeAndLandingPage onTransitionEnd={handleTransitionEnd} /></div>;
     }
   };
 
