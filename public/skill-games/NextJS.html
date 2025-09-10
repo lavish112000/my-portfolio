@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Next.js Tutorial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #000000;
+            --primary-color: #0070f3;
+            --secondary-color: #f81ce5;
+            --text-color: #eaeaea;
+            --border-color: #333;
+            --code-bg: #111;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: white;
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+            color: #888;
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: white;
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .code-block .comment { color: #666; }
+        .code-block .keyword { color: #f81ce5; }
+        .code-block .tag { color: #0070f3; cursor: pointer; }
+        .code-block .attr { color: #7928ca; }
+        .code-block .string { color: #3bff86; }
+
+        .visualization {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 400px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-family: 'Roboto Mono', monospace;
+            overflow: hidden;
+        }
+        
+        /* Specific Viz Styles */
+        .file-tree .file { cursor: pointer; padding: 5px; border-radius: 4px; transition: background-color 0.2s, transform 0.2s; }
+        .file-tree .file:hover { background-color: #222; transform: translateX(5px); }
+        .file-tree .file.active { background-color: var(--primary-color); color: white; }
+        .browser-view { border: 1px solid var(--border-color); border-radius: 5px; flex-grow: 1; padding: 15px; transition: all 0.3s; }
+        .browser-view .url { color: #888; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;}
+        .browser-view .content { font-size: 1.2em; transition: opacity 0.3s; }
+        .browser-view.loading .content { opacity: 0.2; }
+
+        .component-assembly { overflow: hidden; }
+        .component-assembly .component { border: 2px dashed #444; padding: 10px; text-align: center; border-radius: 5px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .component-assembly .component.highlight { border-color: var(--primary-color); background: rgba(0, 112, 243, 0.1); transform: scale(1.05); box-shadow: 0 0 15px var(--primary-color); }
+        
+        /* New Diagram Styles */
+        .implementation-flow {
+            font-size: 0.8em;
+            height: 100%;
+            width: 100%;
+        }
+        .flow-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            background: #191919;
+            text-align: center;
+        }
+        .flow-box h4 { margin: 0 0 5px 0; color: var(--primary-color); font-family: 'Inter'; }
+        .flow-code { font-size: 0.85em; text-align: left; background: #000; padding: 5px; border-radius: 4px; margin-top: 5px; }
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 8px 0;
+            color: var(--primary-color);
+        }
+        .flow-arrow svg { width: 24px; height: 24px; }
+
+        /* Animation for diagrams */
+        .flow-box, .flow-arrow {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .visible .flow-box, .visible .flow-arrow {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .api-viz button { background: var(--primary-color); border: none; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
+        .api-viz button:hover { background: #0056b3; }
+        .api-viz .response { margin-top: 15px; background: #000; padding: 10px; border-radius: 5px; min-height: 50px; transition: all 0.3s; }
+        .api-viz .response.loading { opacity: 0.5; }
+
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">Next.js</span> Blueprint</h1>
+            <p>A dynamic, interactive tutorial on the powerful React framework for building fast, modern, and full-stack web applications.</p>
+        </header>
+
+        <!-- SECTION 1: Pages & Routing -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. File-System Routing (Pages)</h2>
+                <p>The traditional Next.js approach creates routes based on your file structure. Any React component in the <strong><code>pages</code></strong> directory automatically becomes a page.</p>
+                <ul>
+                    <li><code>pages/index.js</code> → <code>/</code></li>
+                    <li><code>pages/about.js</code> → <code>/about</code></li>
+                </ul>
+                <p>This intuitive system simplifies navigation. Click the files on the right to see it in action.</p>
+            </div>
+            <div class="visualization">
+                <div class="file-tree" id="pages-router-viz">
+                    <strong>/pages</strong>
+                    <div class="file active" data-path="/" data-content="Welcome to the Home Page!"> L index.js</div>
+                    <div class="file" data-path="/about" data-content="This is the About Page."> L about.js</div>
+                    <div class="file" data-path="/contact" data-content="Contact us here!"> L contact.js</div>
+                </div>
+                <div class="browser-view" id="pages-browser">
+                    <div class="url">https://example.com<span id="browser-path">/</span></div>
+                    <div class="content" id="browser-content">Welcome to the Home Page!</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: App Router -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. The App Router</h2>
+                <p>The modern approach uses the <strong><code>app</code></strong> directory. Routing is folder-based, but you now create special <code>layout.js</code> and <code>page.js</code> files. This allows for more complex, nested layouts.</p>
+                 <ul>
+                    <li><code>app/layout.js</code> → Shared UI Shell</li>
+                    <li><code>app/page.js</code> → Content for <code>/</code></li>
+                    <li><code>app/dashboard/page.js</code> → Content for <code>/dashboard</code></li>
+                </ul>
+            </div>
+            <div class="visualization">
+                <div class="file-tree" id="app-router-viz">
+                    <strong>/app</strong>
+                    <div class="file active" data-path="/"> L layout.js <small>(Root Layout)</small></div>
+                    <div class="file active" data-path="/"> L page.js <small>(Home)</small></div>
+                    <strong> L /dashboard</strong>
+                    <div style="padding-left: 20px;" class="file" data-path="/dashboard"> L page.js <small>(Dashboard)</small></div>
+                </div>
+                <div class="browser-view" id="app-browser">
+                    <div class="url">https://example.com<span id="app-browser-path">/</span></div>
+                    <div class="content" id="app-browser-content">
+                        <div class="component highlight">Root Layout (Navbar, Footer)
+                            <div class="component" style="margin:10px; background: #222;">Page Content: Home</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SECTION 3: Components -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Components</h2>
+                <p>Next.js is built with reusable components. Create UI elements (like a Navbar) and import them into your pages to build complex interfaces without repeating code. Hover over the code tags to see the connection.</p>
+                 <div class="code-block">
+<span class="comment">// app/page.js</span>
+<span class="keyword">import</span> Navbar <span class="keyword">from</span> <span class="string">'../components/Navbar'</span>;
+<span class="keyword">export default function</span> HomePage() {
+  <span class="keyword">return</span> (
+    &lt;&gt;
+      &lt;<span class="tag" data-target="comp-nav">Navbar</span> /&gt;
+      &lt;<span class="tag" data-target="comp-main">h1</span>&gt;Home&lt;/<span class="tag" data-target="comp-main">h1</span>&gt;
+      &lt;<span class="tag" data-target="comp-footer">Footer</span> /&gt;
+    &lt;/&gt;
+  )
+}
+                </div>
+            </div>
+            <div class="visualization component-assembly">
+                 <div class="component" id="comp-nav">Navbar</div>
+                 <div class="component" id="comp-main" style="flex-grow: 1;">Main Content</div>
+                 <div class="component" id="comp-footer">Footer</div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: SSG -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Static Rendering</h2>
+                <p>By default, the App Router renders components on the server statically. The HTML is generated at **build time** and cached on a CDN. This is perfect for pages that don't need real-time data, providing incredible speed and great SEO.</p>
+                <div class="code-block">
+<span class="comment">// This component is rendered at build time</span>
+<span class="keyword">async function</span> Page() {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> fetch(<span class="string">'...'</span>);
+  <span class="keyword">const</span> data = <span class="keyword">await</span> res.json();
+  <span class="keyword">return</span> &lt;<span class="tag">div</span>&gt;{data.title}&lt;/<span class="tag">div</span>&gt;;
+}
+                </div>
+            </div>
+            <div class="visualization implementation-flow">
+                <div class="flow-box">
+                    <h4>1. Build Time (on Server)</h4>
+                    <p><code>next build</code> runs</p>
+                </div>
+                <div class="flow-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"></path></svg></div>
+                <div class="flow-box">
+                    <h4>2. Data Fetched & HTML Generated</h4>
+                    <p>The page is pre-rendered.</p>
+                </div>
+                <div class="flow-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"></path></svg></div>
+                <div class="flow-box">
+                    <h4>3. Files Hosted on CDN</h4>
+                    <p>Result is stored globally for speed.</p>
+                </div>
+                 <div class="flow-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"></path></svg></div>
+                 <div class="flow-box">
+                    <h4>4. User Served Instantly</h4>
+                    <p>User gets a static, fast page.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: SSR -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. Dynamic Rendering</h2>
+                <p>For pages that need fresh data on every request, you can opt into dynamic rendering. The page is generated on the server for **each request**, ensuring the data is always up-to-date. This happens automatically when you use a dynamic function.</p>
+                 <div class="code-block">
+<span class="comment">// This component is rendered on every request</span>
+<span class="keyword">async function</span> Page() {
+  <span class="keyword">const</span> res = <span class="keyword">await</span> fetch(<span class="string">'...'</span>, { cache: <span class="string">'no-store'</span> });
+  <span class="keyword">const</span> data = <span class="keyword">await</span> res.json();
+  <span class="keyword">return</span> &lt;<span class="tag">div</span>&gt;{data.title}&lt;/<span class="tag">div</span>&gt;;
+}
+                </div>
+            </div>
+            <div class="visualization implementation-flow">
+                <div class="flow-box">
+                    <h4>1. User Makes Request</h4>
+                    <p>Navigates to the page.</p>
+                </div>
+                <div class="flow-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"></path></svg></div>
+                <div class="flow-box">
+                    <h4>2. Page Rendered on Server</h4>
+                    <p>Data is fetched on-demand.</p>
+                </div>
+                <div class="flow-arrow"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"></path></svg></div>
+                <div class="flow-box">
+                    <h4>3. HTML Sent to User</h4>
+                    <p>The freshly generated page is returned.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: API Routes -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>6. Route Handlers (APIs)</h2>
+                <p>You can create backend API endpoints using <strong>Route Handlers</strong>. A <code>route.js</code> file inside any app directory folder allows you to handle HTTP requests (GET, POST, etc.), enabling full-stack functionality like database access or form handling.</p>
+            </div>
+            <div class="visualization api-viz">
+                <p>Click to fetch data from <code>/api/message/route.js</code></p>
+                <button id="api-button">Fetch Message</button>
+                <div class="response" id="api-response-container">
+                    <pre id="api-response"></pre>
+                </div>
+            </div>
+        </section>
+        
+        <footer>
+            <h2>The Complete Blueprint</h2>
+            <p>By combining the App Router, Components, versatile Rendering Strategies, and Route Handlers, Next.js provides a complete and powerful framework for any web application.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const implementationFlow = entry.target.querySelector('.implementation-flow');
+                    if(implementationFlow) {
+                        const items = implementationFlow.querySelectorAll('.flow-box, .flow-arrow');
+                        items.forEach((item, index) => {
+                            setTimeout(() => {
+                                item.classList.add('visible');
+                            }, index * 250); // Stagger the animation
+                        });
+                    }
+                }
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // --- Viz 1: Pages Router ---
+        const pagesFiles = document.querySelectorAll('#pages-router-viz .file');
+        const browserPath = document.getElementById('browser-path');
+        const browserContent = document.getElementById('browser-content');
+        const pagesBrowser = document.getElementById('pages-browser');
+        
+        pagesFiles.forEach(file => {
+            file.addEventListener('click', () => {
+                pagesFiles.forEach(f => f.classList.remove('active'));
+                file.classList.add('active');
+                pagesBrowser.classList.add('loading');
+                setTimeout(() => {
+                    browserPath.textContent = file.dataset.path;
+                    browserContent.textContent = file.dataset.content;
+                    pagesBrowser.classList.remove('loading');
+                }, 300);
+            });
+        });
+
+        // --- Viz 2: App Router ---
+        const appFiles = document.querySelectorAll('#app-router-viz .file');
+        const appBrowserPath = document.getElementById('app-browser-path');
+        const appBrowserContent = document.getElementById('app-browser-content');
+        
+        appFiles.forEach(file => {
+            file.addEventListener('click', () => {
+                const path = file.dataset.path;
+                appBrowserPath.textContent = path;
+
+                let contentHTML = '';
+                 if(path === '/') {
+                    contentHTML = `<div class="component highlight">Root Layout (Navbar, Footer)<div class="component" style="margin:10px; background: #222;">Page Content: Home</div></div>`;
+                } else if(path === '/dashboard') {
+                    contentHTML = `<div class="component highlight">Root Layout (Navbar, Footer)<div class="component" style="margin:10px; background: #222;">Page Content: Dashboard</div></div>`;
+                }
+                appBrowserContent.innerHTML = contentHTML;
+            });
+        });
+
+        // --- Viz 3: Components ---
+        const codeComponents = document.querySelectorAll('.code-block .tag');
+        codeComponents.forEach(span => {
+            const targetEl = document.getElementById(span.dataset.target);
+            if (targetEl) {
+                span.addEventListener('mouseenter', () => targetEl.classList.add('highlight'));
+                span.addEventListener('mouseleave', () => targetEl.classList.remove('highlight'));
+            }
+        });
+
+        // --- Viz 6: API Routes ---
+        const apiButton = document.getElementById('api-button');
+        const apiResponse = document.getElementById('api-response');
+        const apiResponseContainer = document.getElementById('api-response-container');
+        
+        apiButton.addEventListener('click', () => {
+            apiResponse.textContent = 'Fetching...';
+            apiResponseContainer.classList.add('loading');
+            setTimeout(() => {
+                const data = { message: 'Hello from the API!', timestamp: new Date().toLocaleTimeString() };
+                apiResponse.textContent = JSON.stringify(data, null, 2);
+                apiResponseContainer.classList.remove('loading');
+            }, 500);
+        });
+
+    </script>
+</body>
+</html>
+
