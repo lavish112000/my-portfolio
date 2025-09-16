@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OracleDB: An Interactive Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9; /* Light gray background */
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #ef4444, #b91c1c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .sql-view {
+            background-color: #1a202c;
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .keyword { color: #569cd6; }
+        .identifier { color: #9cdcfe; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .operator { color: #d4d4d4; }
+
+
+        /* Quiz styles */
+        .quiz-option {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .quiz-option.selected {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        /* Keyframes for animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold gradient-text">OracleDB Interactive</h1>
+            <div class="hidden md:flex space-x-6 text-gray-600">
+                <a href="#about" class="hover:text-red-600">About</a>
+                <a href="#concepts" class="hover:text-red-600">Core Concepts</a>
+                <a href="#scenario" class="hover:text-red-600">Example</a>
+                <a href="#quiz" class="hover:text-red-600">Challenge</a>
+                <a href="#links" class="hover:text-red-600">Resources</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2">
+            <a href="#about" class="block hover:text-red-600">About</a>
+            <a href="#concepts" class="block hover:text-red-600">Core Concepts</a>
+            <a href="#scenario" class="block hover:text-red-600">Example</a>
+            <a href="#quiz" class="block hover:text-red-600">Challenge</a>
+            <a href="#links" class="block hover:text-red-600">Resources</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Section 1: What is OracleDB? -->
+        <section id="about" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Powering Enterprises with OracleDB</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">Oracle Database is a multi-model relational database management system (RDBMS) mainly used for running online transaction processing (OLTP), data warehousing, and mixed database workloads.</p>
+            <div class="relative w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+                <div class="text-left">
+                    <h3 class="font-bold text-xl mb-2">Simple Flat-File Data</h3>
+                    <img src="https://placehold.co/600x300/e2e8f0/4a5568?text=Unstructured+Data+(e.g.,+CSV)" alt="Flat File" class="rounded-lg shadow-md">
+                    <p class="text-sm text-gray-500 mt-2">Data stored in simple files. Can be hard to query, maintain relationships, and ensure data integrity.</p>
+                </div>
+                 <div class="text-left">
+                    <h3 class="font-bold text-xl mb-2">Oracle Relational Database</h3>
+                    <img src="https://placehold.co/600x300/fee2e2/b91c1c?text=Structured+Relational+Tables" alt="OracleDB Tables" class="rounded-lg shadow-md animate-pulse-custom">
+                     <p class="text-sm text-gray-500 mt-2">Data is organized into tables with predefined relationships, ensuring consistency, security, and performance at scale.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Concepts -->
+        <section id="concepts" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">The Building Blocks of OracleDB</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tables Card -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">1. Tables: The Data Containers</h3>
+                    <p class="text-gray-600 mb-4">The fundamental unit for data storage. A table is a collection of related data entries organized in a structure of rows and columns.</p>
+                    <div class="sql-view h-48 overflow-auto text-sm">
+                        <span class="identifier">EMPLOYEES</span> Table:<br>
+                        <hr class="border-gray-600 my-1">
+                        | ID | NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| DEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+                        |----|----------|-------------|<br>
+                        | 1&nbsp;&nbsp;|&nbsp;Alice&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Sales&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|<br>
+                        | 2&nbsp;&nbsp;|&nbsp;Bob&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;Engineering&nbsp;|<br>
+                    </div>
+                </div>
+
+                <!-- Schemas Card -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">2. Schemas: The Organizers</h3>
+                    <p class="text-gray-600 mb-4">A schema is a collection of database objects, including tables, views, and indexes, owned by a database user. It's like a folder for organizing your data.</p>
+                    <div id="collection-viz" class="h-48 bg-gray-50 rounded-lg p-3 flex flex-col space-y-2 items-center justify-center">
+                        <div class="font-bold">HR_SCHEMA</div>
+                        <div class="flex space-x-2">
+                             <div class="p-2 bg-red-200 text-red-800 rounded text-sm">EMPLOYEES</div>
+                             <div class="p-2 bg-red-200 text-red-800 rounded text-sm">DEPARTMENTS</div>
+                             <div class="p-2 bg-red-200 text-red-800 rounded text-sm">SALARIES</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SQL Queries Card -->
+                <div class="card p-6 lg:col-span-1 md:col-span-2">
+                     <h3 class="text-xl font-bold mb-4 gradient-text">3. SQL: The Language</h3>
+                    <p class="text-gray-600 mb-4">Structured Query Language (SQL) is used to communicate with the database. You use it to retrieve, insert, update, and delete data.</p>
+                    <div class="sql-view h-24 mb-4">
+                        <span class="keyword">SELECT</span> <span class="identifier">name</span><br><span class="keyword">FROM</span> <span class="identifier">employees</span><br><span class="keyword">WHERE</span> <span class="identifier">department</span> <span class="operator">=</span> <span class="string">'Sales'</span>;
+                    </div>
+                    <p class="text-sm text-center text-gray-500">This query finds all employees in the Sales department.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Real-World Scenario -->
+        <section id="scenario" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Real-Life Scenario: Employee Directory</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Let's build an employee directory filter. Use the controls to run a 'query' against our "employees" table and see how OracleDB finds matching records instantly.</p>
+            
+            <div class="card p-8">
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Left side: The filter interface -->
+                    <div class="lg:col-span-1">
+                        <h3 class="text-2xl font-bold mb-4">Filter Employees</h3>
+                        <div class="space-y-4">
+                             <div>
+                                <label for="department-filter" class="block font-medium mb-1">Department</label>
+                                <select id="department-filter" class="w-full p-2 border border-gray-300 rounded-md">
+                                    <option value="all">All</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Sales">Sales</option>
+                                    <option value="HR">HR</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="salary-filter" class="block font-medium mb-1">Max Salary: $<span id="salary-label">120000</span></label>
+                                <input type="range" id="salary-filter" min="50000" max="200000" value="120000" step="5000" class="w-full">
+                            </div>
+                            <div>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="full-time-filter" class="rounded">
+                                    <span>Full-Time Only</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right side: The results -->
+                    <div class="lg:col-span-2 bg-gray-50 p-6 rounded-lg min-h-[250px]">
+                        <h4 class="font-bold text-lg mb-2">Query Results (<span id="results-count">0</span>)</h4>
+                        <div id="results-container" class="space-y-2 max-h-80 overflow-y-auto">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Gamify Your Learning -->
+        <section id="quiz" class="mb-20">
+             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Check Your Understanding!</h2>
+             <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Ready to test your new OracleDB knowledge? Let's find out.</p>
+             <div class="card max-w-2xl mx-auto p-8">
+                 <div id="quiz-container">
+                     <!-- Quiz content will be injected by JS -->
+                 </div>
+                 <p id="quiz-feedback" class="text-center font-medium mt-4 h-6"></p>
+                 <div class="mt-4 flex justify-center">
+                     <button id="next-question-btn" class="bg-red-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-red-700 transition-colors hidden">Next</button>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Section 5: Applications -->
+        <section id="applications" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Where is OracleDB Used?</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <h4 class="font-semibold">Enterprise Systems</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                     <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                    <h4 class="font-semibold">Data Warehousing</h4>
+                </div>
+                 <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8l3 5m0 0l3-5m-3 5v4m-3-5h6l-6 10h6-6-6"></path></svg>
+                    <h4 class="font-semibold">Transaction Processing</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                     <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    <h4 class="font-semibold">Financial Services</h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Useful Links -->
+        <footer id="links" class="bg-gray-800 text-white mt-20 py-12">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-2xl font-bold mb-6">Want to Become an OracleDB Expert?</h2>
+                <p class="mb-8 text-gray-400">Explore these fantastic resources to continue your journey.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/index.html" target="_blank" class="bg-gray-700 hover:bg-red-500 px-5 py-3 rounded-lg transition-colors">Official Oracle SQL Docs</a>
+                    <a href="https://www.w3schools.com/sql/" target="_blank" class="bg-gray-700 hover:bg-red-500 px-5 py-3 rounded-lg transition-colors">W3Schools SQL Tutorial</a>
+                    <a href="https://developer.oracle.com/learn/" target="_blank" class="bg-gray-700 hover:bg-red-500 px-5 py-3 rounded-lg transition-colors">Oracle Developer Center</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Mobile Menu ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // --- Real-World Scenario: Employee Directory ---
+            const employeeData = [
+                { name: "Alice", department: "Sales", salary: 90000, isFullTime: true },
+                { name: "Bob", department: "Engineering", salary: 110000, isFullTime: true },
+                { name: "Charlie", department: "HR", salary: 75000, isFullTime: false },
+                { name: "David", department: "Engineering", salary: 150000, isFullTime: true },
+                { name: "Eve", department: "Sales", salary: 125000, isFullTime: true },
+                { name: "Frank", department: "HR", salary: 65000, isFullTime: true },
+                { name: "Grace", department: "Engineering", salary: 180000, isFullTime: false },
+                { name: "Heidi", department: "Sales", salary: 85000, isFullTime: true },
+            ];
+
+            const departmentFilter = document.getElementById('department-filter');
+            const salaryFilter = document.getElementById('salary-filter');
+            const salaryLabel = document.getElementById('salary-label');
+            const fullTimeFilter = document.getElementById('full-time-filter');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsCount = document.getElementById('results-count');
+
+            function filterEmployees() {
+                const department = departmentFilter.value;
+                const maxSalary = parseInt(salaryFilter.value);
+                const isFullTime = fullTimeFilter.checked;
+
+                const results = employeeData.filter(employee => {
+                    const departmentMatch = department === 'all' || employee.department === department;
+                    const salaryMatch = employee.salary <= maxSalary;
+                    const fullTimeMatch = !isFullTime || employee.isFullTime === true;
+                    return departmentMatch && salaryMatch && fullTimeMatch;
+                });
+
+                resultsCount.textContent = results.length;
+                resultsContainer.innerHTML = '';
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<p class="text-gray-500">No employees match your query.</p>';
+                    return;
+                }
+                
+                // Create table header
+                const table = document.createElement('table');
+                table.className = 'w-full text-left text-sm';
+                table.innerHTML = `
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2">Name</th>
+                            <th class="p-2">Department</th>
+                            <th class="p-2">Salary</th>
+                        </tr>
+                    </thead>
+                `;
+                const tbody = document.createElement('tbody');
+
+                results.forEach(employee => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200';
+                    row.innerHTML = `
+                        <td class="p-2">${employee.name}</td>
+                        <td class="p-2">${employee.department}</td>
+                        <td class="p-2">$${employee.salary.toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                resultsContainer.appendChild(table);
+            }
+
+            salaryFilter.addEventListener('input', () => {
+                salaryLabel.textContent = parseInt(salaryFilter.value).toLocaleString();
+                filterEmployees();
+            });
+            departmentFilter.addEventListener('change', filterEmployees);
+            fullTimeFilter.addEventListener('change', filterEmployees);
+            
+            // Initial load
+            filterEmployees();
+
+            // --- Quiz Logic ---
+            const quizContainer = document.getElementById('quiz-container');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-question-btn');
+            
+            const quizData = [
+                {
+                    question: "What is the primary unit of data storage in a relational database like OracleDB?",
+                    options: ["A Document", "A Collection", "A Table", "A JSON object"],
+                    answer: 2
+                },
+                {
+                    question: "What language is used to query data from OracleDB?",
+                    options: ["Python", "Java", "SQL", "NoSQL"],
+                    answer: 2
+                },
+                {
+                    question: "What is a 'Schema' used for in OracleDB?",
+                    options: ["Storing all data in one place", "Defining the color scheme", "Grouping related database objects like tables", "Running backups"],
+                    answer: 2
+                }
+            ];
+
+            let currentQuestionIndex = 0;
+            let answered = false;
+
+            function loadQuestion() {
+                answered = false;
+                feedbackEl.textContent = '';
+                nextBtn.classList.add('hidden');
+                const q = quizData[currentQuestionIndex];
+                quizContainer.innerHTML = `
+                    <h4 class="text-xl font-semibold mb-6 text-center">${q.question}</h4>
+                    <div class="space-y-3">
+                        ${q.options.map((opt, i) => `
+                            <button class="quiz-option block w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-100" data-index="${i}">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    btn.addEventListener('click', selectAnswer);
+                });
+            }
+
+            function selectAnswer(e) {
+                if (answered) return;
+                answered = true;
+                
+                const selectedButton = e.currentTarget;
+                const selectedIndex = parseInt(selectedButton.dataset.index);
+                const correctIndex = quizData[currentQuestionIndex].answer;
+
+                document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+                    if (i === correctIndex) {
+                        btn.classList.add('correct');
+                    } else if (i === selectedIndex) {
+                        btn.classList.add('incorrect');
+                    }
+                    btn.disabled = true;
+                });
+                
+                if (selectedIndex === correctIndex) {
+                    feedbackEl.textContent = "Correct! 🎉";
+                    feedbackEl.className = "text-center font-medium mt-4 h-6 text-green-600";
+                } else {
+                    feedbackEl.textContent = "Not quite. The correct answer is highlighted.";
+                     feedbackEl.className = "text-center font-medium mt-4 h-6 text-red-600";
+                }
+                
+                if (currentQuestionIndex < quizData.length - 1) {
+                    nextBtn.textContent = 'Next Question';
+                } else {
+                    nextBtn.textContent = 'Restart Quiz';
+                }
+                nextBtn.classList.remove('hidden');
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= quizData.length) {
+                    currentQuestionIndex = 0;
+                }
+                loadQuestion();
+            });
+
+            loadQuestion();
+
+        });
+    </script>
+</body>
+</html>
+
