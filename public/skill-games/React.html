@@ -213,6 +213,21 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Inline style replacements */
+        #preview-feed {
+            height: 250px;
+        }
+        
+        .tutorial-section .visualization div[style*="font-size"] {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        .further-exploration > div:first-child {
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
@@ -249,7 +264,7 @@
                 </div>
                 <div id="components-preview">
                     <div id="preview-header" class="preview-component">Header</div>
-                    <div id="preview-feed" class="preview-component" style="height: 250px;">PostFeed</div>
+                    <div id="preview-feed" class="preview-component">PostFeed</div>
                     <div id="preview-footer" class="preview-component">Footer</div>
                 </div>
             </div>
@@ -266,7 +281,7 @@
                     <p>You write this JSX:</p>
                     <textarea id="jsx-input" rows="2" class="code-block" title="You write this JSX">&lt;h1 className="title"&gt;Hello&lt;/h1&gt;</textarea>
                 </div>
-                <div style="font-size: 2em; color: var(--primary-color); margin: 10px 0;">↓</div>
+                <div>↓</div>
                 <div class="jsx-block">
                     <p>Babel compiles it to this JavaScript:</p>
                     <div id="jsx-output" class="code-block">React.createElement('h1', {className: 'title'}, 'Hello')</div>
@@ -339,7 +354,7 @@
         </section>
         
         <footer class="tutorial-section further-exploration">
-            <div style="grid-column: 1 / -1;">
+            <div>
                 <h2>Continue Your Journey</h2>
                 <div class="exploration-grid">
                     <div class="exploration-column">
