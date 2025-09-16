@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL: An Interactive Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #14b8a6, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .sql-view {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            transition: background-color 0.3s ease;
+        }
+        .keyword { color: #569cd6; }
+        .identifier { color: #9cdcfe; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .operator { color: #d4d4d4; }
+        .comment { color: #6a9955; }
+
+        /* Quiz styles */
+        .quiz-option {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        /* Keyframes for animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s infinite;
+        }
+
+        /* Ambient light effect */
+        .ambient-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            z-index: -1;
+            border-radius: inherit;
+            background: linear-gradient(145deg, rgba(20, 184, 166, 0.2), rgba(8, 145, 178, 0.25));
+            filter: blur(25px);
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+        }
+        .ambient-glow:hover::before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold gradient-text">SQL Interactive Tutorial</h1>
+            <div class="hidden md:flex items-center space-x-6 text-gray-600">
+                <a href="#about" class="hover:text-cyan-600">About</a>
+                <a href="#concepts" class="hover:text-cyan-600">Core Concepts</a>
+                <a href="#scenario" class="hover:text-cyan-600">Example</a>
+                <a href="#quiz" class="hover:text-cyan-600">Challenge</a>
+                <a href="#links" class="hover:text-cyan-600">Resources</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden" aria-label="Toggle mobile menu">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2 text-gray-600">
+            <a href="#about" class="block hover:text-cyan-600">About</a>
+            <a href="#concepts" class="block hover:text-cyan-600">Core Concepts</a>
+            <a href="#scenario" class="block hover:text-cyan-600">Example</a>
+            <a href="#quiz" class="block hover:text-cyan-600">Challenge</a>
+            <a href="#links" class="block hover:text-cyan-600">Resources</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Section 1: What is SQL? -->
+        <section id="about" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">SQL: The Language of Data</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">Structured Query Language (SQL) is the standard language for managing and manipulating data in relational databases. It's not a database itself, but the universal tool you use to talk to them.</p>
+            <div class="relative w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+                <div class="text-left p-6 rounded-2xl bg-white border border-slate-200 relative ambient-glow">
+                    <h3 class="font-bold text-xl mb-2">Unstructured Data</h3>
+                    <img src="https://placehold.co/600x300/e2e8f0/4a5568?text=Simple+Text+File" alt="Unstructured Data" class="rounded-lg shadow-md">
+                    <p class="text-sm text-gray-500 mt-2">Difficult to search, filter, and relate pieces of information together.</p>
+                </div>
+                 <div class="text-left p-6 rounded-2xl bg-white border border-slate-200 relative ambient-glow">
+                    <h3 class="font-bold text-xl mb-2">SQL-Managed Database</h3>
+                    <img src="https://placehold.co/600x300/ccfbf1/0891b2?text=Structured+Tables" alt="SQL Database" class="rounded-lg shadow-md animate-pulse-custom">
+                     <p class="text-sm text-gray-500 mt-2">Data is perfectly organized. SQL provides a powerful, consistent way to work with it.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Concepts -->
+        <section id="concepts" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">The Core Commands of SQL</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- SELECT Card -->
+                <div class="card p-6 border border-slate-200 ambient-glow">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">1. SELECT: The Retriever</h3>
+                    <p class="text-gray-600 mb-4">The most common command. You use `SELECT` to fetch data from tables. `FROM` specifies the table, and `WHERE` filters the results.</p>
+                    <div class="sql-view h-40 overflow-auto text-sm">
+                        <span class="keyword">SELECT</span> <span class="identifier">product_name, price</span><br>
+                        <span class="keyword">FROM</span> <span class="identifier">products</span><br>
+                        <span class="keyword">WHERE</span> <span class="identifier">category</span> <span class="operator">=</span> <span class="string">'Electronics'</span>;
+                    </div>
+                </div>
+
+                <!-- JOIN Card -->
+                <div class="card p-6 border border-slate-200 ambient-glow">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">2. JOIN: The Connector</h3>
+                    <p class="text-gray-600 mb-4">The magic of relational databases! `JOIN` is used to combine rows from two or more tables based on a related column between them.</p>
+                    <div class="h-40 bg-gray-50 rounded-lg p-3 flex items-center justify-center space-x-2">
+                         <div class="text-center">
+                            <div class="p-2 bg-teal-200 text-teal-800 rounded text-sm">Users</div>
+                            <div class="text-xs mt-1">user_id | name</div>
+                         </div>
+                         <div class="text-3xl font-light text-cyan-500">&harr;</div>
+                         <div class="text-center">
+                            <div class="p-2 bg-cyan-200 text-cyan-800 rounded text-sm">Orders</div>
+                             <div class="text-xs mt-1">order_id | user_id</div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- DML Card -->
+                <div class="card p-6 lg:col-span-1 md:col-span-2 border border-slate-200 ambient-glow">
+                     <h3 class="text-xl font-bold mb-4 gradient-text">3. DML: The Manipulator</h3>
+                    <p class="text-gray-600 mb-4">Data Manipulation Language. `INSERT` adds new data, `UPDATE` modifies it, and `DELETE` removes it.</p>
+                    <div class="sql-view h-40 text-sm">
+                        <span class="keyword">INSERT INTO</span> <span class="identifier">users</span> <span class="operator">(...)</span> <span class="keyword">VALUES</span> <span class="operator">(...)</span>;<br>
+                        <span class="keyword">UPDATE</span> <span class="identifier">users</span> <span class="keyword">SET</span> <span class="operator">...</span> <span class="keyword">WHERE</span> <span class="operator">...</span>;<br>
+                        <span class="keyword">DELETE FROM</span> <span class="identifier">users</span> <span class="keyword">WHERE</span> <span class="operator">...</span>;
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Real-World Scenario -->
+        <section id="scenario" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Real-Life Scenario: Product Catalog</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Let's build a product filter. As you change the filters, watch how the SQL query is built in real-time to fetch exactly the data you need.</p>
+            
+            <div class="card p-8 border border-slate-200 ambient-glow">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Left side: The filter interface and results -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4">Filter Products</h3>
+                        <div class="space-y-4 mb-6">
+                             <div>
+                                <label for="category-filter" class="block font-medium mb-1">Category</label>
+                                <select id="category-filter" class="w-full p-2 border border-gray-300 rounded-md bg-white">
+                                    <option value="all">All</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Books">Books</option>
+                                    <option value="Clothing">Clothing</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="price-filter" class="block font-medium mb-1">Max Price: $<span id="price-label">500</span></label>
+                                <input type="range" id="price-filter" min="10" max="1000" value="500" step="10" class="w-full">
+                            </div>
+                        </div>
+                         <h4 class="font-bold text-lg mb-2">Results (<span id="results-count">0</span>)</h4>
+                        <div id="results-container" class="space-y-2 h-64 overflow-y-auto border border-slate-200 rounded-lg p-2">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Right side: The live query -->
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-lg mb-2">Your Live SQL Query</h4>
+                        <div id="live-query" class="sql-view h-full text-base">
+                           <!-- Query will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Gamify Your Learning -->
+        <section id="quiz" class="mb-20">
+             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Check Your Understanding!</h2>
+             <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Time to test your new SQL skills. Let's see what you've learned.</p>
+             <div class="card max-w-2xl mx-auto p-8 border border-slate-200 ambient-glow">
+                 <div id="quiz-container">
+                     <!-- Quiz content will be injected by JS -->
+                 </div>
+                 <p id="quiz-feedback" class="text-center font-medium mt-4 h-6"></p>
+                 <div class="mt-4 flex justify-center">
+                     <button id="next-question-btn" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-cyan-700 transition-colors hidden">Next</button>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Section 5: Applications -->
+        <section id="applications" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">Where is SQL Used?</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm relative ambient-glow">
+                    <svg class="w-12 h-12 mx-auto text-cyan-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                    <h4 class="font-semibold">Backend Systems</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm relative ambient-glow">
+                    <svg class="w-12 h-12 mx-auto text-cyan-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <h4 class="font-semibold">Business Intelligence</h4>
+                </div>
+                 <div class="text-center p-4 bg-white rounded-lg shadow-sm relative ambient-glow">
+                    <svg class="w-12 h-12 mx-auto text-cyan-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    <h4 class="font-semibold">Data Analysis</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm relative ambient-glow">
+                     <svg class="w-12 h-12 mx-auto text-cyan-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <h4 class="font-semibold">Finance & E-commerce</h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Useful Links -->
+        <footer id="links" class="bg-gray-800 mt-20 py-12">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-2xl font-bold mb-6 text-white">Ready to Master SQL?</h2>
+                <p class="mb-8 text-gray-400">These resources are perfect for taking the next step in your SQL journey.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://www.w3schools.com/sql/" target="_blank" class="bg-gray-700 text-white hover:bg-cyan-600 px-5 py-3 rounded-lg transition-colors relative inline-block ambient-glow">W3Schools SQL Tutorial</a>
+                    <a href="https://sqlzoo.net/" target="_blank" class="bg-gray-700 text-white hover:bg-cyan-600 px-5 py-3 rounded-lg transition-colors relative inline-block ambient-glow">SQLZoo Interactive Tutorial</a>
+                    <a href="https://mode.com/sql-tutorial/" target="_blank" class="bg-gray-700 text-white hover:bg-cyan-600 px-5 py-3 rounded-lg transition-colors relative inline-block ambient-glow">Mode's SQL Tutorial</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Mobile Menu ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // --- Real-World Scenario: Product Catalog ---
+            const productData = [
+                { name: "Laptop Pro", category: "Electronics", price: 999 },
+                { name: "SQL for Beginners", category: "Books", price: 25 },
+                { name: "Wireless Mouse", category: "Electronics", price: 40 },
+                { name: "Cotton T-Shirt", category: "Clothing", price: 15 },
+                { name: "The Data Warehouse Toolkit", category: "Books", price: 60 },
+                { name: "Running Shoes", category: "Clothing", price: 80 },
+                { name: "4K Monitor", category: "Electronics", price: 350 },
+                { name: "Jeans", category: "Clothing", price: 55 },
+                { name: "Advanced SQL", category: "Books", price: 45 },
+                { name: "Webcam HD", category: "Electronics", price: 75 },
+            ];
+
+            const categoryFilter = document.getElementById('category-filter');
+            const priceFilter = document.getElementById('price-filter');
+            const priceLabel = document.getElementById('price-label');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsCount = document.getElementById('results-count');
+            const liveQueryContainer = document.getElementById('live-query');
+
+            function filterProducts() {
+                const category = categoryFilter.value;
+                const maxPrice = parseInt(priceFilter.value);
+
+                // Build query string
+                let queryParts = [];
+                if (category !== 'all') {
+                    queryParts.push(`<span class="identifier">category</span> <span class="operator">=</span> <span class="string">'${category}'</span>`);
+                }
+                queryParts.push(`<span class="identifier">price</span> <span class="operator">&lt;=</span> <span class="number">${maxPrice}</span>`);
+
+                let whereClause = queryParts.join('<br>&nbsp;&nbsp;<span class="keyword">AND</span> ');
+
+                liveQueryContainer.innerHTML = `
+                    <span class="keyword">SELECT</span> <span class="identifier">*</span><br>
+                    <span class="keyword">FROM</span> <span class="identifier">products</span><br>
+                    <span class="keyword">WHERE</span> ${whereClause};
+                `;
+
+                const results = productData.filter(product => {
+                    const categoryMatch = category === 'all' || product.category === category;
+                    const priceMatch = product.price <= maxPrice;
+                    return categoryMatch && priceMatch;
+                });
+
+                resultsCount.textContent = results.length;
+                resultsContainer.innerHTML = '';
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<p class="text-gray-500">No products match your query.</p>';
+                    return;
+                }
+                
+                const table = document.createElement('table');
+                table.className = 'w-full text-left text-sm';
+                table.innerHTML = `
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="p-2">Name</th>
+                            <th class="p-2">Category</th>
+                            <th class="p-2">Price</th>
+                        </tr>
+                    </thead>`;
+                const tbody = document.createElement('tbody');
+
+                results.forEach(product => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-200';
+                    row.innerHTML = `
+                        <td class="p-2">${product.name}</td>
+                        <td class="p-2">${product.category}</td>
+                        <td class="p-2">$${product.price}</td>`;
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                resultsContainer.appendChild(table);
+            }
+
+            priceFilter.addEventListener('input', () => {
+                priceLabel.textContent = priceFilter.value;
+                filterProducts();
+            });
+            categoryFilter.addEventListener('change', filterProducts);
+            
+            filterProducts();
+
+            // --- Quiz Logic ---
+            const quizContainer = document.getElementById('quiz-container');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-question-btn');
+            
+            const quizData = [
+                {
+                    question: "What does SQL stand for?",
+                    options: ["Strong Question Language", "Structured Query Language", "Simple Query Logic", "System Query Language"],
+                    answer: 1
+                },
+                {
+                    question: "Which command is used to retrieve data from a database?",
+                    options: ["GET", "FETCH", "SELECT", "OPEN"],
+                    answer: 2
+                },
+                {
+                    question: "What is the purpose of a JOIN clause?",
+                    options: ["To create a new table", "To combine rows from two or more tables", "To delete data", "To update a record"],
+                    answer: 1
+                }
+            ];
+
+            let currentQuestionIndex = 0;
+            let answered = false;
+
+            function loadQuestion() {
+                answered = false;
+                feedbackEl.textContent = '';
+                nextBtn.classList.add('hidden');
+                const q = quizData[currentQuestionIndex];
+                quizContainer.innerHTML = `
+                    <h4 class="text-xl font-semibold mb-6 text-center">${q.question}</h4>
+                    <div class="space-y-3">
+                        ${q.options.map((opt, i) => `
+                            <button class="quiz-option block w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-100" data-index="${i}">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>`;
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    btn.addEventListener('click', selectAnswer);
+                });
+            }
+
+            function selectAnswer(e) {
+                if (answered) return;
+                answered = true;
+                
+                const selectedButton = e.currentTarget;
+                const selectedIndex = parseInt(selectedButton.dataset.index);
+                const correctIndex = quizData[currentQuestionIndex].answer;
+
+                document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+                    if (i === correctIndex) { btn.classList.add('correct'); } 
+                    else if (i === selectedIndex) { btn.classList.add('incorrect'); }
+                    btn.disabled = true;
+                });
+                
+                if (selectedIndex === correctIndex) {
+                    feedbackEl.textContent = "Correct! 🎉";
+                    feedbackEl.className = "text-center font-medium mt-4 h-6 text-green-600";
+                } else {
+                    feedbackEl.textContent = "Not quite. The correct answer is highlighted.";
+                     feedbackEl.className = "text-center font-medium mt-4 h-6 text-red-600";
+                }
+                
+                if (currentQuestionIndex < quizData.length - 1) {
+                    nextBtn.textContent = 'Next Question';
+                } else {
+                    nextBtn.textContent = 'Restart Quiz';
+                }
+                nextBtn.classList.remove('hidden');
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= quizData.length) {
+                    currentQuestionIndex = 0;
+                }
+                loadQuestion();
+            });
+
+            loadQuestion();
+        });
+    </script>
+</body>
+</html>
+
