@@ -52,6 +52,7 @@
         header h1 .highlight {
              background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -183,6 +184,20 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Inline style fixes */
+        .file[data-path="/dashboard"] {
+            padding-left: 20px;
+        }
+
+        .component.page-content {
+            margin: 10px;
+            background: #222;
+        }
+
+        .component[id="comp-main"] {
+            flex-grow: 1;
+        }
     </style>
 </head>
 <body>
@@ -235,13 +250,13 @@
                     <div class="file active" data-path="/"> L layout.js <small>(Root Layout)</small></div>
                     <div class="file active" data-path="/"> L page.js <small>(Home)</small></div>
                     <strong> L /dashboard</strong>
-                    <div style="padding-left: 20px;" class="file" data-path="/dashboard"> L page.js <small>(Dashboard)</small></div>
+                    <div class="file" data-path="/dashboard"> L page.js <small>(Dashboard)</small></div>
                 </div>
                 <div class="browser-view" id="app-browser">
                     <div class="url">https://example.com<span id="app-browser-path">/</span></div>
                     <div class="content" id="app-browser-content">
                         <div class="component highlight">Root Layout (Navbar, Footer)
-                            <div class="component" style="margin:10px; background: #222;">Page Content: Home</div>
+                            <div class="component page-content">Page Content: Home</div>
                         </div>
                     </div>
                 </div>
@@ -269,7 +284,7 @@
             </div>
             <div class="visualization component-assembly">
                  <div class="component" id="comp-nav">Navbar</div>
-                 <div class="component" id="comp-main" style="flex-grow: 1;">Main Content</div>
+                 <div class="component" id="comp-main">Main Content</div>
                  <div class="component" id="comp-footer">Footer</div>
             </div>
         </section>
