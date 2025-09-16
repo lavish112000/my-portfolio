@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TensorFlow: An Interactive Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #4f46e5, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        /* Neural Network Visualization */
+        .neuron {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #818cf8;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+        .neuron.active {
+            background-color: #ec4899;
+        }
+        .connection {
+            position: absolute;
+            height: 2px;
+            background-color: #c7d2fe;
+            transform-origin: left center;
+            z-index: -1;
+        }
+        
+        /* Quiz styles */
+        .quiz-option {
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .quiz-option.selected {
+            background-color: #e0e7ff;
+            border-color: #4f46e5;
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        
+        /* Keyframes for animations */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+        .animate-pulse-custom {
+            animation: pulse 2s infinite;
+        }
+        @keyframes flow {
+            from { stroke-dashoffset: 20; }
+            to { stroke-dashoffset: 0; }
+        }
+        .animated-path {
+            stroke-dasharray: 20;
+            animation: flow 1.5s linear infinite;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold gradient-text">TensorFlow Interactive</h1>
+            <div class="hidden md:flex space-x-6 text-gray-600">
+                <a href="#about" class="hover:text-indigo-600">About</a>
+                <a href="#concepts" class="hover:text-indigo-600">Core Concepts</a>
+                <a href="#scenario" class="hover:text-indigo-600">Example</a>
+                <a href="#quiz" class="hover:text-indigo-600">Challenge</a>
+                <a href="#links" class="hover:text-indigo-600">Resources</a>
+            </div>
+            <buttonbutton id="mobile-menu-button" class="md:hidden" title="Toggle Menu">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 space-y-2">
+            <a href="#about" class="block hover:text-indigo-600">About</a>
+            <a href="#concepts" class="block hover:text-indigo-600">Core Concepts</a>
+            <a href="#scenario" class="block hover:text-indigo-600">Example</a>
+            <a href="#quiz" class="block hover:text-indigo-600">Challenge</a>
+            <a href="#links" class="block hover:text-indigo-600">Resources</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Section 1: What is TensorFlow? -->
+        <section id="about" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Welcome to the World of TensorFlow</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">An open-source library that's like a powerful sandbox for building and training machine learning models. Think of it as giving computers a brain to learn from data, just like we do!</p>
+            <div class="relative w-full max-w-4xl mx-auto h-64 bg-indigo-50 rounded-2xl flex items-center justify-center p-4 overflow-hidden">
+                <div class="flex items-center space-x-4 md:space-x-8">
+                    <div class="text-center">
+                        <svg class="w-16 h-16 mx-auto text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        <p class="font-semibold mt-2">Data</p>
+                    </div>
+                     <svg class="w-12 h-12 text-gray-400 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                     <div class="md:hidden text-gray-400 text-3xl">&darr;</div>
+                    <div class="text-center animate-pulse-custom">
+                         <img src="https://www.tensorflow.org/images/tf_logo_social.png" alt="TensorFlow Logo" class="w-20 h-20 mx-auto rounded-full">
+                        <p class="font-semibold mt-2">TensorFlow Model</p>
+                    </div>
+                     <svg class="w-12 h-12 text-gray-400 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                     <div class="md:hidden text-gray-400 text-3xl">&darr;</div>
+                    <div class="text-center">
+                        <svg class="w-16 h-16 mx-auto text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <p class="font-semibold mt-2">Insights</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Concepts -->
+        <section id="concepts" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">How Does It Actually Work?</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Tensors Card -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">1. Tensors: The Building Blocks</h3>
+                    <p class="text-gray-600 mb-4">Tensors are the fundamental data structures. They are multi-dimensional arrays, like lists of numbers, grids of numbers, or even cubes of numbers!</p>
+                    <div id="tensor-viz" class="h-40 bg-gray-50 rounded-lg flex items-center justify-center p-4 text-center font-mono text-indigo-800 transition-all duration-300"></div>
+                    <div class="flex justify-center space-x-2 mt-4">
+                        <button class="tensor-btn bg-indigo-500 text-white px-3 py-1 rounded-md text-sm" data-dim="0">0D</button>
+                        <button class="tensor-btn bg-indigo-200 text-indigo-800 px-3 py-1 rounded-md text-sm" data-dim="1">1D</button>
+                        <button class="tensor-btn bg-indigo-200 text-indigo-800 px-3 py-1 rounded-md text-sm" data-dim="2">2D</button>
+                    </div>
+                </div>
+
+                <!-- Neural Network Card -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4 gradient-text">2. Models: The Brains</h3>
+                    <p class="text-gray-600 mb-4">You assemble layers of "neurons" into a model, or a "neural network". Data flows through, and the model learns patterns.</p>
+                    <div id="nn-viz" class="h-40 relative flex items-center justify-around">
+                        <!-- Neurons and connections will be injected by JS -->
+                    </div>
+                    <div class="text-center mt-4">
+                        <button id="nn-animate-btn" class="bg-pink-500 text-white px-4 py-2 rounded-lg">Animate Flow</button>
+                    </div>
+                </div>
+
+                <!-- Training Card -->
+                <div class="card p-6 lg:col-span-1 md:col-span-2">
+                     <h3 class="text-xl font-bold mb-4 gradient-text">3. Training: The Learning Process</h3>
+                    <p class="text-gray-600 mb-4">The model makes a guess, compares it to the correct answer (calculates "loss"), and adjusts its neurons slightly to get better. This loop is repeated thousands of times.</p>
+                    <div id="training-loop-viz" class="h-40 flex flex-col justify-center items-center space-y-2">
+                        <!-- Training loop vis will be injected by JS -->
+                    </div>
+                     <div class="text-center mt-4">
+                        <button id="training-animate-btn" class="bg-indigo-500 text-white px-4 py-2 rounded-lg">Animate Loop</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Real-World Scenario -->
+        <section id="scenario" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Real-Life Scenario: House Price Prediction</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Let's gamify this! Imagine you're a real estate mogul. You want to build a model to predict house prices based on size.</p>
+            
+            <div class="card p-8">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <!-- Left side: The game interface -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4">Your Prediction Challenge</h3>
+                        <p class="mb-4 text-gray-600">Drag the slider to input the size of a house (in sq. ft.) and our simple TensorFlow model will predict its price.</p>
+                        <div class="mb-6">
+                            <label for="house-size" class="block font-medium mb-2">House Size: <span id="house-size-label" class="font-bold text-indigo-600">1500</span> sq. ft.</label>
+                            <input type="range" id="house-size" min="500" max="4000" value="1500" class="w-full">
+                        </div>
+                        <button id="predict-btn" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors">Predict Price</button>
+                        <div id="prediction-result" class="mt-6 text-center h-20 flex items-center justify-center">
+                             <!-- Prediction will appear here -->
+                        </div>
+                    </div>
+
+                    <!-- Right side: The explanation -->
+                    <div class="bg-indigo-50 p-6 rounded-lg">
+                        <h4 class="font-bold text-lg mb-2">How it works:</h4>
+                        <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                            <li><span class="font-semibold">Input Data:</span> We trained a model on thousands of houses with their size (input) and price (output).</li>
+                            <li><span class="font-semibold">Finding a Pattern:</span> The model learned a simple relationship: <code class="bg-indigo-200 text-sm rounded px-1">price ≈ size * C</code> (where C is a constant it figured out).</li>
+                            <li><span class="font-semibold">Prediction:</span> When you provide a size, it uses this learned formula to make an educated guess on the price. This is a basic form of linear regression!</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Gamify Your Learning -->
+        <section id="quiz" class="mb-20">
+             <h2 class="text-3xl md:text-4xl font-bold text-center mb-4">Test Your Knowledge!</h2>
+             <p class="text-lg text-gray-600 max-w-3xl mx-auto text-center mb-12">Let's see what you've learned. Answer this quick question.</p>
+             <div class="card max-w-2xl mx-auto p-8">
+                 <div id="quiz-container">
+                     <!-- Quiz content will be injected by JS -->
+                 </div>
+                 <p id="quiz-feedback" class="text-center font-medium mt-4 h-6"></p>
+                 <div class="mt-4 flex justify-center">
+                     <button id="next-question-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700 transition-colors hidden">Next</button>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Section 5: Applications -->
+        <section id="applications" class="mb-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-center mb-12">What's It Used For?</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <svg class="w-12 h-12 mx-auto text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <h4 class="font-semibold">Image Recognition</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <svg class="w-12 h-12 mx-auto text-pink-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                    <h4 class="font-semibold">Natural Language</h4>
+                </div>
+                 <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                    <svg class="w-12 h-12 mx-auto text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.636 5.636a9 9 0 0112.728 0M8.464 15.536a5 5 0 010-7.072"></path></svg>
+                    <h4 class="font-semibold">Voice Recognition</h4>
+                </div>
+                <div class="text-center p-4 bg-white rounded-lg shadow-sm">
+                     <svg class="w-12 h-12 mx-auto text-pink-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <h4 class="font-semibold">Video Analysis</h4>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Useful Links -->
+        <footer id="links" class="bg-gray-800 text-white mt-20 py-12">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-2xl font-bold mb-6">Ready to Dive Deeper?</h2>
+                <p class="mb-8 text-gray-400">These resources are fantastic places to continue your learning journey.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://www.tensorflow.org/tutorials" target="_blank" class="bg-gray-700 hover:bg-indigo-500 px-5 py-3 rounded-lg transition-colors">Official TensorFlow Tutorials</a>
+                    <a href="https://www.w3schools.com/python/python_ml_tensorflow.asp" target="_blank" class="bg-gray-700 hover:bg-indigo-500 px-5 py-3 rounded-lg transition-colors">W3Schools TensorFlow Guide</a>
+                    <a href="https://developers.google.com/machine-learning/crash-course" target="_blank" class="bg-gray-700 hover:bg-indigo-500 px-5 py-3 rounded-lg transition-colors">Google's ML Crash Course</a>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Mobile Menu ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // --- Tensor Visualization ---
+            const tensorViz = document.getElementById('tensor-viz');
+            const tensorBtns = document.querySelectorAll('.tensor-btn');
+            const tensorData = {
+                0: { text: '5', class: 'text-4xl font-bold' },
+                1: { text: '[5, 1, 8]', class: 'text-2xl font-semibold' },
+                2: { text: '[[5, 1], <br> [8, 2]]', class: 'text-xl' }
+            };
+
+            function updateTensorViz(dim) {
+                tensorViz.innerHTML = `<span class="${tensorData[dim].class}">${tensorData[dim].text}</span>`;
+                tensorBtns.forEach(btn => {
+                    if (btn.dataset.dim === dim) {
+                        btn.classList.remove('bg-indigo-200', 'text-indigo-800');
+                        btn.classList.add('bg-indigo-500', 'text-white');
+                    } else {
+                        btn.classList.add('bg-indigo-200', 'text-indigo-800');
+                        btn.classList.remove('bg-indigo-500', 'text-white');
+                    }
+                });
+            }
+            tensorBtns.forEach(btn => btn.addEventListener('click', () => updateTensorViz(btn.dataset.dim)));
+            updateTensorViz('0');
+
+            // --- Neural Network Visualization ---
+            const nnViz = document.getElementById('nn-viz');
+            const nnAnimateBtn = document.getElementById('nn-animate-btn');
+            const nnConfig = {
+                layers: [2, 3, 1],
+                neuronSize: 30,
+                layerGap: 80,
+            };
+
+            function createNN() {
+                nnViz.innerHTML = '';
+                let totalWidth = (nnConfig.layers.length - 1) * nnConfig.layerGap;
+                let startX = (nnViz.clientWidth - totalWidth) / 2;
+
+                const positions = [];
+
+                // Create neurons
+                nnConfig.layers.forEach((numNeurons, layerIndex) => {
+                    const layerPositions = [];
+                    let layerHeight = (numNeurons - 1) * 50;
+                    let startY = (nnViz.clientHeight - layerHeight) / 2;
+                    for (let i = 0; i < numNeurons; i++) {
+                        const neuron = document.createElement('div');
+                        neuron.classList.add('neuron');
+                        const x = startX + layerIndex * nnConfig.layerGap;
+                        const y = startY + i * 50;
+                        neuron.style.left = `${x - nnConfig.neuronSize/2}px`;
+                        neuron.style.top = `${y - nnConfig.neuronSize/2}px`;
+                        neuron.id = `n-${layerIndex}-${i}`;
+                        nnViz.appendChild(neuron);
+                        layerPositions.push({x, y});
+                    }
+                    positions.push(layerPositions);
+                });
+
+                // Create connections
+                for (let i = 0; i < positions.length - 1; i++) {
+                    positions[i].forEach(startPos => {
+                        positions[i+1].forEach(endPos => {
+                            const connection = document.createElement('div');
+                            connection.classList.add('connection');
+                            const dx = endPos.x - startPos.x;
+                            const dy = endPos.y - startPos.y;
+                            const length = Math.sqrt(dx*dx + dy*dy);
+                            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                            
+                            connection.style.width = `${length}px`;
+                            connection.style.left = `${startPos.x}px`;
+                            connection.style.top = `${startPos.y}px`;
+                            connection.style.transform = `rotate(${angle}deg)`;
+                            nnViz.appendChild(connection);
+                        });
+                    });
+                }
+            }
+            
+            function animateNN() {
+                nnAnimateBtn.disabled = true;
+                const neurons = document.querySelectorAll('.neuron');
+                neurons.forEach(n => n.classList.remove('active'));
+
+                const animateLayer = (layerIndex) => {
+                    if(layerIndex >= nnConfig.layers.length) {
+                        nnAnimateBtn.disabled = false;
+                        return;
+                    }
+                    for(let i=0; i<nnConfig.layers[layerIndex]; i++) {
+                        document.getElementById(`n-${layerIndex}-${i}`).classList.add('active');
+                    }
+                    setTimeout(() => {
+                        for(let i=0; i<nnConfig.layers[layerIndex]; i++) {
+                           document.getElementById(`n-${layerIndex}-${i}`).classList.remove('active');
+                        }
+                        animateLayer(layerIndex + 1);
+                    }, 500);
+                };
+                animateLayer(0);
+            }
+
+            // A small hack to ensure clientWidth is available
+            setTimeout(createNN, 100); 
+            nnAnimateBtn.addEventListener('click', animateNN);
+            
+            // --- Training Loop Visualization ---
+            const trainingViz = document.getElementById('training-loop-viz');
+            const trainingAnimateBtn = document.getElementById('training-animate-btn');
+            const trainingSteps = ['Data →', 'Model 🤔', '→ Prediction', 'Compare (Loss)', 'Adjust ⚙️'];
+
+            function createTrainingLoop() {
+                trainingViz.innerHTML = '';
+                trainingSteps.forEach((text, i) => {
+                    const el = document.createElement('div');
+                    el.id = `train-step-${i}`;
+                    el.textContent = text;
+                    el.className = 'px-3 py-1 rounded-md bg-gray-200 text-gray-700 transition-all duration-300';
+                    trainingViz.appendChild(el);
+                });
+            }
+
+            function animateTrainingLoop() {
+                trainingAnimateBtn.disabled = true;
+                let currentStep = 0;
+                const interval = setInterval(() => {
+                    // Reset previous
+                    const prevStep = (currentStep - 1 + trainingSteps.length) % trainingSteps.length;
+                    document.getElementById(`train-step-${prevStep}`).className = 'px-3 py-1 rounded-md bg-gray-200 text-gray-700 transition-all duration-300';
+
+                    // Highlight current
+                    const currentEl = document.getElementById(`train-step-${currentStep}`);
+                    currentEl.className = 'px-4 py-2 rounded-lg bg-indigo-500 text-white transition-all duration-300 transform scale-110';
+                    
+                    currentStep++;
+                    if (currentStep > trainingSteps.length) {
+                        clearInterval(interval);
+                        trainingAnimateBtn.disabled = false;
+                        // Reset all
+                        trainingSteps.forEach((_, i) => {
+                           document.getElementById(`train-step-${i}`).className = 'px-3 py-1 rounded-md bg-gray-200 text-gray-700 transition-all duration-300';
+                        });
+                    }
+                }, 600);
+            }
+            createTrainingLoop();
+            trainingAnimateBtn.addEventListener('click', animateTrainingLoop);
+
+            // --- House Price Prediction ---
+            const sizeSlider = document.getElementById('house-size');
+            const sizeLabel = document.getElementById('house-size-label');
+            const predictBtn = document.getElementById('predict-btn');
+            const predictionResult = document.getElementById('prediction-result');
+
+            sizeSlider.addEventListener('input', () => {
+                sizeLabel.textContent = sizeSlider.value;
+            });
+
+            predictBtn.addEventListener('click', () => {
+                const size = parseInt(sizeSlider.value);
+                // Simple linear model: price = 150 * size + 50000 (learned parameters)
+                const price = 150 * size + 50000 + (Math.random() - 0.5) * 5000; // a little noise
+                
+                predictionResult.innerHTML = `<div class="text-center p-4 bg-green-50 rounded-lg w-full">
+                    <p class="text-gray-600">Predicted Price:</p>
+                    <p class="text-3xl font-bold text-green-700">$${price.toLocaleString()}</p>
+                </div>`;
+            });
+            
+            // --- Quiz Logic ---
+            const quizContainer = document.getElementById('quiz-container');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const nextBtn = document.getElementById('next-question-btn');
+            
+            const quizData = [
+                {
+                    question: "What is a 'Tensor' in TensorFlow?",
+                    options: ["A type of sensor", "A multi-dimensional array", "A machine learning model", "A brand of computer chip"],
+                    answer: 1
+                },
+                {
+                    question: "What is the process of a model learning from data called?",
+                    options: ["Computing", "Executing", "Training", "Deploying"],
+                    answer: 2
+                },
+                {
+                    question: "What does 'loss' represent during training?",
+                    options: ["How much data was lost", "How wrong the model's prediction is", "The amount of time it takes to train", "The model's file size"],
+                    answer: 1
+                }
+            ];
+
+            let currentQuestionIndex = 0;
+            let answered = false;
+
+            function loadQuestion() {
+                answered = false;
+                feedbackEl.textContent = '';
+                nextBtn.classList.add('hidden');
+                const q = quizData[currentQuestionIndex];
+                quizContainer.innerHTML = `
+                    <h4 class="text-xl font-semibold mb-6 text-center">${q.question}</h4>
+                    <div class="space-y-3">
+                        ${q.options.map((opt, i) => `
+                            <button class="quiz-option block w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:bg-gray-100" data-index="${i}">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                document.querySelectorAll('.quiz-option').forEach(btn => {
+                    btn.addEventListener('click', selectAnswer);
+                });
+            }
+
+            function selectAnswer(e) {
+                if (answered) return;
+                answered = true;
+                
+                const selectedButton = e.currentTarget;
+                const selectedIndex = parseInt(selectedButton.dataset.index);
+                const correctIndex = quizData[currentQuestionIndex].answer;
+
+                document.querySelectorAll('.quiz-option').forEach((btn, i) => {
+                    if (i === correctIndex) {
+                        btn.classList.add('correct');
+                    } else if (i === selectedIndex) {
+                        btn.classList.add('incorrect');
+                    }
+                    btn.disabled = true;
+                });
+                
+                if (selectedIndex === correctIndex) {
+                    feedbackEl.textContent = "Correct! 🎉";
+                    feedbackEl.className = "text-center font-medium mt-4 h-6 text-green-600";
+                } else {
+                    feedbackEl.textContent = "Not quite. The correct answer is highlighted.";
+                     feedbackEl.className = "text-center font-medium mt-4 h-6 text-red-600";
+                }
+                
+                if (currentQuestionIndex < quizData.length - 1) {
+                    nextBtn.textContent = 'Next Question';
+                } else {
+                    nextBtn.textContent = 'Restart Quiz';
+                }
+                nextBtn.classList.remove('hidden');
+            }
+
+            nextBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex >= quizData.length) {
+                    currentQuestionIndex = 0;
+                }
+                loadQuestion();
+            });
+
+            loadQuestion();
+
+        });
+    </script>
+</body>
+</html>
