@@ -213,6 +213,26 @@
                 min-height: 400px;
             }
         }
+        
+        /* Inline style replacements */
+        .intro-layer:nth-child(1) {
+            border-color: #bbf7d0;
+            animation-delay: 0s;
+        }
+        
+        .intro-layer:nth-child(3) {
+            border-color: var(--secondary-color);
+            animation-delay: 0.2s;
+        }
+        
+        .intro-layer:nth-child(5) {
+            border-color: var(--primary-color);
+            animation-delay: 0.4s;
+        }
+        
+        .further-exploration > div:first-child {
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
@@ -231,11 +251,11 @@
                 <p><strong>Express.js</strong> is the entire kitchen staff, equipment, and menu system you install. It provides a simple, organized way to handle customer orders (web requests) and serve them food (web pages and data).</p>
             </div>
             <div id="intro-viz" class="visualization">
-                <div class="intro-layer" style="border-color: #bbf7d0; animation-delay: 0s;">Your Café Ideas (App Code)</div>
+                <div class="intro-layer">Your Café Ideas (App Code)</div>
                 <div class="text-xl font-bold">+</div>
-                <div class="intro-layer" style="border-color: var(--secondary-color); animation-delay: 0.2s;">Express.js (Kitchen & Staff)</div>
+                <div class="intro-layer">Express.js (Kitchen & Staff)</div>
                  <div class="text-xl font-bold">=</div>
-                <div class="intro-layer" style="border-color: var(--primary-color); animation-delay: 0.4s;">A Functioning Café (Web Server)</div>
+                <div class="intro-layer">A Functioning Café (Web Server)</div>
             </div>
         </section>
 
@@ -304,7 +324,7 @@
         </section>
         
         <footer class="tutorial-section further-exploration">
-            <div style="grid-column: 1 / -1;">
+            <div>
                 <h2>Continue Your Journey</h2>
                 <div class="exploration-grid">
                     <div class="exploration-column">
