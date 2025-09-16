@@ -63,6 +63,7 @@
         header h1 .highlight {
              background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -264,6 +265,11 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Inline style replacement */
+        .further-exploration > div:first-child {
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
@@ -400,7 +406,7 @@
         </section>
         
         <footer class="tutorial-section further-exploration">
-            <div style="grid-column: 1 / -1;">
+            <div>
                 <h2>Continue Your Journey</h2>
                 <div class="exploration-grid">
                     <div class="exploration-column">
