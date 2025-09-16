@@ -47,6 +47,7 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             background: linear-gradient(to right, #f72585, #4cc9f0);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
@@ -309,6 +310,40 @@
                 flex-direction: column;
             }
         }
+        
+        /* Inline style replacements */
+        .http-cycle .fa-user {
+            color: #4cc9f0;
+        }
+        
+        .http-cycle .fa-arrow-right {
+            margin: 0 10px;
+        }
+        
+        .http-cycle .fa-server {
+            color: #f72585;
+        }
+        
+        .visualization p {
+            margin-top: 15px;
+        }
+        
+        .scenario ul {
+            margin-left: 20px;
+            margin-top: 15px;
+        }
+        
+        .scenario .scenario-text p {
+            margin-top: 15px;
+        }
+        
+        .scenario-visual .fa-book-open {
+            color: #ffba08;
+        }
+        
+        .scenario-visual p {
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -345,13 +380,13 @@
                 
                 <div class="visualization">
                     <div class="http-cycle">
-                        <i class="fas fa-user fa-2x" style="color: #4cc9f0;"></i>
-                        <i class="fas fa-arrow-right fa-2x" style="margin: 0 10px;"></i>
-                        <i class="fas fa-server fa-2x" style="color: #f72585;"></i>
-                        <i class="fas fa-arrow-right fa-2x" style="margin: 0 10px;"></i>
-                        <i class="fas fa-user fa-2x" style="color: #4cc9f0;"></i>
+                        <i class="fas fa-user fa-2x"></i>
+                        <i class="fas fa-arrow-right fa-2x"></i>
+                        <i class="fas fa-server fa-2x"></i>
+                        <i class="fas fa-arrow-right fa-2x"></i>
+                        <i class="fas fa-user fa-2x"></i>
                     </div>
-                    <p style="margin-top: 15px;">1. User sends request → 2. Flask processes request → 3. Flask sends response</p>
+                    <p>1. User sends request → 2. Flask processes request → 3. Flask sends response</p>
                 </div>
                 
                 <p>When a user visits a URL, Flask matches the URL to a Python function, which processes the request and returns a response.</p>
@@ -382,17 +417,17 @@
             <div class="scenario-content">
                 <div class="scenario-text">
                     <p>Imagine you're building a website for an online bookstore. Here's how Flask would help:</p>
-                    <ul style="margin-left: 20px; margin-top: 15px;">
+                    <ul>
                         <li><strong>Homepage:</strong> Visitors see book recommendations</li>
                         <li><strong>Search:</strong> Users can search for specific books</li>
                         <li><strong>Book Details:</strong> Each book has its own page</li>
                         <li><strong>Shopping Cart:</strong> Users can add books to their cart</li>
                     </ul>
-                    <p style="margin-top: 15px;">Flask makes it easy to create each of these pages and connect them to your database.</p>
+                    <p>Flask makes it easy to create each of these pages and connect them to your database.</p>
                 </div>
                 <div class="scenario-visual">
-                    <i class="fas fa-book-open fa-5x" style="color: #ffba08;"></i>
-                    <p style="margin-top: 15px;">Flask helps organize your bookstore website</p>
+                    <i class="fas fa-book-open fa-5x"></i>
+                    <p>Flask helps organize your bookstore website</p>
                 </div>
             </div>
         </div>
@@ -404,28 +439,28 @@
                     <i class="fab fa-python"></i>
                     <h3>Official Documentation</h3>
                     <p>The best place to start with Flask</p>
-                    <a href="https://flask.palletsprojects.com/" target="_blank">Explore Docs</a>
+                    <a href="https://flask.palletsprojects.com/" target="_blank" rel="noopener">Explore Docs</a>
                 </div>
                 
                 <div class="resource-card">
                     <i class="fas fa-graduation-cap"></i>
                     <h3>W3Schools</h3>
                     <p>Beginner-friendly tutorials</p>
-                    <a href="https://www.w3schools.com/python/flask/index.asp" target="_blank">Learn on W3Schools</a>
+                    <a href="https://www.w3schools.com/python/flask/index.asp" target="_blank" rel="noopener">Learn on W3Schools</a>
                 </div>
                 
                 <div class="resource-card">
                     <i class="fas fa-video"></i>
                     <h3>YouTube Tutorials</h3>
                     <p>Visual learning resources</p>
-                    <a href="https://www.youtube.com/results?search_query=flask+tutorial" target="_blank">Watch Videos</a>
+                    <a href="https://www.youtube.com/results?search_query=flask+tutorial" target="_blank" rel="noopener">Watch Videos</a>
                 </div>
                 
                 <div class="resource-card">
                     <i class="fas fa-laptop-code"></i>
                     <h3>Real Python</h3>
                     <p>In-depth articles and tutorials</p>
-                    <a href="https://realpython.com/tutorials/flask/" target="_blank">Read Tutorials</a>
+                    <a href="https://realpython.com/tutorials/flask/" target="_blank" rel="noopener">Read Tutorials</a>
                 </div>
             </div>
         </div>
