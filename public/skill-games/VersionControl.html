@@ -273,6 +273,11 @@
                 flex-direction: column;
             }
         }
+        
+        /* Inline style replacement */
+        .further-exploration > div:first-child {
+            grid-column: 1 / -1;
+        }
     </style>
 </head>
 <body>
@@ -385,7 +390,7 @@
         </section>
         
         <footer class="tutorial-section further-exploration">
-            <div style="grid-column: 1 / -1;">
+            <div>
                 <h2>Continue Your Journey</h2>
                 <div class="exploration-grid">
                     <div class="exploration-column">
