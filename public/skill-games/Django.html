@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Django Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-start: #16a085; 
+            --bg-color-end: #f4d03f;
+            --primary-color: #16a085; /* Django Green */
+            --secondary-color: #f39c12; /* Django Orange */
+            --text-color-dark: #2c3e50; /* Dark Blue */
+            --text-color-light: #34495e; /* Lighter Blue */
+            --border-color: rgba(22, 160, 133, 0.2);
+            --panel-bg: rgba(255, 255, 255, 0.7); 
+        }
+
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slide-in-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes order-flow { 
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color-dark);
+            line-height: 1.7;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+            background-size: 200% 200%;
+            animation: gradient-bg 20s ease infinite;
+            background-attachment: fixed;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: var(--text-color-dark);
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+             text-shadow: 0 0 20px rgba(22, 160, 133, 0.3);
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+            color: var(--text-color-light);
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s, scale 0.3s;
+        }
+        
+        .tutorial-section:hover {
+            transform: translateY(20px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--text-color-dark);
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .viz-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter';
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .viz-button:hover { background-color: #d35400; transform: translateY(-2px); }
+
+        /* Specific Viz Styles */
+        .restaurant-diagram {
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .diagram-box { border: 2px solid var(--border-color); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.3s; }
+        .diagram-box svg { width: 40px; height: 40px; margin-bottom: 10px; }
+        #customer { grid-row: 1 / 3; }
+        .diagram-arrow { position: absolute; font-size: 2em; color: var(--primary-color); opacity: 0; transition: opacity 0.5s; }
+        .diagram-box.active { transform: scale(1.1); border-color: var(--primary-color); box-shadow: 0 0 15px var(--primary-color); }
+
+        .routing-diagram { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+        .host-stand { text-align: center; }
+        .customer-request { animation: pop-in 0.3s; }
+        
+        .orm-diagram { flex-direction: column; gap: 15px; }
+        .recipe-book, .pantry { width: 80%; border: 1px solid var(--border-color); border-radius: 5px; padding: 15px; }
+        
+        .admin-viz { padding: 0; background: #ecf0f1; }
+        
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .further-exploration h2 { color: var(--primary-color); }
+        .exploration-column h3 { color: var(--secondary-color); }
+        .exploration-column a:hover { color: var(--primary-color); }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%2316a085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+            .visualization {
+                height: auto;
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">Django</span> Restaurant</h1>
+            <p>An interactive guide to the high-level Python web framework, explained through the real-life situation of running a restaurant.</p>
+        </header>
+
+        <!-- SECTION 1: MVT Architecture -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. The Restaurant's Workflow (MVT)</h2>
+                <p>Django organizes your code using the <strong>Model-View-Template</strong> (MVT) pattern. It's just like how a restaurant works!</p>
+                <ol class="list-decimal list-inside ml-4">
+                    <li><strong>Model:</strong> The pantry with your ingredients (the database structure).</li>
+                    <li><strong>View:</strong> The chef who gets the ingredients and cooks the meal (the logic).</li>
+                    <li><strong>Template:</strong> The final, plated dish served to the customer (the HTML page).</li>
+                </ol>
+            </div>
+            <div id="mvt-viz" class="visualization">
+                 <div class="viz-controls absolute top-4 left-4">
+                    <button id="mvt-btn" class="viz-button">Simulate Order</button>
+                 </div>
+                 <div class="restaurant-diagram">
+                    <div id="customer" class="diagram-box">
+                         <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        Customer
+                    </div>
+                    <div id="model" class="diagram-box">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+                        Model (Pantry)
+                    </div>
+                     <div id="view" class="diagram-box">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048l5.962-5.962a.75.75 0 011.06 0l2.298 2.298a.75.75 0 010 1.06l-5.962 5.962A8.25 8.25 0 0115.362 5.214z" /></svg>
+                        View (Chef)
+                     </div>
+                     <div id="template" class="diagram-box">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 3.098l-6.75 6.75a.75.75 0 000 1.06l6.75 6.75c.624.624 1.637.624 2.262 0l6.75-6.75a.75.75 0 000-1.06l-6.75-6.75a1.65 1.65 0 00-2.262 0z" /></svg>
+                        Template (Plate)
+                     </div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: URL Routing -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. The Hostess (URL Routing)</h2>
+                <p>The <code>urls.py</code> file in Django is like the restaurant's hostess. When a customer arrives asking for a specific menu (a URL path), the hostess directs them to the correct chef (the View) who can prepare that meal.</p>
+                <p>Click a request to see how the hostess routes the customer.</p>
+            </div>
+            <div id="routing-viz" class="visualization">
+                 <div class="routing-diagram">
+                    <div class="host-stand">
+                        <div id="customer-request" class="bg-white p-4 rounded-lg shadow-md"> "Table for the dinner menu, please!"</div>
+                        <div class="text-2xl mt-4">🤵</div>
+                        <p class="font-bold">Hostess (urls.py)</p>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-300">→</div>
+                    <div class="kitchen">
+                        <h4 class="font-bold">Kitchen (views.py)</h4>
+                        <div class="p-4 rounded-lg border" id="dinner-chef">🍽️ Dinner Chef</div>
+                        <div class="p-4 rounded-lg border mt-2" id="drinks-chef">🍹 Drinks Chef</div>
+                    </div>
+                 </div>
+                 <div class="viz-controls absolute bottom-4 left-4">
+                     <button class="viz-button" data-chef="dinner">Request Dinner Menu</button>
+                     <button class="viz-button" data-chef="drinks">Request Drinks Menu</button>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: The ORM -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. The Magical Recipe Book (ORM)</h2>
+                <p>Django's <strong>Object-Relational Mapper (ORM)</strong> is like a magical recipe book. Your chef (View) can ask for ingredients in simple terms (Python code), and the book automatically knows how to find them in the complex pantry (SQL database), without the chef needing to know the exact shelf and box numbers.</p>
+            </div>
+            <div id="orm-viz" class="visualization">
+                <div class="orm-diagram">
+                    <div class="recipe-book">
+                        <h4 class="font-bold">Chef's Request (Python)</h4>
+                        <div class="code-block">Dishes.objects.filter(is_spicy=True)</div>
+                    </div>
+                    <div class="text-2xl my-4 text-gray-400">↓ Magical Translation ↓</div>
+                    <div class="pantry">
+                        <h4 class="font-bold">Pantry's Action (SQL)</h4>
+                        <div class="code-block">SELECT * FROM dishes WHERE is_spicy = TRUE;</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SECTION 4: Django Admin -->
+        <section class="tutorial-section">
+             <div class="explanation">
+                <h2>4. The Manager's Office (Admin)</h2>
+                <p>One of Django's best features is the automatic <strong>Admin Interface</strong>. It's like the restaurant manager's office. Django automatically builds a powerful website where you can view, add, edit, and delete all your ingredients (Models) without writing any extra code for the page itself.</p>
+            </div>
+            <div id="admin-viz" class="visualization">
+                <img src="https://placehold.co/400x300/e2d8c3/422f28?text=Live+Django+Admin+Panel" alt="A preview of the Django admin interface" class="rounded-lg shadow-lg" />
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Culinary Journey</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Official & Core Resources</h3>
+                        <ul>
+                            <li><a href="https://www.djangoproject.com/start/" target="_blank" rel="noopener">Official Django Tutorial</a></li>
+                            <li><a href="https://docs.djangoproject.com/en/stable/" target="_blank" rel="noopener">Official Django Docs</a></li>
+                            <li><a href="https://djangopackages.org/" target="_blank" rel="noopener">Django Packages</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Learning Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/django/" target="_blank" rel="noopener">W3Schools Django Tutorial</a></li>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django" target="_blank" rel="noopener">MDN Django Tutorial</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/django/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Project Ideas</h3>
+                        <ul>
+                            <li>A personal blog application</li>
+                            <li>A to-do list manager</li>
+                            <li>A photo gallery website</li>
+                            <li>A simple e-commerce site</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        // --- Viz 1: MVT ---
+        const mvtBtn = document.getElementById('mvt-btn');
+        const mvtBoxes = {
+            customer: document.getElementById('customer'),
+            view: document.getElementById('view'),
+            model: document.getElementById('model'),
+            template: document.getElementById('template')
+        };
+        mvtBtn.onclick = async () => {
+            mvtBtn.disabled = true;
+            const order = ['customer', 'view', 'model', 'view', 'template', 'customer'];
+            for(const key of order) {
+                mvtBoxes[key].classList.add('active');
+                await sleep(600);
+                mvtBoxes[key].classList.remove('active');
+            }
+            mvtBtn.disabled = false;
+        };
+
+        // --- Viz 2: Routing ---
+        const routingButtons = document.querySelectorAll('#routing-viz .viz-button');
+        const dinnerChef = document.getElementById('dinner-chef');
+        const drinksChef = document.getElementById('drinks-chef');
+        const customerRequest = document.getElementById('customer-request');
+
+        routingButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.dataset.chef;
+                dinnerChef.classList.remove('active');
+                drinksChef.classList.remove('active');
+
+                if (target === 'dinner') {
+                    dinnerChef.classList.add('active');
+                    customerRequest.textContent = `"Table for the dinner menu!"`;
+                } else {
+                    drinksChef.classList.add('active');
+                     customerRequest.textContent = `"Just drinks, please."`;
+                }
+            });
+        });
+        
+    </script>
+</body>
+</html>
