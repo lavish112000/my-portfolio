@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Native Skill Game - Lavish Kumar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #61dafb, #282c34);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #61dafb, #282c34);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.close()" title="Back to Portfolio">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#61dafb" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <div class="container mx-auto px-4 py-16">
+        <header class="text-center mb-16">
+            <h1 class="text-6xl font-bold text-white mb-4 gradient-text">React Native</h1>
+            <p class="text-xl text-white opacity-90">Build Native Mobile Apps with JavaScript</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Core Components</h3>
+                <p class="text-gray-600 mb-4">Master the fundamental building blocks of React Native apps.</p>
+                <div class="space-y-2">
+                    <div class="bg-blue-100 p-3 rounded">📱 View Component</div>
+                    <div class="bg-green-100 p-3 rounded">📝 Text Component</div>
+                    <div class="bg-purple-100 p-3 rounded">🔘 Touchable Components</div>
+                    <div class="bg-orange-100 p-3 rounded">📋 ScrollView & FlatList</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Navigation</h3>
+                <p class="text-gray-600 mb-4">Learn to navigate between screens in your mobile app.</p>
+                <div class="space-y-2">
+                    <div class="bg-red-100 p-3 rounded">🧭 React Navigation</div>
+                    <div class="bg-yellow-100 p-3 rounded">📄 Stack Navigator</div>
+                    <div class="bg-indigo-100 p-3 rounded">📑 Tab Navigator</div>
+                    <div class="bg-pink-100 p-3 rounded">🎯 Drawer Navigator</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">State Management</h3>
+                <p class="text-gray-600 mb-4">Manage application state effectively in React Native.</p>
+                <div class="space-y-2">
+                    <div class="bg-teal-100 p-3 rounded">🎣 useState Hook</div>
+                    <div class="bg-cyan-100 p-3 rounded">🔄 useEffect Hook</div>
+                    <div class="bg-lime-100 p-3 rounded">📦 Context API</div>
+                    <div class="bg-emerald-100 p-3 rounded">🏪 Redux Toolkit</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">React Native Code Example</h2>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code>import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+
+const CounterApp = () => {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;React Native Counter&lt;/Text&gt;
+      &lt;Text style={styles.counter}&gt;{count}&lt;/Text&gt;
+
+      &lt;View style={styles.buttonContainer}&gt;
+        &lt;TouchableOpacity
+          style={[styles.button, styles.incrementButton]}
+          onPress={() =&gt; setCount(count + 1)}
+        &gt;
+          &lt;Text style={styles.buttonText}&gt;Increment&lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
+
+        &lt;TouchableOpacity
+          style={[styles.button, styles.decrementButton]}
+          onPress={() =&gt; setCount(count - 1)}
+        &gt;
+          &lt;Text style={styles.buttonText}&gt;Decrement&lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
+      &lt;/View&gt;
+    &lt;/View&gt;
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  counter: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    color: '#007AFF',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 10,
+    minWidth: 100,
+    alignItems: 'center',
+  },
+  incrementButton: {
+    backgroundColor: '#4CAF50',
+  },
+  decrementButton: {
+    backgroundColor: '#f44336',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default CounterApp;</code></pre>
+            </div>
+        </div>
+
+        <div class="mt-16 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">React Native Development Path</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Setup</h3>
+                    <p class="text-white opacity-80">Expo CLI, React Native CLI</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">⚛️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Components</h3>
+                    <p class="text-white opacity-80">Core Components, Styling</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🔗</div>
+                    <h3 class="text-xl font-bold text-white mb-2">APIs</h3>
+                    <p class="text-white opacity-80">AsyncStorage, Fetch API</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Deployment</h3>
+                    <p class="text-white opacity-80">App Store, Play Store</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

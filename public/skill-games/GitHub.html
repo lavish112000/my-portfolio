@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Skill Game - Lavish Kumar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #24292e, #0366d6);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #24292e, #0366d6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.close()" title="Back to Portfolio">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24292e" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <div class="container mx-auto px-4 py-16">
+        <header class="text-center mb-16">
+            <h1 class="text-6xl font-bold text-white mb-4 gradient-text">GitHub</h1>
+            <p class="text-xl text-white opacity-90">Master Version Control & Collaboration</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Git Fundamentals</h3>
+                <p class="text-gray-600 mb-4">Essential Git commands for version control.</p>
+                <div class="space-y-2">
+                    <div class="bg-blue-100 p-3 rounded">📋 git init & clone</div>
+                    <div class="bg-green-100 p-3 rounded">➕ git add & commit</div>
+                    <div class="bg-purple-100 p-3 rounded">📤 git push & pull</div>
+                    <div class="bg-orange-100 p-3 rounded">🌿 git branch & merge</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">GitHub Features</h3>
+                <p class="text-gray-600 mb-4">Powerful collaboration tools on GitHub.</p>
+                <div class="space-y-2">
+                    <div class="bg-red-100 p-3 rounded">🔀 Pull Requests</div>
+                    <div class="bg-yellow-100 p-3 rounded">🐛 Issues & Projects</div>
+                    <div class="bg-indigo-100 p-3 rounded">🤖 GitHub Actions</div>
+                    <div class="bg-pink-100 p-3 rounded">📊 Insights & Analytics</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Collaboration</h3>
+                <p class="text-gray-600 mb-4">Work effectively with teams on GitHub.</p>
+                <div class="space-y-2">
+                    <div class="bg-teal-100 p-3 rounded">👥 Forks & Contributions</div>
+                    <div class="bg-cyan-100 p-3 rounded">💬 Code Reviews</div>
+                    <div class="bg-lime-100 p-3 rounded">🏷️ Labels & Milestones</div>
+                    <div class="bg-emerald-100 p-3 rounded">📈 Repository Management</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Git Workflow Example</h2>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code># Complete Git workflow for a feature
+# 1. Create and switch to feature branch
+git checkout -b feature/user-authentication
+
+# 2. Make changes and stage them
+git add .
+
+# 3. Commit with descriptive message
+git commit -m "feat: implement user authentication system
+
+- Add login/logout functionality
+- Implement JWT token validation
+- Create user registration endpoint
+- Add password hashing with bcrypt
+- Include input validation and error handling"
+
+# 4. Push feature branch to remote
+git push -u origin feature/user-authentication
+
+# 5. Create Pull Request on GitHub
+# - Go to repository on GitHub
+# - Click "Compare & pull request"
+# - Add description and reviewers
+# - Link related issues
+
+# 6. After review and approval, merge
+git checkout main
+git pull origin main
+git merge feature/user-authentication
+
+# 7. Clean up merged branch
+git branch -d feature/user-authentication
+git push origin --delete feature/user-authentication</code></pre>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">GitHub Actions Workflow</h2>
+            <div class="bg-gray-900 text-yellow-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code>name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run linting
+      run: npm run lint
+
+    - name: Run tests
+      run: npm test -- --coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy to production
+      run: |
+        npm ci
+        npm run build
+        aws s3 sync dist/ s3://my-app-bucket --delete
+        aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_ID }} --paths "/*"</code></pre>
+            </div>
+        </div>
+
+        <div class="mt-16 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">GitHub Learning Path</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Git Basics</h3>
+                    <p class="text-white opacity-80">Version control fundamentals</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🤝</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Collaboration</h3>
+                    <p class="text-white opacity-80">Working with teams effectively</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Automation</h3>
+                    <p class="text-white opacity-80">CI/CD with GitHub Actions</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold text-white mb-2">DevOps</h3>
+                    <p class="text-white opacity-80">Complete development lifecycle</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

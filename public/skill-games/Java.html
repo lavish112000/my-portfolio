@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Skill Game - Lavish Kumar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #007396, #28a745);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #007396, #28a745);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.close()" title="Back to Portfolio">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007396" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <div class="container mx-auto px-4 py-16">
+        <header class="text-center mb-16">
+            <h1 class="text-6xl font-bold text-white mb-4 gradient-text">Java</h1>
+            <p class="text-xl text-white opacity-90">Master Object-Oriented Programming</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">OOP Concepts</h3>
+                <p class="text-gray-600 mb-4">Learn the four pillars of Object-Oriented Programming: Encapsulation, Inheritance, Polymorphism, and Abstraction.</p>
+                <div class="space-y-2">
+                    <div class="bg-blue-100 p-3 rounded">🔒 Encapsulation</div>
+                    <div class="bg-green-100 p-3 rounded">📈 Inheritance</div>
+                    <div class="bg-purple-100 p-3 rounded">🎭 Polymorphism</div>
+                    <div class="bg-orange-100 p-3 rounded">🎯 Abstraction</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Java Features</h3>
+                <p class="text-gray-600 mb-4">Explore the key features that make Java powerful and versatile.</p>
+                <div class="space-y-2">
+                    <div class="bg-red-100 p-3 rounded">☕ Platform Independent</div>
+                    <div class="bg-yellow-100 p-3 rounded">🛡️ Secure</div>
+                    <div class="bg-indigo-100 p-3 rounded">🔧 Robust</div>
+                    <div class="bg-pink-100 p-3 rounded">🏃‍♂️ Multithreaded</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Collections Framework</h3>
+                <p class="text-gray-600 mb-4">Master Java's powerful collections for data manipulation.</p>
+                <div class="space-y-2">
+                    <div class="bg-teal-100 p-3 rounded">📋 List Interface</div>
+                    <div class="bg-cyan-100 p-3 rounded">🔑 Set Interface</div>
+                    <div class="bg-lime-100 p-3 rounded">🗺️ Map Interface</div>
+                    <div class="bg-emerald-100 p-3 rounded">📊 Queue Interface</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Java Code Example</h2>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code>// Hello World in Java
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, Java World!");
+
+        // OOP Example
+        Person person = new Person("John Doe", 25);
+        person.displayInfo();
+    }
+}
+
+class Person {
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public void displayInfo() {
+        System.out.println("Name: " + name + ", Age: " + age);
+    }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="mt-16 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">Java Learning Path</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Basics</h3>
+                    <p class="text-white opacity-80">Variables, Data Types, Operators</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🏗️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">OOP</h3>
+                    <p class="text-white opacity-80">Classes, Objects, Inheritance</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🔧</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Advanced</h3>
+                    <p class="text-white opacity-80">Collections, Exceptions, Threads</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Frameworks</h3>
+                    <p class="text-white opacity-80">Spring, Hibernate, Maven</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Skill Game - Lavish Kumar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2496ed, #0db7ed);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #2496ed, #0db7ed);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.close()" title="Back to Portfolio">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2496ed" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+    </button>
+
+    <div class="container mx-auto px-4 py-16">
+        <header class="text-center mb-16">
+            <h1 class="text-6xl font-bold text-white mb-4 gradient-text">Docker</h1>
+            <p class="text-xl text-white opacity-90">Containerize Your Applications</p>
+        </header>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Container Basics</h3>
+                <p class="text-gray-600 mb-4">Learn the fundamentals of containerization.</p>
+                <div class="space-y-2">
+                    <div class="bg-blue-100 p-3 rounded">📦 Images vs Containers</div>
+                    <div class="bg-green-100 p-3 rounded">🏗️ Dockerfile Instructions</div>
+                    <div class="bg-purple-100 p-3 rounded">🔄 Container Lifecycle</div>
+                    <div class="bg-orange-100 p-3 rounded">🌐 Ports & Volumes</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Docker Commands</h3>
+                <p class="text-gray-600 mb-4">Essential Docker CLI commands for development.</p>
+                <div class="space-y-2">
+                    <div class="bg-red-100 p-3 rounded">🏃 docker run</div>
+                    <div class="bg-yellow-100 p-3 rounded">🔍 docker ps</div>
+                    <div class="bg-indigo-100 p-3 rounded">📋 docker logs</div>
+                    <div class="bg-pink-100 p-3 rounded">🧹 docker system prune</div>
+                </div>
+            </div>
+
+            <div class="card p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Docker Compose</h3>
+                <p class="text-gray-600 mb-4">Orchestrate multi-container applications.</p>
+                <div class="space-y-2">
+                    <div class="bg-teal-100 p-3 rounded">📄 docker-compose.yml</div>
+                    <div class="bg-cyan-100 p-3 rounded">🔗 Services & Networks</div>
+                    <div class="bg-lime-100 p-3 rounded">💾 Volumes & Environment</div>
+                    <div class="bg-emerald-100 p-3 rounded">📊 Scaling Services</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Dockerfile Example</h2>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code># Multi-stage Node.js Dockerfile
+# Stage 1: Build stage
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Stage 2: Production stage
+FROM node:18-alpine AS production
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Set environment
+ENV NODE_ENV=production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Start the application
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "start"]</code></pre>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-lg mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Docker Compose Example</h2>
+            <div class="bg-gray-900 text-yellow-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
+                <pre><code>version: '3.8'
+
+services:
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - app-network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=mydb
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge</code></pre>
+            </div>
+        </div>
+
+        <div class="mt-16 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">Docker Learning Path</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🏗️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Fundamentals</h3>
+                    <p class="text-white opacity-80">Images, Containers, Dockerfile</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🎼</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Orchestration</h3>
+                    <p class="text-white opacity-80">Docker Compose, Networking</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">🐳</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Advanced</h3>
+                    <p class="text-white opacity-80">Multi-stage builds, Security</p>
+                </div>
+                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
+                    <div class="text-4xl mb-4">☸️</div>
+                    <h3 class="text-xl font-bold text-white mb-2">Kubernetes</h3>
+                    <p class="text-white opacity-80">Container orchestration at scale</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

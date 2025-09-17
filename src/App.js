@@ -119,7 +119,7 @@ const App = () => {
         targetPath = '/skill-games/python.html';
         break;
       case 'java':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Java as well, or create Java.html
+        targetPath = '/skill-games/Java.html';
         break;
       case 'javascript':
         targetPath = '/skill-games/javascript.html';
@@ -148,6 +148,9 @@ const App = () => {
       case 'react':
         targetPath = '/skill-games/React.html';
         break;
+      case 'react native':
+        targetPath = '/skill-games/ReactNative.html';
+        break;
       case 'tailwind css':
         targetPath = '/skill-games/Tailwind.html';
         break;
@@ -156,6 +159,51 @@ const App = () => {
         break;
       case 'version control':
         targetPath = '/skill-games/VersionControl.html';
+        break;
+      case 'django':
+        targetPath = '/skill-games/Django.html';
+        break;
+      case 'flask':
+        targetPath = '/skill-games/Flask.html';
+        break;
+      case 'tensorflow':
+        targetPath = '/skill-games/TensorFlow.html';
+        break;
+      case 'oracle':
+        targetPath = '/skill-games/OracleDB.html';
+        break;
+      case 'sql':
+        targetPath = '/skill-games/SQL.html';
+        break;
+      case 'postgresql':
+        targetPath = '/skill-games/PostgreSQL.html';
+        break;
+      case 'mongodb':
+        targetPath = '/skill-games/MongoDB.html';
+        break;
+      case 'css':
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for CSS as well
+        break;
+      case 'rest api':
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Rest API as well
+        break;
+      case 'gcp':
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for GCP as well
+        break;
+      case 'aws':
+        targetPath = '/skill-games/AWS.html';
+        break;
+      case 'azure':
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Azure as well
+        break;
+      case 'github':
+        targetPath = '/skill-games/GitHub.html';
+        break;
+      case 'docker':
+        targetPath = '/skill-games/Docker.html';
+        break;
+      case 'kubernetes':
+        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Kubernetes as well
         break;
       default:
         console.log(`No specific page found for skill: ${skillName}`);
