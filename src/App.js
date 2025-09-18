@@ -1,29 +1,121 @@
+/**
+ * ============================================================================
+ * PORTFOLIO WEBSITE - MAIN APPLICATION COMPONENT
+ * ============================================================================
+ *
+ * @fileoverview Main React application component for a comprehensive portfolio website
+ * @description This component serves as the root of the portfolio application, managing
+ *              state, navigation, animations, and rendering of all portfolio sections.
+ *
+ * FEATURES:
+ * - Multi-page navigation (Home, Profile, Project Details)
+ * - Interactive skill games with external HTML tutorials
+ * - Animated landing page with multilingual greetings
+ * - Scroll-based animations and transitions
+ * - Contact form with email integration
+ * - Analytics tracking for user interactions
+ * - Responsive design with Tailwind CSS
+ * - 3D animations using Three.js
+ *
+ * ARCHITECTURE:
+ * - Single-page application with state-based navigation
+ * - Component composition with reusable sub-components
+ * - External skill game integration via window.open()
+ * - Scroll-triggered animations using GSAP
+ * - Email functionality via EmailJS
+ *
+ * DEPENDENCIES:
+ * - React: Core framework for component-based UI
+ * - Three.js: 3D graphics and animations
+ * - GSAP: Animation library for smooth transitions
+ * - EmailJS: Client-side email sending
+ * - Tailwind CSS: Utility-first CSS framework
+ * - Analytics: Custom tracking functions
+ *
+ * @author Lalit Choudhary
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
+import ScrollFloat from './ScrollFloat';
 
-
-
-// This is a self-contained React component for the entire portfolio website.
-// It uses modern React hooks and Tailwind CSS for styling and responsiveness.
-
+/**
+ * ============================================================================
+ * MAIN APPLICATION COMPONENT
+ * ============================================================================
+ *
+ * @component App
+ * @description Root component that orchestrates the entire portfolio website
+ * @returns {JSX.Element} Complete portfolio application
+ */
 const App = () => {
-  // State to manage the current page view: 'home', 'profile', or 'project-details'
-  const [currentPage, setCurrentPage] = useState('home');
-  const [showProfile, setShowProfile] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [previousScrollY, setPreviousScrollY] = useState(0);
-  const [currentSection, setCurrentSection] = useState(''); // Track current section (skills/projects)
+  // ============================================================================
+  // STATE MANAGEMENT
+  // ============================================================================
 
-  // A list of "Hello" in 10 different languages for the landing page animation
+  /**
+   * Navigation state for managing different views
+   * @type {string} currentPage - Current active page ('home', 'profile', 'project-details')
+   */
+  const [currentPage, setCurrentPage] = useState('home');
+
+  /**
+   * Profile page visibility state
+   * @type {boolean} showProfile - Controls profile page display
+   */
+  const [showProfile, setShowProfile] = useState(false);
+
+  /**
+   * Selected project for detailed view
+   * @type {Object|null} selectedProject - Currently selected project object
+   */
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  /**
+   * Scroll position tracking for smooth transitions
+   * @type {number} previousScrollY - Previous scroll position for restoration
+   */
+  const [previousScrollY, setPreviousScrollY] = useState(0);
+
+  /**
+   * Current section tracking for navigation context
+   * @type {string} currentSection - Current active section ('skills' or 'projects')
+   */
+  const [currentSection, setCurrentSection] = useState('');
+
+  // ============================================================================
+  // STATIC DATA
+  // ============================================================================
+
+  /**
+   * Multilingual greeting array for landing page animation
+   * @description Array of "Hello" in different languages for the initial loading animation
+   * @type {string[]}
+   */
   const hellos = [
-    'Hello', '你好', 'नमस्ते', 'Hola', 'Bonjour', 'أهلاً', 'হ্যালো', 'Olá', 'Здравствуйте', 'سلام'
+    'Hello',      // English
+    '你好',       // Chinese (Mandarin)
+    'नमस्ते',     // Hindi
+    'Hola',       // Spanish
+    'Bonjour',    // French
+    'أهلاً',      // Arabic
+    'হ্যালো',     // Bengali
+    'Olá',        // Portuguese
+    'Здравствуйте', // Russian
+    'سلام'        // Persian
   ];
 
-  // Project data moved to a global scope within the App component
+  /**
+   * Portfolio projects data
+   * @description Array of project objects containing detailed information about each project
+   * @type {Array<Object>}
+   */
   const projectData = [
     {
       id: 1,
@@ -54,10 +146,10 @@ const App = () => {
     },
     {
       id: 4,
-      title: '4K VIdeo player',
+      title: 'Cosmic Video player',
       tech: 'React Native, Node.js, Express.js, MongoDB',
       image: videoPlayerProfileImage,
-      details: 'A mobile-first 4K VIdeo player application with features like dynamic UI , Fast and smooth user experience, and comments. Built with React Native for cross-platform compatibility, a Node.js backend with Express.js for REST APIs, and MongoDB for flexible data storage. The project focuses on real-time updates and user engagement.',
+      details: 'A mobile-first Cosmic Video player application with features like dynamic UI , Fast and smooth user experience, and comments. Built with React Native for cross-platform compatibility, a Node.js backend with Express.js for REST APIs, and MongoDB for flexible data storage. The project focuses on real-time updates and user engagement.',
       impact: 'Achieved a high-performance video playback with minimal buffering, resulting in a 95% user satisfaction rate. The cross-platform nature of React Native allowed for a 50% reduction in development time and cost.',
       keyFeatures: ['4K video playback', 'Dynamic UI', 'Real-time comments', 'Cross-platform compatibility'],
     },
@@ -81,40 +173,94 @@ const App = () => {
     },
   ];
 
+  // ============================================================================
+  // NAVIGATION HANDLERS
+  // ============================================================================
+
+  /**
+   * Handles project selection and navigation to project details page
+   * @function handleProjectClick
+   * @param {Object} project - The selected project object containing all project details
+   * @param {Object} containerRef - Reference to the scrollable container for position tracking
+   * @description
+   * - Saves current scroll position for restoration
+   * - Updates selected project state
+   * - Navigates to project details view
+   * - Tracks the navigation context (projects section)
+   * - Sends analytics event for project view tracking
+   */
   const handleProjectClick = (project, containerRef) => {
+    // Preserve scroll position for smooth return navigation
     if (containerRef.current) {
       setPreviousScrollY(containerRef.current.scrollTop);
     }
+
+    // Update application state for project details view
     setSelectedProject(project);
     setCurrentPage('project-details');
-    setCurrentSection('projects'); // Remember we came from projects section
+    setCurrentSection('projects'); // Track navigation context
+
+    // Track user interaction for analytics
     trackProjectView(project.title);
   };
 
+  /**
+   * Handles navigation back to projects section from project details
+   * @function handleBackToProjects
+   * @description
+   * - Resets to profile page view
+   * - Clears selected project
+   * - Smoothly scrolls to projects section after transition
+   * - Uses timeout to ensure DOM is ready for scrolling
+   */
   const handleBackToProjects = () => {
+    // Reset navigation state
     setCurrentPage('profile');
     setSelectedProject(null);
-    // Scroll to projects section after a brief delay to allow page transition
+
+    // Smooth scroll to projects section after page transition
     setTimeout(() => {
       const projectsElement = document.getElementById('projects');
       if (projectsElement) {
         projectsElement.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 100);
+    }, 100); // Brief delay for DOM readiness
   };
 
   /**
-   * Handles the click event on a skill card.
-   * It opens the respective HTML page with a smooth transition.
-   * @param {string} skillName - The name of the skill that was clicked.
+   * Handles skill card clicks and navigation to external skill tutorials
+   * @function handleSkillClick
+   * @param {string} skillName - The name of the clicked skill (case-insensitive)
+   * @description
+   * Core navigation function that:
+   * - Maps skill names to their corresponding HTML tutorial files
+   * - Opens tutorials in new tabs for better UX
+   * - Tracks navigation context for return navigation
+   * - Applies smooth page transitions
+   * - Sends analytics events for skill interaction tracking
+   *
+   * SUPPORTED SKILLS:
+   * - Programming Languages: Python, Java, JavaScript
+   * - Frontend: HTML, CSS, React, Next.js, Flutter, Tailwind CSS, Three.js
+   * - Backend: Apache, Django, Flask, TensorFlow, Express.js, Node.js
+   * - Databases: Oracle, SQL, PostgreSQL, MongoDB
+   * - Cloud: GCP, AWS, Azure
+   * - Tools: GitHub, Docker, Kubernetes
    */
   const handleSkillClick = (skillName) => {
-    setCurrentSection('skills'); // Remember we came from skills section
+    // Track navigation context for return navigation
+    setCurrentSection('skills');
 
+    // Initialize target path variable
     let targetPath = '';
 
-    // Map skill names to their respective HTML file paths (served from public folder)
+    // ============================================================================
+    // SKILL NAME TO FILE PATH MAPPING
+    // ============================================================================
+    // Maps user-friendly skill names to their corresponding HTML tutorial files
+    // All paths are relative to the public folder and serve static HTML content
     switch (skillName.toLowerCase()) {
+      // Programming Languages
       case 'python':
         targetPath = '/skill-games/python.html';
         break;
@@ -124,26 +270,13 @@ const App = () => {
       case 'javascript':
         targetPath = '/skill-games/javascript.html';
         break;
+
+      // Frontend Technologies
       case 'html':
         targetPath = '/skill-games/HTML.html';
         break;
-      case 'apache':
-        targetPath = '/skill-games/Apache.html';
-        break;
-      case 'dsa':
-        targetPath = '/skill-games/DSA.html';
-        break;
-      case 'express.js':
-        targetPath = '/skill-games/ExpressJS.html';
-        break;
-      case 'flutter':
-        targetPath = '/skill-games/flutter.html';
-        break;
-      case 'next.js':
-        targetPath = '/skill-games/NextJS.html';
-        break;
-      case 'node.js':
-        targetPath = '/skill-games/NodeJS.html';
+      case 'css':
+        targetPath = '/skill-games/HTML.html'; // CSS tutorial is combined with HTML
         break;
       case 'react':
         targetPath = '/skill-games/React.html';
@@ -151,14 +284,37 @@ const App = () => {
       case 'react native':
         targetPath = '/skill-games/ReactNative.html';
         break;
+      case 'next.js':
+        targetPath = '/skill-games/NextJS.html';
+        break;
+      case 'flutter':
+        targetPath = '/skill-games/flutter.html';
+        break;
       case 'tailwind css':
         targetPath = '/skill-games/Tailwind.html';
         break;
       case 'three.js':
         targetPath = '/skill-games/ThreeJS.html';
         break;
+
+      // Backend Technologies
+      case 'apache':
+        targetPath = '/skill-games/Apache.html';
+        break;
+      case 'rest api':
+        targetPath = '/skill-games/HTML.html'; // REST API tutorial combined with HTML
+        break;
+      case 'dsa':
+        targetPath = '/skill-games/DSA.html';
+        break;
       case 'version control':
         targetPath = '/skill-games/VersionControl.html';
+        break;
+      case 'express.js':
+        targetPath = '/skill-games/ExpressJS.html';
+        break;
+      case 'node.js':
+        targetPath = '/skill-games/NodeJS.html';
         break;
       case 'django':
         targetPath = '/skill-games/Django.html';
@@ -169,6 +325,8 @@ const App = () => {
       case 'tensorflow':
         targetPath = '/skill-games/TensorFlow.html';
         break;
+
+      // Database Technologies
       case 'oracle':
         targetPath = '/skill-games/OracleDB.html';
         break;
@@ -181,21 +339,19 @@ const App = () => {
       case 'mongodb':
         targetPath = '/skill-games/MongoDB.html';
         break;
-      case 'css':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for CSS as well
-        break;
-      case 'rest api':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Rest API as well
-        break;
+
+      // Cloud Platforms
       case 'gcp':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for GCP as well
+        targetPath = '/skill-games/HTML.html'; // GCP tutorial combined with HTML
         break;
       case 'aws':
         targetPath = '/skill-games/AWS.html';
         break;
       case 'azure':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Azure as well
+        targetPath = '/skill-games/HTML.html'; // Azure tutorial combined with HTML
         break;
+
+      // Development Tools
       case 'github':
         targetPath = '/skill-games/GitHub.html';
         break;
@@ -203,23 +359,31 @@ const App = () => {
         targetPath = '/skill-games/Docker.html';
         break;
       case 'kubernetes':
-        targetPath = '/skill-games/HTML.html'; // Using HTML.html for Kubernetes as well
+        targetPath = '/skill-games/HTML.html'; // Kubernetes tutorial combined with HTML
         break;
+
+      // Default case for unmapped skills
       default:
         console.log(`No specific page found for skill: ${skillName}`);
-        return;
+        return; // Exit function if skill is not mapped
     }
 
-    // Track skill game interaction
+    // ============================================================================
+    // ANALYTICS TRACKING
+    // ============================================================================
+    // Track skill game interaction for user behavior analysis
     trackSkillGameInteraction(skillName.toLowerCase(), 'click');
 
-    // Add smooth page transition effect
+    // ============================================================================
+    // SMOOTH PAGE TRANSITION
+    // ============================================================================
+    // Apply fade-out effect before opening new window
     document.body.classList.add('fade-out');
 
-    // Open the HTML file in a new tab with smooth transition
+    // Open skill tutorial in new tab with transition delay
     setTimeout(() => {
       window.open(targetPath, '_blank');
-    }, 300); // Delay to allow fade-out animation
+    }, 300); // 300ms delay to allow fade-out animation to complete
   };
 
   // Handle back navigation from skill games
@@ -346,7 +510,7 @@ const App = () => {
         { name: 'Version control', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
         { name: 'Express.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg' },
         { name: 'Node.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
-        { name: 'Django', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-original.svg' },
+        { name: 'Django', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-plain.svg' },
         { name: 'Flask', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flask/flask-original.svg' },
         { name: 'TensorFlow', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg' },
       ],
@@ -378,7 +542,7 @@ const App = () => {
       <div className="w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] p-10">
         <div className="container mx-auto max-w-7xl">
           <button onClick={onBack} className="text-white text-xl font-bold hover:text-blue-400 transition-colors duration-200 mb-8">
-            ← Back to Projects
+            ← Back to My Work
           </button>
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Left Column */}
@@ -434,6 +598,13 @@ const App = () => {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
     const [isNavbarVisible, setIsNavbarVisible] = useState(true);
     const lastScrollY = useRef(0);
+
+    // Decrypted text animation state
+    const [displayedText, setDisplayedText] = useState('');
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [animationCompleted, setAnimationCompleted] = useState(false);
+    const fullText = "Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.";
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
     const handleSkillsetsClick = () => {
       document.body.classList.add('fade-out');
@@ -531,6 +702,52 @@ const App = () => {
       trackPageView(`/${currentPage}`);
     }, []);
 
+    // Decrypted text animation effect
+    useEffect(() => {
+      if (isMounted && !isAnimating && !animationCompleted) {
+        setIsAnimating(true);
+        let currentIndex = 0;
+        let animationInterval;
+
+        const animateText = () => {
+          if (currentIndex < fullText.length) {
+            // Calculate how many characters to reveal per step to complete in 1500ms
+            const totalSteps = 1500 / 50; // 50ms intervals for 1500ms total
+            const charsPerStep = Math.ceil(fullText.length / totalSteps);
+
+            // Reveal multiple characters at once
+            const nextIndex = Math.min(currentIndex + charsPerStep, fullText.length);
+
+            // Create random characters for the remaining text
+            const randomText = fullText.slice(nextIndex).split('').map(() =>
+              chars[Math.floor(Math.random() * chars.length)]
+            ).join('');
+
+            // Update displayed text with correct characters up to next index + random for rest
+            setDisplayedText(fullText.slice(0, nextIndex) + randomText);
+            currentIndex = nextIndex;
+          } else {
+            // Animation complete - show full text
+            setDisplayedText(fullText);
+            setIsAnimating(false);
+            setAnimationCompleted(true);
+            clearInterval(animationInterval);
+          }
+        };
+
+        // Start animation with a slight delay after the box slides in
+        setTimeout(() => {
+          animationInterval = setInterval(animateText, 50); // 50ms delay between steps
+        }, 500); // Wait 500ms after slide-in animation
+
+        return () => {
+          if (animationInterval) {
+            clearInterval(animationInterval);
+          }
+        };
+      }
+    }, [isMounted, isAnimating, animationCompleted, fullText, chars]);
+
     const skillsByCategory = {
       'Languages': [
         { name: 'Java', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
@@ -552,6 +769,9 @@ const App = () => {
         { name: 'Version control', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
         { name: 'Express.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg' },
         { name: 'Node.js', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
+        { name: 'Django', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/django/django-plain.svg' },
+        { name: 'Flask', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/flask/flask-original.svg' },
+        { name: 'TensorFlow', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg' },
       ],
       'Databases': [
         { name: 'Oracle', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/oracle/oracle-original.svg' },
@@ -594,7 +814,7 @@ const App = () => {
           </button>
           <div className={`flex items-center space-x-8 text-xl font-bold font-[Playfair Display] transition-all duration-300 ease-in-out ${isNavbarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <button onClick={() => setCurrentPage('home')} className="hover:text-blue-400 transition-colors duration-200">Homepage</button>
-            <button onClick={() => containerRef.current.querySelector('#projects').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">Projects</button>
+            <button onClick={() => containerRef.current.querySelector('#projects').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">My Work</button>
             <button onClick={() => containerRef.current.querySelector('#skills').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">Skills</button>
             <button onClick={() => containerRef.current.querySelector('#about').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">About Me</button>
           </div>
@@ -626,16 +846,26 @@ const App = () => {
               <div className={`w-full md:w-7/12 p-8 rounded-lg shadow-lg text-white bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 transform transition-all duration-1000 ease-in-out hover:scale-105 ${isMounted ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
                 <h2 className="text-3xl font-bold font-[Playfair Display] mb-4">About Me</h2>
                 <p className="text-lg leading-relaxed text-white">
-                  Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.
+                  {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
                 </p>
               </div>
 
             </div>
           </div>
 
-          {/* Projects Section */}
+          {/* My Work Section */}
           <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
-            <h1 className="text-5xl font-extrabold font-sans text-white mb-8">PROJECTS</h1>
+            <ScrollFloat
+              scrollContainerRef={containerRef}
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='center bottom+=50%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.03}
+              textClassName="text-white font-extrabold font-sans"
+            >
+              MY WORK
+            </ScrollFloat>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {projectData.map((project, index) => {
                 const isLeft = index % 2 === 0;
@@ -669,7 +899,19 @@ const App = () => {
           
           {/* Skillset Section */}
           <div id="skills" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
-            <h1 onClick={handleSkillsetsClick} className="text-5xl font-extrabold font-sans text-white mb-8 cursor-pointer">SKILLSETS</h1>
+            <div onClick={handleSkillsetsClick} className="cursor-pointer">
+              <ScrollFloat
+                scrollContainerRef={containerRef}
+                animationDuration={1}
+                ease='back.inOut(2)'
+                scrollStart='center bottom+=50%'
+                scrollEnd='bottom bottom-=40%'
+                stagger={0.03}
+                textClassName="text-white font-extrabold font-sans"
+              >
+                SKILLSETS
+              </ScrollFloat>
+            </div>
             <div className="space-y-8">
               {Object.entries(skillsByCategory).map(([category, skills], categoryIndex) => (
                 <div key={category}>
@@ -710,7 +952,17 @@ const App = () => {
           
           {/* Connect with me Section */}
           <div id="connect" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
-            <h1 className="text-5xl font-extrabold font-sans text-white mb-8">Connect with me</h1>
+            <ScrollFloat
+              scrollContainerRef={containerRef}
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='center bottom+=50%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.03}
+              textClassName="text-white font-extrabold font-sans"
+            >
+              Connect with me
+            </ScrollFloat>
             <div className="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-12">
               
               {/* Gmail Form */}
