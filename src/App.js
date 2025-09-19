@@ -42,6 +42,9 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
+import TaskTracker from './TaskTracker.png';
+import ResumeParser from './ResumeParser.png';
+import NeonFlux from './NeonFlux.png';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
 import ScrollFloat from './ScrollFloat';
 
@@ -128,18 +131,18 @@ const App = () => {
     },
     {
       id: 2,
-      title: 'E-commerce Website',
-      tech: 'HTML, CSS, MongoDB, JavaScript',
-      image: 'https://placehold.co/600x400/00FFE9/000?text=E-commerce Site',
-      details: 'Developed a responsive and interactive e-commerce website for an offline business. The site features a clean and attractive UI/UX design. MongoDB was used to store customer data and product details, enabling efficient data management and a personalized shopping experience.',
-      impact: 'Increased sales by 30% in the first quarter after launch. The new UI/UX design led to a 50% increase in user engagement and a 20% decrease in bounce rate.',
-      keyFeatures: ['Product catalog', 'Shopping cart', 'User accounts', 'Order history'],
+      title: 'Resume-Parser',
+      tech: 'HTML, CSS, Supabase, JavaScript',
+      image: ResumeParser,
+      details: 'Developed a responsive and interactive resume parser application. The site features a clean and attractive UI/UX design. Supabase was used to store user data and resume details, enabling efficient data management and a personalized experience.',
+      impact: 'Increased user engagement by 30% in the first quarter after launch. The new UI/UX design led to a 50% increase in user satisfaction and a 20% decrease in bounce rate.',
+      keyFeatures: ['Resume upload', 'Data extraction', 'User accounts', 'Analytics dashboard'],
     },
     {
       id: 3,
-      title: 'Portfolio Website',
+      title: 'NeonFlux Portfolio Website',
       tech: 'React, Tailwind CSS, Three.js',
-      image: 'https://placehold.co/600x400/f042ff/fff?text=Portfolio',
+      image: NeonFlux,
       details: 'A personal portfolio website built with modern technologies. It features a custom landing page with a 3D animated greeting, a dynamic homepage with a wave effect, and a profile page with animated sections. The site is fully responsive and designed for a smooth user experience.',
       impact: 'Showcased my skills and projects to potential employers, leading to a 40% increase in interview requests. The animated and interactive design received positive feedback for its creativity and user engagement.',
       keyFeatures: ['3D landing page', 'Dynamic wave effect', 'Animated skill sections', 'Responsive design'],
@@ -155,10 +158,10 @@ const App = () => {
     },
     {
       id: 5,
-      title: 'Task Management System',
+      title: 'Task Management Application',
       tech: 'Python, Django, PostgreSQL, HTML, CSS',
-      image: 'https://placehold.co/600x400/87f5f5/000?text=Task Manager',
-      details: 'A web-based task management system that allows users to create, assign, and track tasks. The backend is powered by Django and Python, using PostgreSQL as the database. The front end is a simple, responsive design built with HTML and CSS, focusing on usability and organization.',
+      image: TaskTracker,
+      details: 'A Mobile-based task management application that allows users to create, assign, and track tasks. The backend is powered by Django and Python, using PostgreSQL as the database. The front end is a simple, responsive design built with HTML and CSS, focusing on usability and organization.',
       impact: 'Improved team productivity by 25% by providing a centralized platform for task management. The intuitive design and clear organization of tasks led to a significant reduction in missed deadlines.',
       keyFeatures: ['Task creation and assignment', 'Task tracking', 'User roles and permissions', 'Email notifications'],
     },
