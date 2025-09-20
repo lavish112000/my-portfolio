@@ -38,9 +38,11 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { gsap } from 'gsap';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
+import ProfileCard from './components/ProfileCard';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
@@ -490,6 +492,100 @@ const App = () => {
   };
 
   const ProjectDetailsPage = ({ project, onBack }) => {
+    // Refs for interactive panels
+    const panelRefs = useRef([]);
+    const particleLayers = useRef([]);
+
+    // Initialize particle + interaction effects
+    useEffect(() => {
+      const panels = panelRefs.current.filter(Boolean);
+      if (!panels.length) return;
+
+      // Helper to create floating particles inside a panel
+      const createParticles = (panel) => {
+        const layer = document.createElement('div');
+        layer.style.position = 'absolute';
+        layer.style.inset = '0';
+        layer.style.overflow = 'hidden';
+        layer.style.pointerEvents = 'none';
+        layer.style.zIndex = '0';
+        panel.appendChild(layer);
+        for (let i = 0; i < 14; i++) {
+          const p = document.createElement('div');
+            p.className = 'pd-particle';
+            const x = Math.random()*100;
+            const y = Math.random()*100;
+            p.style.left = x+'%';
+            p.style.top = y+'%';
+            layer.appendChild(p);
+            // animate
+            gsap.to(p, {duration: 0.6, opacity:1, delay: Math.random()*1});
+            const drift = () => {
+              gsap.to(p, { x: (Math.random()-0.5)*40, y:(Math.random()-0.5)*40, duration: 6+Math.random()*6, ease:'sine.inOut', onComplete: drift});
+              gsap.to(p, { opacity: 0.3+Math.random()*0.7, duration: 3+Math.random()*3, ease:'sine.inOut'});
+            };
+            drift();
+        }
+        return layer;
+      };
+
+      panels.forEach(panel => {
+        // create particle layer
+        particleLayers.current.push(createParticles(panel));
+        const handleMove = (e) => {
+          const rect = panel.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          // Increased tilt intensity (previously 10deg each axis → now 18deg)
+          const rx = ((y / rect.height) - 0.5) * -18;
+          const ry = ((x / rect.width) - 0.5) * 18;
+          panel.style.setProperty('--mx', (x/rect.width*100)+'%');
+          panel.style.setProperty('--my', (y/rect.height*100)+'%');
+          panel.style.setProperty('--glow-alpha', '1');
+          gsap.to(panel, { rotateX: rx, rotateY: ry, duration: 0.35, ease:'power2.out'});
+          gsap.to(panel, { boxShadow: '0 15px 35px -6px rgba(132,0,255,0.35), 0 0 55px -6px rgba(132,0,255,0.55)', duration:0.45, ease:'power2.out'});
+        };
+        const handleLeave = () => {
+          panel.style.setProperty('--glow-alpha', '0');
+          gsap.to(panel, { rotateX:0, rotateY:0, duration:0.6, ease:'power3.out'});
+          gsap.to(panel, { boxShadow: '0 4px 12px rgba(0,0,0,0.4)', duration:0.6, ease:'power3.out'});
+        };
+        const handleClick = (e) => {
+          const rect = panel.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          // Create ripple element
+          const ripple = document.createElement('div');
+          const maxDist = Math.max(
+            Math.hypot(x, y),
+            Math.hypot(rect.width - x, y),
+            Math.hypot(x, rect.height - y),
+            Math.hypot(rect.width - x, rect.height - y)
+          );
+          ripple.style.cssText = `position:absolute;left:${x - maxDist}px;top:${y - maxDist}px;width:${maxDist*2}px;height:${maxDist*2}px;border-radius:50%;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle, rgba(132,0,255,0.55) 0%, rgba(132,0,255,0.25) 35%, transparent 70%);opacity:0.85;`; 
+          panel.appendChild(ripple);
+          // Animate ripple
+          gsap.fromTo(ripple,{scale:0,opacity:0.85},{scale:1,opacity:0, duration:0.9, ease:'power3.out', onComplete:()=>ripple.remove()});
+          // Panel pulse + glow flash
+          gsap.fromTo(panel, { scale:1 }, { scale:1.035, duration:0.18, ease:'power2.out', yoyo:true, repeat:1 });
+          gsap.fromTo(panel, { '--glow-alpha': 1 }, { '--glow-alpha': 0.4, duration:0.6, ease:'sine.out'});
+        };
+        panel.addEventListener('mousemove', handleMove);
+        panel.addEventListener('mouseleave', handleLeave);
+        panel.addEventListener('click', handleClick);
+        panel.__cleanup = () => {
+          panel.removeEventListener('mousemove', handleMove);
+          panel.removeEventListener('mouseleave', handleLeave);
+          panel.removeEventListener('click', handleClick);
+        };
+      });
+
+      return () => {
+        panels.forEach(p => { p.__cleanup && p.__cleanup(); });
+        particleLayers.current.forEach(layer => layer && layer.remove());
+        particleLayers.current = [];
+      };
+    }, []);
     const skillsByCategory = {
       'Languages': [
         { name: 'Java', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg' },
@@ -550,7 +646,7 @@ const App = () => {
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Left Column */}
             <div className="lg:w-1/2">
-              <div className="p-8 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm transition-transform duration-300 hover:scale-105">
+              <div ref={el => panelRefs.current[0]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
                 <div className="w-full h-auto mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
                   <img src={project.image} alt={project.title} className="w-full object-cover"/>
                   <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': '#00FFE9'}}></div>
@@ -561,17 +657,17 @@ const App = () => {
             </div>
             {/* Right Column */}
             <div className="lg:w-1/2">
-              <div className="p-8 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm mb-8 transition-transform duration-300 hover:scale-105">
+              <div ref={el => panelRefs.current[1]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-8">
                 <h4 className="text-3xl font-bold mb-4">Project Impact</h4>
                 <p className="text-gray-300 text-lg leading-relaxed">{project.impact}</p>
               </div>
-              <div className="p-8 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm mb-8 transition-transform duration-300 hover:scale-105">
+              <div ref={el => panelRefs.current[2]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-8">
                 <h4 className="text-3xl font-bold mb-4">Key Features</h4>
                 <ul className="list-disc list-inside text-gray-300 text-lg space-y-2">
                   {project.keyFeatures.map(feature => <li key={feature}>{feature}</li>)}
                 </ul>
               </div>
-              <div className="p-8 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm transition-transform duration-300 hover:scale-105">
+              <div ref={el => panelRefs.current[3]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
                 <h4 className="text-3xl font-bold mb-4">Technologies Used</h4>
                 <div className="flex flex-wrap gap-4">
                   {project.tech.split(',').map((techName, index) => {
@@ -591,6 +687,40 @@ const App = () => {
             </div>
           </div>
         </div>
+
+        {/* Enhanced interactive effects (glow, tilt, particles) */}
+        <style>
+          {`
+            .pd-panel {
+              position: relative;
+              --glow-color-rgb: 132,0,255;
+              --glow-alpha: 0;
+              transition: box-shadow .35s ease, transform .3s ease;
+              will-change: transform, box-shadow;
+              transform-style: preserve-3d;
+              perspective: 1200px;
+            }
+            .pd-panel::after {
+              content: '';
+              position: absolute;
+              inset: 0;
+              pointer-events: none;
+              border-radius: inherit;
+              background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(var(--glow-color-rgb),0.35) 0%, rgba(var(--glow-color-rgb),0.15) 35%, transparent 70%);
+              opacity: var(--glow-alpha);
+              transition: opacity .3s ease;
+              mix-blend-mode: screen;
+            }
+            .pd-particle {
+              position:absolute;
+              width:6px;height:6px;
+              background:rgba(var(--glow-color-rgb),0.9);
+              border-radius:50%;
+              box-shadow:0 0 8px rgba(var(--glow-color-rgb),0.8);
+              opacity:0;
+            }
+          `}
+        </style>
       </div>
     );
   };
@@ -828,21 +958,23 @@ const App = () => {
           <div id="top" className={`w-full max-w-7xl mx-auto rounded-xl shadow-2xl p-10 bg-transparent transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <div className="flex flex-col md:flex-row space-y-12 md:space-y-0 md:space-x-12">
 
-              {/* Detail Box - Styled like the left card in the image */}
-              <div
-                id="about"
-                className={`w-full md:w-5/12 p-8 rounded-lg shadow-lg bg-gradient-to-b from-[#2E3192] to-[#00FFE9] bg-opacity-50 flex flex-col items-center text-center transform transition-all duration-1000 ease-in-out hover:scale-105 ${isMounted ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}
-              >
-                <div className="w-48 h-48 rounded-full overflow-hidden mb-6 border-4 border-gray-700 shadow-xl">
-                  {/* Placeholder for profile photo */}
-                  <img
-                     src={profileImage} alt="Lalit Choudhary"
-                     className="w-full h-full object-cover"
-                  />
-                </div>
-                <h2 className="text-3xl font-bold font-[Playfair Display] mb-2">LALIT CHOUDHARY</h2>
-                <p className="text-xl font-medium text-gray-200">FULL STACK WEB&APP DEVELOPER</p>
-                <p className="text-lg text-gray-400 mt-2">5+ years of experience</p>
+              {/* ProfileCard Component Integration */}
+              <div id="about" className={`w-full md:w-5/12 flex items-center justify-center transform transition-all duration-1000 ease-in-out ${isMounted ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
+                <ProfileCard
+                  avatarUrl={profileImage}
+                  name="LALIT CHOUDHARY"
+                  title="FULL STACK WEB & APP DEVELOPER"
+                  handle="lavish112000"
+                  status="Available"
+                  contactText="Contact"
+                  onContactClick={() => {
+                    if (containerRef.current) {
+                      const connectEl = containerRef.current.querySelector('#connect');
+                      connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="scale-90 md:scale-100"
+                />
               </div>
 
               {/* Intro Box - Styled like the right card in the image */}
