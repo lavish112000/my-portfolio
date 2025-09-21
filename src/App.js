@@ -37,13 +37,14 @@
  * @since 2024
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import ProfileCard from './components/ProfileCard';
-import Prism from './components/Prism';
+// Lazy load Prism to reduce initial bundle
+const Prism = lazy(() => import('./components/Prism'));
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
@@ -116,6 +117,9 @@ const App = () => {
     'Здравствуйте', // Russian
     'سلام'        // Persian
   ];
+
+  // Detect reduced motion preference once (outside lazy Prism usage)
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /**
    * Portfolio projects data
@@ -955,9 +959,15 @@ const App = () => {
           </div>
     </nav>
     {/* Spotlight Section with Prism background and ProfileCard in foreground */}
-  <section className="spotlight-section relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
+    <section className="spotlight-section relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
           <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-90">
-            <Prism animationType="rotate" timeScale={0.5} height={3.5} baseWidth={5.5} scale={3.6} hueShift={0} colorFrequency={1} noise={0.5} glow={1} />
+            {prefersReducedMotion ? (
+              <div className="w-full h-full bg-gradient-to-br from-fuchsia-400/40 via-cyan-300/30 to-teal-200/40" />
+            ) : (
+              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-sm text-white/60">Loading prism...</div>}>
+                <Prism animationType="rotate" timeScale={0.5} height={3.5} baseWidth={5.5} scale={3.6} hueShift={0} colorFrequency={1} noise={0.5} glow={1} />
+              </Suspense>
+            )}
           </div>
           <div className={`spotlight-profile-card relative z-10 transform transition-all duration-1000 ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
             <ProfileCard
@@ -1012,7 +1022,7 @@ const App = () => {
                   <div
                     key={project.id}
                     ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover cursor-pointer ${animationClass}`}
+                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover pop-hover cursor-pointer ${animationClass}`}
                     onClick={() => onProjectClick(project, containerRef)}
                   >
                     <div className="flex flex-col items-center text-center">
@@ -1070,7 +1080,7 @@ const App = () => {
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
+                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover pop-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}

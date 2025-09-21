@@ -115,6 +115,11 @@ body.fade-in { opacity:1; transform:scale(1); transition:all .5s cubic-bezier(.4
 .spotlight-profile-card { z-index:10; }
 .spotlight-section { isolation:isolate; }
 
+/* Pop in/out hover effect */
+.pop-hover { transition: transform .35s cubic-bezier(.22,1.28,.23,1), box-shadow .35s ease; will-change:transform; }
+.pop-hover:hover { transform: translateY(-6px) scale(1.04); box-shadow:0 18px 38px -10px rgba(0,0,0,.4),0 8px 22px -6px rgba(0,0,0,.35); }
+.pop-hover:active { transform: translateY(-2px) scale(0.98); transition-duration:.15s; }
+
 /* Responsive tuning for spotlight intensity */
 @media (max-width: 1024px) {
   .spotlight-section { height: 620px !important; }
