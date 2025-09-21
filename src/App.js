@@ -970,7 +970,7 @@ const App = () => {
         </nav>
 
         {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
-  <section className="relative w-full pt-20 flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
+  <section className={`relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a] ${isNavbarVisible ? 'pt-16' : 'pt-0'}`}>
           {/* Dark gradient base */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
             {/* Prism background (lazy) */}
