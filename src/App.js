@@ -43,6 +43,7 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import ProfileCard from './components/ProfileCard';
+import Prism from './components/Prism';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
@@ -689,7 +690,8 @@ const App = () => {
         </div>
 
         {/* Enhanced interactive effects (glow, tilt, particles) */}
-        <style>
+  {/* Inline styles (consider moving to CSS later) */}
+  <style>
           {`
             .pd-panel {
               position: relative;
@@ -951,42 +953,42 @@ const App = () => {
             <button onClick={() => containerRef.current.querySelector('#skills').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">Skills</button>
             <button onClick={() => containerRef.current.querySelector('#about').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">About Me</button>
           </div>
-        </nav>
+    </nav>
+    {/* Spotlight Section with Prism background and ProfileCard in foreground */}
+    <section className="relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
+          <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-90">
+            <Prism animationType="rotate" timeScale={0.5} height={3.5} baseWidth={5.5} scale={3.6} hueShift={0} colorFrequency={1} noise={0.5} glow={1} />
+          </div>
+          <div className={`relative z-10 transform transition-all duration-1000 ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+            <ProfileCard
+              avatarUrl={profileImage}
+              name="LALIT CHOUDHARY"
+              title="FULL STACK WEB & APP DEVELOPER"
+              handle="lavish112000"
+              status="Available"
+              contactText="Contact"
+              onContactClick={() => {
+                if (containerRef.current) {
+                  const connectEl = containerRef.current.querySelector('#connect');
+                  connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+              className="shadow-2xl backdrop-blur-[2px]"
+            />
+          </div>
+  </section>
 
-        {/* Profile Box container */}
-        <div className="pt-16 p-10 min-h-screen flex flex-col items-center justify-center">
-          <div id="top" className={`w-full max-w-7xl mx-auto rounded-xl shadow-2xl p-10 bg-transparent transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className="flex flex-col md:flex-row space-y-12 md:space-y-0 md:space-x-12">
-
-              {/* ProfileCard Component Integration */}
-              <div id="about" className={`w-full md:w-5/12 flex items-center justify-center transform transition-all duration-1000 ease-in-out ${isMounted ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
-                <ProfileCard
-                  avatarUrl={profileImage}
-                  name="LALIT CHOUDHARY"
-                  title="FULL STACK WEB & APP DEVELOPER"
-                  handle="lavish112000"
-                  status="Available"
-                  contactText="Contact"
-                  onContactClick={() => {
-                    if (containerRef.current) {
-                      const connectEl = containerRef.current.querySelector('#connect');
-                      connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="scale-90 md:scale-100"
-                />
-              </div>
-
-              {/* Intro Box - Styled like the right card in the image */}
-              <div className={`w-full md:w-7/12 p-8 rounded-lg shadow-lg text-white bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 transform transition-all duration-1000 ease-in-out hover:scale-105 ${isMounted ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
-                <h2 className="text-3xl font-bold font-[Playfair Display] mb-4">About Me</h2>
-                <p className="text-lg leading-relaxed text-white">
-                  {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
-                </p>
-              </div>
-
+  {/* About Me content box now separated below spotlight */}
+  <div id="about" className="pt-10 px-10 w-full flex flex-col items-center justify-center">
+          <div className={`w-full max-w-5xl mx-auto rounded-xl shadow-2xl p-10 bg-transparent transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`p-8 rounded-lg shadow-lg text-white bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 transform transition-all duration-1000 ease-in-out hover:scale-105 ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
+              <h2 className="text-3xl font-bold font-[Playfair Display] mb-4">About Me</h2>
+              <p className="text-lg leading-relaxed text-white">
+                {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
+              </p>
             </div>
           </div>
+        </div>
 
           {/* My Work Section */}
           <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
@@ -1143,93 +1145,7 @@ const App = () => {
               </div>
             </div>
           </div>
-        </div>
-        
-        <style>
-          {`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
-          body { font-family: 'Playfair Display', serif; }
-
-          @keyframes spin-slow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          .animate-spin-slow {
-            animation: spin-slow 5s linear infinite;
-          }
-          
-          @keyframes glow {
-            0% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
-            50% { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
-            100% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
-          }
-          .animate-glow {
-            animation: glow 2s ease-in-out infinite;
-          }
-          @keyframes float-up-down {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0); }
-          }
-          .animate-float-icon-1 {
-            animation: float-up-down 2s ease-in-out infinite;
-          }
-          .animate-float-icon-2 {
-            animation: float-up-down 2.2s ease-in-out infinite;
-          }
-          .animate-float-icon-3 {
-            animation: float-up-down 2.4s ease-in-out infinite;
-          }
-          body.fade-out {
-            opacity: 0;
-            transform: scale(0.98);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          body.fade-in {
-            opacity: 1;
-            transform: scale(1);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          /* Smooth page transitions */
-          .page-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .page-enter {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-
-          .page-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .page-exit {
-            opacity: 1;
-            transform: translateY(0);
-          }
-
-          .page-exit-active {
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          /* Enhanced skill card hover effects */
-          .skill-card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .skill-card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-          }
-          `}
-        </style>
+          {/* Styles moved to App.css */}
       </div>
     );
   };
