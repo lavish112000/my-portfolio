@@ -41,16 +41,18 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
+// Assets
 import profileImage from './profile.jpg';
-import ProfileCard from './components/ProfileCard';
-// Lazy load Prism to reduce initial bundle
-const Prism = lazy(() => import('./components/Prism'));
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
 import NeonFlux from './NeonFlux.png';
-import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
+// Components & utilities
+import ProfileCard from './components/ProfileCard';
 import ScrollFloat from './ScrollFloat';
+import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
+// Lazy components (keep after static imports)
+const Prism = lazy(() => import('./components/Prism'));
 
 /**
  * ============================================================================
