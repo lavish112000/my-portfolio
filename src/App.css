@@ -120,6 +120,15 @@ body.fade-in { opacity:1; transform:scale(1); transition:all .5s cubic-bezier(.4
 .pop-hover:hover { transform: translateY(-6px) scale(1.04); box-shadow:0 18px 38px -10px rgba(0,0,0,.4),0 8px 22px -6px rgba(0,0,0,.35); }
 .pop-hover:active { transform: translateY(-2px) scale(0.98); transition-duration:.15s; }
 
+/* Pop-in entrance animation for cards */
+@keyframes pop-in-seq { 0% {opacity:0; transform:scale(.85) translateY(20px);} 60% {opacity:1; transform:scale(1.04) translateY(-4px);} 100% {opacity:1; transform:scale(1) translateY(0);} }
+.pop-in-seq { animation: pop-in-seq .7s cubic-bezier(.22,1.22,.28,1) forwards; }
+.pop-in-delay-1 { animation-delay:.05s; }
+.pop-in-delay-2 { animation-delay:.1s; }
+.pop-in-delay-3 { animation-delay:.15s; }
+.pop-in-delay-4 { animation-delay:.2s; }
+.pop-in-delay-5 { animation-delay:.25s; }
+
 /* Responsive tuning for spotlight intensity */
 @media (max-width: 1024px) {
   .spotlight-section { height: 620px !important; }

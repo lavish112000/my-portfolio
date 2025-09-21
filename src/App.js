@@ -1020,11 +1020,12 @@ const App = () => {
                 const isLeft = index % 2 === 0;
                 const animationClass = projectsVisible[index] ? 'translate-x-0 opacity-100' : (isLeft ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0');
 
+                const popInClass = projectsVisible[index] ? `pop-in-seq pop-in-delay-${(index % 5)}` : '';
                 return (
                   <div
                     key={project.id}
                     ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover pop-hover cursor-pointer ${animationClass}`}
+                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover pop-hover cursor-pointer ${animationClass} ${popInClass}`}
                     onClick={() => onProjectClick(project, containerRef)}
                   >
                     <div className="flex flex-col items-center text-center">
@@ -1077,12 +1078,13 @@ const App = () => {
                         animationClass = skillsVisible[globalIndex] ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0';
                       }
 
+                      const skillPop = skillsVisible[globalIndex] ? `pop-in-seq pop-in-delay-${(skillIndex % 5)}` : '';
                       return (
                         <button
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover pop-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
+                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover pop-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass} ${skillPop}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
