@@ -731,9 +731,6 @@ const App = () => {
     const containerRef = useRef(null);
     const [isMounted, setIsMounted] = useState(false);
     const [enablePrism, setEnablePrism] = useState(false);
-    const [isNavbarOpen, setIsNavbarOpen] = useState(false);
-    const [isNavbarVisible, setIsNavbarVisible] = useState(true);
-    const lastScrollY = useRef(0);
 
     // Decrypted text animation state
     const [displayedText, setDisplayedText] = useState('');
@@ -801,13 +798,6 @@ const App = () => {
       const handleScroll = () => {
         const currentRef = containerRef.current;
         if (currentRef) {
-          const currentScrollY = currentRef.scrollTop;
-          if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-            setIsNavbarVisible(false);
-          } else {
-            setIsNavbarVisible(true);
-          }
-          lastScrollY.current = currentScrollY;
           const viewportHeight = window.innerHeight;
           skillsRef.current.forEach((ref, index) => {
             if (ref) {
@@ -949,32 +939,12 @@ const App = () => {
         className={`w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] transition-opacity duration-1000 ease-in-out ${isMounted && isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         ref={containerRef}
       >
-        {/* Navbar */}
-        <nav
-          onMouseEnter={() => setIsNavbarOpen(true)}
-          onMouseLeave={() => setIsNavbarOpen(false)}
-          className={`fixed top-0 left-0 right-0 h-16 bg-gray-800 bg-opacity-90 backdrop-blur-md z-50 flex items-center justify-between px-10 border-b border-gray-700 transition-all duration-300 ease-in-out shadow-lg ${isNavbarVisible ? 'translate-y-0' : '-translate-y-full'}`}
-        >
-          <button
-            onClick={() => containerRef.current.scrollTop = 0}
-            className="text-3xl font-bold font-[Playfair Display] cursor-pointer"
-          >
-            LC
-          </button>
-          <div className={`flex items-center space-x-8 text-xl font-bold font-[Playfair Display] transition-all duration-300 ease-in-out ${isNavbarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <button onClick={() => setCurrentPage('home')} className="hover:text-blue-400 transition-colors duration-200">Homepage</button>
-            <button onClick={() => containerRef.current.querySelector('#projects').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">My Work</button>
-            <button onClick={() => containerRef.current.querySelector('#skills').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">Skills</button>
-            <button onClick={() => containerRef.current.querySelector('#about').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">About Me</button>
-          </div>
-        </nav>
-
         {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
-  <section className={`relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a] ${isNavbarVisible ? 'pt-16' : 'pt-0'}`}>
+  <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
           {/* Dark gradient base */}
-            <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90`} />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
             {/* Prism background (lazy) */}
-            <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
+            <div className={`absolute inset-0 ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
               {enablePrism && (
                 <Suspense fallback={<div className="w-full h-full" />}> 
                   <Prism
@@ -993,7 +963,7 @@ const App = () => {
                 </Suspense>
               )}
               {/* Focus overlay + bottom fade */}
-              <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 pointer-events-none mix-blend-overlay`} style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
+              <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
               <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{background:'linear-gradient(to bottom, rgba(5,3,9,0) 0%, #050309 65%, #050309 100%)'}} />
             </div>
             {/* Profile Card in spotlight */}
