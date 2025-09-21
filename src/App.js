@@ -831,22 +831,18 @@ const App = () => {
           setIsNavbarVisible(true);
         }
         lastScrollY.current = currentScrollY;
-        const viewportHeight = window.innerHeight;
+        const containerHeight = currentRef.clientHeight;
         skillsRef.current.forEach((ref, index) => {
           if (!ref) return;
-          const rect = ref.getBoundingClientRect();
-          const isVisible = rect.top < viewportHeight - 100;
+          const isVisible = ref.offsetTop - currentScrollY < containerHeight - 100;
           setSkillsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
         });
         projectsRef.current.forEach((ref, index) => {
           if (!ref) return;
-          const rect = ref.getBoundingClientRect();
-          const isVisible = rect.top < viewportHeight - 100;
-            setProjectsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
+          const isVisible = ref.offsetTop - currentScrollY < containerHeight - 100;
+          setProjectsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
         });
-      };
-
-      const currentContainer = containerRef.current;
+      };      const currentContainer = containerRef.current;
       if (currentContainer) {
         currentContainer.addEventListener('scroll', handleScroll);
         handleScroll();
