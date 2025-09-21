@@ -52,6 +52,9 @@ import ScrollFloat from './ScrollFloat';
 // Lazy load advanced Prism effect (declared after other imports for lint ordering)
 const Prism = lazy(() => import('./Prism'));
 
+// Lazy load StaggeredMenu
+const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
+
 /**
  * ============================================================================
  * MAIN APPLICATION COMPONENT
@@ -739,6 +742,19 @@ const App = () => {
     const fullText = "Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.";
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
+    const menuItems = [
+      { label: 'Home', ariaLabel: 'Go to home page', link: '#' },
+      { label: 'My Work', ariaLabel: 'View my work', link: '#projects' },
+      { label: 'Skills', ariaLabel: 'View skills', link: '#skills' },
+      { label: 'About Me', ariaLabel: 'Learn about me', link: '#about' }
+    ];
+
+    const socialItems = [
+      { label: 'Twitter', link: 'https://twitter.com' },
+      { label: 'GitHub', link: 'https://github.com' },
+      { label: 'LinkedIn', link: 'https://linkedin.com' }
+    ];
+
     const handleSkillsetsClick = () => {
       document.body.classList.add('fade-out');
       setTimeout(() => {
@@ -939,6 +955,22 @@ const App = () => {
         className={`w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] transition-opacity duration-1000 ease-in-out ${isMounted && isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         ref={containerRef}
       >
+        <Suspense fallback={null}>
+          <StaggeredMenu
+            position="right"
+            items={menuItems}
+            socialItems={socialItems}
+            displaySocials={true}
+            displayItemNumbering={true}
+            menuButtonColor="#fff"
+            openMenuButtonColor="#fff"
+            changeMenuColorOnOpen={true}
+            colors={['#B19EEF', '#5227FF']}
+            logoUrl="/path-to-your-logo.svg"
+            accentColor="#ff6b6b"
+          />
+        </Suspense>
+
         {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
   <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
           {/* Dark gradient base */}
