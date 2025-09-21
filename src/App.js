@@ -955,11 +955,11 @@ const App = () => {
           </div>
     </nav>
     {/* Spotlight Section with Prism background and ProfileCard in foreground */}
-    <section className="relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
+  <section className="spotlight-section relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
           <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-90">
             <Prism animationType="rotate" timeScale={0.5} height={3.5} baseWidth={5.5} scale={3.6} hueShift={0} colorFrequency={1} noise={0.5} glow={1} />
           </div>
-          <div className={`relative z-10 transform transition-all duration-1000 ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+          <div className={`spotlight-profile-card relative z-10 transform transition-all duration-1000 ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
             <ProfileCard
               avatarUrl={profileImage}
               name="LALIT CHOUDHARY"

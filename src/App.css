@@ -115,3 +115,18 @@ body.fade-in { opacity:1; transform:scale(1); transition:all .5s cubic-bezier(.4
 .spotlight-profile-card { z-index:10; }
 .spotlight-section { isolation:isolate; }
 
+/* Responsive tuning for spotlight intensity */
+@media (max-width: 1024px) {
+  .spotlight-section { height: 620px !important; }
+  .prism-canvas-wrapper { filter: saturate(1.25) brightness(1.02); }
+}
+@media (max-width: 768px) {
+  .spotlight-section { height: 520px !important; }
+  .prism-canvas-wrapper { filter: saturate(1.15) brightness(1.0) blur(1px); }
+}
+@media (max-width: 560px) {
+  .spotlight-section { height: 460px !important; }
+  .prism-canvas-wrapper { filter: saturate(1.05) brightness(.95) blur(1.5px); }
+  .spotlight-profile-card { transform: scale(.9); }
+}
+
