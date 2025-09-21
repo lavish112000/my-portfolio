@@ -972,9 +972,9 @@ const App = () => {
         {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
   <section className={`relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a] ${isNavbarVisible ? 'pt-16' : 'pt-0'}`}>
           {/* Dark gradient base */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
+            <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90`} />
             {/* Prism background (lazy) */}
-            <div className={`absolute inset-0 ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
+            <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
               {enablePrism && (
                 <Suspense fallback={<div className="w-full h-full" />}> 
                   <Prism
@@ -993,7 +993,7 @@ const App = () => {
                 </Suspense>
               )}
               {/* Focus overlay + bottom fade */}
-              <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
+              <div className={`absolute ${isNavbarVisible ? 'top-16' : 'top-0'} left-0 right-0 bottom-0 pointer-events-none mix-blend-overlay`} style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
               <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{background:'linear-gradient(to bottom, rgba(5,3,9,0) 0%, #050309 65%, #050309 100%)'}} />
             </div>
             {/* Profile Card in spotlight */}
