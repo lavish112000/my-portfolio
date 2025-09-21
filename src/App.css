@@ -129,6 +129,13 @@ body.fade-in { opacity:1; transform:scale(1); transition:all .5s cubic-bezier(.4
 .pop-in-delay-4 { animation-delay:.2s; }
 .pop-in-delay-5 { animation-delay:.25s; }
 
+/* Effects toggle overrides */
+.no-effects, .no-effects * { animation: none !important; transition: none !important; transform: none !important; box-shadow: none !important; filter: none !important; }
+.no-effects .pop-hover:hover { transform: none !important; }
+.reduced-effects .pop-hover { transition-duration: .25s; }
+.reduced-effects .pop-hover:hover { transform: translateY(-4px) scale(1.03) !important; }
+.reduced-effects .pop-in-seq { animation-duration: .5s; animation-timing-function: cubic-bezier(.25,.8,.25,1); }
+
 /* Responsive tuning for spotlight intensity */
 @media (max-width: 1024px) {
   .spotlight-section { height: 620px !important; }

@@ -97,6 +97,16 @@ const App = () => {
    * @type {string} currentSection - Current active section ('skills' or 'projects')
    */
   const [currentSection, setCurrentSection] = useState('');
+  /**
+   * Visual effects master toggle (controls Prism, hover scaling, pop animations)
+   * @type {boolean}
+   */
+  const [effectsEnabled, setEffectsEnabled] = useState(true);
+  /**
+   * Reduced effects mode (softer animations without fully disabling)
+   * @type {boolean}
+   */
+  const [reducedEffects, setReducedEffects] = useState(false);
 
   // ============================================================================
   // STATIC DATA
@@ -122,6 +132,27 @@ const App = () => {
 
   // Detect reduced motion preference once (outside lazy Prism usage)
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Sync reduced motion preference to reducedEffects state once on mount
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setReducedEffects(true);
+    }
+  }, [prefersReducedMotion]);
+
+  // Idle prefetch for Prism if effects will be enabled and not reduced (still beneficial)
+  useEffect(() => {
+    if (!effectsEnabled) return; // no need if disabled
+    // Only prefetch if component exists but before use (dynamic import chunk hint)
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(() => {
+        import('./components/Prism').catch(()=>{});
+      }, { timeout: 2000 });
+    } else {
+      setTimeout(() => {
+        import('./components/Prism').catch(()=>{});
+      }, 1500);
+    }
+  }, [effectsEnabled]);
 
   /**
    * Portfolio projects data
@@ -792,31 +823,27 @@ const App = () => {
     useEffect(() => {
       const handleScroll = () => {
         const currentRef = containerRef.current;
-        if (currentRef) {
-          const currentScrollY = currentRef.scrollTop;
-          if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-            setIsNavbarVisible(false);
-          } else {
-            setIsNavbarVisible(true);
-          }
-          lastScrollY.current = currentScrollY;
-          const viewportHeight = window.innerHeight;
-          skillsRef.current.forEach((ref, index) => {
-            if (ref) {
-              const rect = ref.getBoundingClientRect();
-              const isVisible = rect.top < viewportHeight - 100;
-              setSkillsVisible(prev => ({ ...prev, [index]: isVisible }));
-            }
-          });
-
-          projectsRef.current.forEach((ref, index) => {
-            if (ref) {
-              const rect = ref.getBoundingClientRect();
-              const isVisible = rect.top < viewportHeight - 100;
-              setProjectsVisible(prev => ({ ...prev, [index]: isVisible }));
-            }
-          });
+        if (!currentRef) return;
+        const currentScrollY = currentRef.scrollTop;
+        if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+          setIsNavbarVisible(false);
+        } else {
+          setIsNavbarVisible(true);
         }
+        lastScrollY.current = currentScrollY;
+        const viewportHeight = window.innerHeight;
+        skillsRef.current.forEach((ref, index) => {
+          if (!ref) return;
+          const rect = ref.getBoundingClientRect();
+          const isVisible = rect.top < viewportHeight - 100;
+          setSkillsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
+        });
+        projectsRef.current.forEach((ref, index) => {
+          if (!ref) return;
+          const rect = ref.getBoundingClientRect();
+          const isVisible = rect.top < viewportHeight - 100;
+            setProjectsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
+        });
       };
 
       const currentContainer = containerRef.current;
@@ -960,6 +987,27 @@ const App = () => {
             <button onClick={() => containerRef.current.querySelector('#about').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">About Me</button>
           </div>
     </nav>
+        {/* Effects Toggles */}
+        <div className="mt-20 px-10 flex flex-wrap gap-4 items-center">
+          <button
+            type="button"
+            onClick={() => setEffectsEnabled(e => !e)}
+            className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 border text-sm ${(effectsEnabled ? 'bg-emerald-600/80 hover:bg-emerald-500 border-emerald-400' : 'bg-gray-600/60 hover:bg-gray-500 border-gray-400')} ${reducedEffects ? 'ring-2 ring-yellow-400/60' : ''}`}
+          >
+            {effectsEnabled ? 'Disable Effects' : 'Enable Effects'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setReducedEffects(r => !r)}
+            disabled={!effectsEnabled}
+            className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 border text-sm ${(reducedEffects ? 'bg-yellow-600/80 hover:bg-yellow-500 border-yellow-400' : 'bg-indigo-600/80 hover:bg-indigo-500 border-indigo-400')} disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            {reducedEffects ? 'Normal Intensity' : 'Reduce Intensity'}
+          </button>
+          <span className="text-xs opacity-70">
+            {effectsEnabled ? (reducedEffects ? 'Reduced animations active' : 'Full animations active') : 'Effects disabled'}
+          </span>
+        </div>
     {/* Spotlight Section with Prism background and ProfileCard in foreground */}
     <section className="spotlight-section relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
           <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-90">
@@ -1020,12 +1068,12 @@ const App = () => {
                 const isLeft = index % 2 === 0;
                 const animationClass = projectsVisible[index] ? 'translate-x-0 opacity-100' : (isLeft ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0');
 
-                const popInClass = projectsVisible[index] ? `pop-in-seq pop-in-delay-${(index % 5)}` : '';
+                const popInClass = effectsEnabled && projectsVisible[index] ? `pop-in-seq pop-in-delay-${(index % 5)}` : '';
                 return (
                   <div
                     key={project.id}
                     ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover pop-hover cursor-pointer ${animationClass} ${popInClass}`}
+                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover ${effectsEnabled ? 'pop-hover' : ''} cursor-pointer ${animationClass} ${popInClass} ${!effectsEnabled ? 'no-effects' : ''} ${reducedEffects && effectsEnabled ? 'reduced-effects' : ''}`}
                     onClick={() => onProjectClick(project, containerRef)}
                   >
                     <div className="flex flex-col items-center text-center">
@@ -1078,13 +1126,13 @@ const App = () => {
                         animationClass = skillsVisible[globalIndex] ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0';
                       }
 
-                      const skillPop = skillsVisible[globalIndex] ? `pop-in-seq pop-in-delay-${(skillIndex % 5)}` : '';
+                      const skillPop = effectsEnabled && skillsVisible[globalIndex] ? `pop-in-seq pop-in-delay-${(skillIndex % 5)}` : '';
                       return (
                         <button
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover pop-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass} ${skillPop}`}
+                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover ${effectsEnabled ? 'pop-hover' : ''} cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass} ${skillPop} ${!effectsEnabled ? 'no-effects' : ''} ${reducedEffects && effectsEnabled ? 'reduced-effects' : ''}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
