@@ -37,22 +37,19 @@
  * @since 2024
  */
 
-import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Prism from './Prism';
 import { gsap } from 'gsap';
 import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
-// Assets
 import profileImage from './profile.jpg';
+import ProfileCard from './components/ProfileCard';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
 import NeonFlux from './NeonFlux.png';
-// Components & utilities
-import ProfileCard from './components/ProfileCard';
-import ScrollFloat from './ScrollFloat';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
-// Lazy components (keep after static imports)
-const Prism = lazy(() => import('./components/Prism'));
+import ScrollFloat from './ScrollFloat';
 
 /**
  * ============================================================================
@@ -97,16 +94,6 @@ const App = () => {
    * @type {string} currentSection - Current active section ('skills' or 'projects')
    */
   const [currentSection, setCurrentSection] = useState('');
-  /**
-   * Visual effects master toggle (controls Prism, hover scaling, pop animations)
-   * @type {boolean}
-   */
-  const [effectsEnabled, setEffectsEnabled] = useState(true);
-  /**
-   * Reduced effects mode (softer animations without fully disabling)
-   * @type {boolean}
-   */
-  const [reducedEffects, setReducedEffects] = useState(false);
 
   // ============================================================================
   // STATIC DATA
@@ -129,30 +116,6 @@ const App = () => {
     'Здравствуйте', // Russian
     'سلام'        // Persian
   ];
-
-  // Detect reduced motion preference once (outside lazy Prism usage)
-  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Sync reduced motion preference to reducedEffects state once on mount
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setReducedEffects(true);
-    }
-  }, [prefersReducedMotion]);
-
-  // Idle prefetch for Prism if effects will be enabled and not reduced (still beneficial)
-  useEffect(() => {
-    if (!effectsEnabled) return; // no need if disabled
-    // Only prefetch if component exists but before use (dynamic import chunk hint)
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      window.requestIdleCallback(() => {
-        import('./components/Prism').catch(()=>{});
-      }, { timeout: 2000 });
-    } else {
-      setTimeout(() => {
-        import('./components/Prism').catch(()=>{});
-      }, 1500);
-    }
-  }, [effectsEnabled]);
 
   /**
    * Portfolio projects data
@@ -727,8 +690,7 @@ const App = () => {
         </div>
 
         {/* Enhanced interactive effects (glow, tilt, particles) */}
-  {/* Inline styles (consider moving to CSS later) */}
-  <style>
+        <style>
           {`
             .pd-panel {
               position: relative;
@@ -823,26 +785,34 @@ const App = () => {
     useEffect(() => {
       const handleScroll = () => {
         const currentRef = containerRef.current;
-        if (!currentRef) return;
-        const currentScrollY = currentRef.scrollTop;
-        if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-          setIsNavbarVisible(false);
-        } else {
-          setIsNavbarVisible(true);
+        if (currentRef) {
+          const currentScrollY = currentRef.scrollTop;
+          if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+            setIsNavbarVisible(false);
+          } else {
+            setIsNavbarVisible(true);
+          }
+          lastScrollY.current = currentScrollY;
+          const viewportHeight = window.innerHeight;
+          skillsRef.current.forEach((ref, index) => {
+            if (ref) {
+              const rect = ref.getBoundingClientRect();
+              const isVisible = rect.top < viewportHeight - 100;
+              setSkillsVisible(prev => ({ ...prev, [index]: isVisible }));
+            }
+          });
+
+          projectsRef.current.forEach((ref, index) => {
+            if (ref) {
+              const rect = ref.getBoundingClientRect();
+              const isVisible = rect.top < viewportHeight - 100;
+              setProjectsVisible(prev => ({ ...prev, [index]: isVisible }));
+            }
+          });
         }
-        lastScrollY.current = currentScrollY;
-        const containerHeight = currentRef.clientHeight;
-        skillsRef.current.forEach((ref, index) => {
-          if (!ref) return;
-          const isVisible = ref.offsetTop - currentScrollY < containerHeight - 100;
-          setSkillsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
-        });
-        projectsRef.current.forEach((ref, index) => {
-          if (!ref) return;
-          const isVisible = ref.offsetTop - currentScrollY < containerHeight - 100;
-          setProjectsVisible(prev => (prev[index] === isVisible ? prev : { ...prev, [index]: isVisible }));
-        });
-      };      const currentContainer = containerRef.current;
+      };
+
+      const currentContainer = containerRef.current;
       if (currentContainer) {
         currentContainer.addEventListener('scroll', handleScroll);
         handleScroll();
@@ -982,40 +952,18 @@ const App = () => {
             <button onClick={() => containerRef.current.querySelector('#skills').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">Skills</button>
             <button onClick={() => containerRef.current.querySelector('#about').scrollIntoView({ behavior: 'smooth' })} className="hover:text-blue-400 transition-colors duration-200">About Me</button>
           </div>
-    </nav>
-        {/* Effects Toggles */}
-        <div className="mt-20 px-10 flex flex-wrap gap-4 items-center">
-          <button
-            type="button"
-            onClick={() => setEffectsEnabled(e => !e)}
-            className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 border text-sm ${(effectsEnabled ? 'bg-emerald-600/80 hover:bg-emerald-500 border-emerald-400' : 'bg-gray-600/60 hover:bg-gray-500 border-gray-400')} ${reducedEffects ? 'ring-2 ring-yellow-400/60' : ''}`}
-          >
-            {effectsEnabled ? 'Disable Effects' : 'Enable Effects'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setReducedEffects(r => !r)}
-            disabled={!effectsEnabled}
-            className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 border text-sm ${(reducedEffects ? 'bg-yellow-600/80 hover:bg-yellow-500 border-yellow-400' : 'bg-indigo-600/80 hover:bg-indigo-500 border-indigo-400')} disabled:opacity-40 disabled:cursor-not-allowed`}
-          >
-            {reducedEffects ? 'Normal Intensity' : 'Reduce Intensity'}
-          </button>
-          <span className="text-xs opacity-70">
-            {effectsEnabled ? (reducedEffects ? 'Reduced animations active' : 'Full animations active') : 'Effects disabled'}
-          </span>
-        </div>
-    {/* Spotlight Section with Prism background and ProfileCard in foreground */}
-    <section className="spotlight-section relative w-full h-[760px] mt-16 flex items-center justify-center overflow-hidden" id="spotlight">
-          <div className="absolute inset-0 pointer-events-none mix-blend-screen opacity-90">
-            {prefersReducedMotion ? (
-              <div className="w-full h-full bg-gradient-to-br from-fuchsia-400/40 via-cyan-300/30 to-teal-200/40" />
-            ) : (
-              <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-sm text-white/60">Loading prism...</div>}>
-                <Prism animationType="rotate" timeScale={0.5} height={3.5} baseWidth={5.5} scale={3.6} hueShift={0} colorFrequency={1} noise={0.5} glow={1} />
-              </Suspense>
-            )}
+        </nav>
+
+        {/* Spotlight Hero Section with Prism background and ProfileCard */}
+        <section className="relative w-full pt-16 flex items-center justify-center min-h-[80vh] overflow-visible">
+          {/* Prism background */}
+          <div className={`absolute inset-0 opacity-0 ${isMounted ? 'animate-fade-in-slow opacity-100' : ''}`}> 
+            <Prism mode="3drotate" animate={true} suspendWhenOffscreen={true} className="w-full h-full" />
+            {/* Extra radial overlay for subtle focus */}
+            <div className="absolute inset-0 pointer-events-none" style={{background:'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18), rgba(0,0,0,0.65))', mixBlendMode:'overlay'}} />
           </div>
-          <div className={`spotlight-profile-card relative z-10 transform transition-all duration-1000 ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+          {/* Profile Card in spotlight */}
+          <div className={`relative z-10 transform transition-all duration-1000 ease-out ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
             <ProfileCard
               avatarUrl={profileImage}
               name="LALIT CHOUDHARY"
@@ -1029,22 +977,20 @@ const App = () => {
                   connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="shadow-2xl backdrop-blur-[2px]"
+              className="scale-90 md:scale-100"
             />
           </div>
-  </section>
+        </section>
 
-  {/* About Me content box now separated below spotlight */}
-  <div id="about" className="pt-10 px-10 w-full flex flex-col items-center justify-center">
-          <div className={`w-full max-w-5xl mx-auto rounded-xl shadow-2xl p-10 bg-transparent transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <div className={`p-8 rounded-lg shadow-lg text-white bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 transform transition-all duration-1000 ease-in-out hover:scale-105 ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
-              <h2 className="text-3xl font-bold font-[Playfair Display] mb-4">About Me</h2>
-              <p className="text-lg leading-relaxed text-white">
-                {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
-              </p>
-            </div>
+        {/* About Section separated below spotlight */}
+        <section id="about" className="w-full max-w-5xl mx-auto mt-24 px-8">
+          <div className={`rounded-xl shadow-2xl p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <h2 className="text-4xl font-bold font-[Playfair Display] mb-6">About Me</h2>
+            <p className="text-lg leading-relaxed text-white">
+              {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
+            </p>
           </div>
-        </div>
+        </section>
 
           {/* My Work Section */}
           <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
@@ -1064,12 +1010,11 @@ const App = () => {
                 const isLeft = index % 2 === 0;
                 const animationClass = projectsVisible[index] ? 'translate-x-0 opacity-100' : (isLeft ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0');
 
-                const popInClass = effectsEnabled && projectsVisible[index] ? `pop-in-seq pop-in-delay-${(index % 5)}` : '';
                 return (
                   <div
                     key={project.id}
                     ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover ${effectsEnabled ? 'pop-hover' : ''} cursor-pointer ${animationClass} ${popInClass} ${!effectsEnabled ? 'no-effects' : ''} ${reducedEffects && effectsEnabled ? 'reduced-effects' : ''}`}
+                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover cursor-pointer ${animationClass}`}
                     onClick={() => onProjectClick(project, containerRef)}
                   >
                     <div className="flex flex-col items-center text-center">
@@ -1122,13 +1067,12 @@ const App = () => {
                         animationClass = skillsVisible[globalIndex] ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0';
                       }
 
-                      const skillPop = effectsEnabled && skillsVisible[globalIndex] ? `pop-in-seq pop-in-delay-${(skillIndex % 5)}` : '';
                       return (
                         <button
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover ${effectsEnabled ? 'pop-hover' : ''} cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass} ${skillPop} ${!effectsEnabled ? 'no-effects' : ''} ${reducedEffects && effectsEnabled ? 'reduced-effects' : ''}`}
+                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
                         >
                           <div className="w-12 h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
@@ -1203,7 +1147,94 @@ const App = () => {
               </div>
             </div>
           </div>
-          {/* Styles moved to App.css */}
+        
+        <style>
+          {`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+          body { font-family: 'Playfair Display', serif; }
+
+          @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 5s linear infinite;
+          }
+          
+          @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+            50% { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
+            100% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+          }
+          .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+          }
+          @keyframes float-up-down {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+          }
+          .animate-float-icon-1 {
+            animation: float-up-down 2s ease-in-out infinite;
+          }
+          .animate-float-icon-2 {
+            animation: float-up-down 2.2s ease-in-out infinite;
+          }
+          .animate-float-icon-3 {
+            animation: float-up-down 2.4s ease-in-out infinite;
+          }
+          body.fade-out {
+            opacity: 0;
+            transform: scale(0.98);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          body.fade-in {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Smooth page transitions */
+          .page-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-enter {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+
+          .page-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-exit {
+            opacity: 1;
+            transform: translateY(0);
+          }
+
+          .page-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          /* Enhanced skill card hover effects */
+          .skill-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .skill-card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          }
+          @keyframes fade-in-slow { from { opacity:0 } to { opacity:1 } }
+          .animate-fade-in-slow { animation: fade-in-slow 2.5s ease forwards; }
+          `}
+        </style>
       </div>
     );
   };
