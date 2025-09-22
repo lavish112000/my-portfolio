@@ -49,9 +49,6 @@ import ResumeParser from './ResumeParser.png';
 import NeonFlux from './NeonFlux.png';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
 import ScrollFloat from './ScrollFloat';
-// Lazy load advanced Prism effect (declared after other imports for lint ordering)
-const Prism = lazy(() => import('./Prism'));
-
 // Lazy load StaggeredMenu
 const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
 
@@ -733,7 +730,6 @@ const App = () => {
   const ProfilePage = ({ onProjectClick, previousScrollY, setPreviousScrollY, isVisible }) => {
     const containerRef = useRef(null);
     const [isMounted, setIsMounted] = useState(false);
-    const [enablePrism, setEnablePrism] = useState(false);
 
     // Decrypted text animation state
     const [displayedText, setDisplayedText] = useState('');
@@ -796,19 +792,6 @@ const App = () => {
       const timer = setTimeout(() => setIsMounted(true), 100); // Slight delay for a smoother entry
       return () => clearTimeout(timer);
     }, []);
-
-    // Defer Prism activation until first interaction or fallback timeout
-    useEffect(() => {
-      if (!isMounted || enablePrism) return;
-      const activate = () => setEnablePrism(true);
-      const interactionEvents = ['mousemove','touchstart','scroll','keydown'];
-      interactionEvents.forEach(ev => window.addEventListener(ev, activate, { once: true, passive: true }));
-      const fallback = setTimeout(activate, 2500); // ensure it appears even without interaction
-      return () => {
-        interactionEvents.forEach(ev => window.removeEventListener(ev, activate));
-        clearTimeout(fallback);
-      };
-    }, [isMounted, enablePrism]);
 
     useEffect(() => {
       const handleScroll = () => {
@@ -962,8 +945,8 @@ const App = () => {
             socialItems={socialItems}
             displaySocials={true}
             displayItemNumbering={true}
-            menuButtonColor="#fff"
-            openMenuButtonColor="#fff"
+            menuButtonColor="#000"
+            openMenuButtonColor="#000"
             changeMenuColorOnOpen={true}
             colors={['#B19EEF', '#5227FF']}
             logoUrl="/path-to-your-logo.svg"
@@ -971,33 +954,10 @@ const App = () => {
           />
         </Suspense>
 
-        {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
+        {/* Spotlight Hero Section with ProfileCard */}
   <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
           {/* Dark gradient base */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
-            {/* Prism background (lazy) */}
-            <div className={`absolute inset-0 overflow-hidden ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
-              {enablePrism && (
-                <Suspense fallback={<div className="w-full h-full" />}> 
-                  <Prism
-                    animationType="3drotate"
-                    timeScale={0.5}
-                    height={3.9}
-                    baseWidth={5.8}
-                    scale={3.9}
-                    hueShift={0.0}
-                    colorFrequency={1.0}
-                    noise={0.45}
-                    glow={1.1}
-                    bloom={1.15}
-                    suspendWhenOffscreen={true}
-                  />
-                </Suspense>
-              )}
-              {/* Focus overlay + bottom fade */}
-              <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
-              <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{background:'linear-gradient(to bottom, rgba(5,3,9,0) 0%, #050309 65%, #050309 100%)'}} />
-            </div>
             {/* Profile Card in spotlight */}
             <div className={`relative z-10 transform transition-all duration-1000 ease-out px-4 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <ProfileCard
