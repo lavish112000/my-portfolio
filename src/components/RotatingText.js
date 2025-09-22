@@ -27,6 +27,7 @@ const RotatingText = forwardRef((props, ref) => {
   } = props;
 
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
 
   const splitIntoCharacters = text => {
     if (typeof Intl !== 'undefined' && Intl.Segmenter) {
@@ -81,7 +82,13 @@ const RotatingText = forwardRef((props, ref) => {
 
   useImperativeHandle(ref, () => ({ next, previous, jumpTo, reset }), [next, previous, jumpTo, reset]);
 
-  useEffect(() => { if (!auto) return; const intervalId = setInterval(next, rotationInterval); return () => clearInterval(intervalId); }, [next, rotationInterval, auto]);
+  useEffect(() => {
+    const handleVisibilityChange = () => setIsVisible(!document.hidden);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  useEffect(() => { if (!auto || !isVisible) return; const intervalId = setInterval(next, rotationInterval); return () => clearInterval(intervalId); }, [next, rotationInterval, auto, isVisible]);
 
   return (
     <motion.span className={cn('flex flex-wrap whitespace-pre-wrap relative', mainClassName)} {...rest} layout transition={transition}>

@@ -772,10 +772,15 @@ const App = () => {
     const skillsRef = useRef([]);
     const [projectsVisible, setProjectsVisible] = useState({});
     const projectsRef = useRef([]);
-  // Controls visibility of the rotating text banner when the staggered menu is open
-  const [showRotatingText, setShowRotatingText] = useState(false);
+    // Controls visibility of the rotating text banner when the staggered menu is open
+    const [showRotatingText, setShowRotatingText] = useState(false);
 
-    const form = useRef();
+    // Show rotating text briefly on initial load
+    useEffect(() => {
+      setShowRotatingText(true);
+      const timer = setTimeout(() => setShowRotatingText(false), 3000);
+      return () => clearTimeout(timer);
+    }, []);    const form = useRef();
     const [isSending, setIsSending] = useState(false);
     const [sendStatus, setSendStatus] = useState(''); // '', 'success', 'error'
 
@@ -1011,17 +1016,17 @@ const App = () => {
             {/* Rotating Text Overlay (shows when menu open) */}
             {showRotatingText && (
               <Suspense fallback={null}>
-                <div className="absolute top-[10%] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center text-center px-4 rotating-text-enter rotating-text-active">
+                <div className="absolute top-[10%] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center text-center px-4 rotating-text-enter rotating-text-active transition-opacity duration-1000 ease-in-out" aria-live="polite">
                   <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-[#ffffff] to-[#b8b0ff] drop-shadow-[0_0_10px_rgba(255,255,255,0.15)]">
                     <span className="inline-block mr-3">Driven</span>
                     <RotatingText
                       texts={["Result","Creativity","Coding"]}
                       splitBy="characters"
-                      rotationInterval={1800}
+                      rotationInterval={2500}
                       staggerDuration={0.025}
                       staggerFrom="center"
                       transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                      elementLevelClassName="text-[#54ffe4]"
+                      elementLevelClassName="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4]"
                     />
                   </h2>
                 </div>
