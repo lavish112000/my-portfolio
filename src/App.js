@@ -52,9 +52,8 @@ import ScrollFloat from './ScrollFloat';
 // Lazy load advanced Prism effect (declared after other imports for lint ordering)
 const Prism = lazy(() => import('./Prism'));
 
-// Lazy load StaggeredMenu & RotatingText
+// Lazy load StaggeredMenu
 const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
-const RotatingText = lazy(() => import('./components/RotatingText'));
 
 /**
  * ============================================================================
@@ -727,11 +726,6 @@ const App = () => {
             }
           `}
         </style>
-        {/* Local styles for rotating text banner appearance */}
-        <style>{`
-          .rotating-text-enter { opacity:0; transform:translateY(-12px) scale(.96); filter:blur(4px); }
-          .rotating-text-active { opacity:1; transform:translateY(0) scale(1); filter:blur(0); transition:all .85s cubic-bezier(.16,.8,.29,.99); }
-        `}</style>
       </div>
     );
   };
@@ -772,15 +766,8 @@ const App = () => {
     const skillsRef = useRef([]);
     const [projectsVisible, setProjectsVisible] = useState({});
     const projectsRef = useRef([]);
-    // Controls visibility of the rotating text banner when the staggered menu is open
-    const [showRotatingText, setShowRotatingText] = useState(false);
 
-    // Show rotating text briefly on initial load
-    useEffect(() => {
-      setShowRotatingText(true);
-      const timer = setTimeout(() => setShowRotatingText(false), 3000);
-      return () => clearTimeout(timer);
-    }, []);    const form = useRef();
+    const form = useRef();
     const [isSending, setIsSending] = useState(false);
     const [sendStatus, setSendStatus] = useState(''); // '', 'success', 'error'
 
@@ -981,17 +968,15 @@ const App = () => {
             colors={['#B19EEF', '#5227FF']}
             logoUrl="/path-to-your-logo.svg"
             accentColor="#ff6b6b"
-            onMenuOpen={() => setShowRotatingText(true)}
-            onMenuClose={() => setShowRotatingText(false)}
           />
         </Suspense>
 
-        {/* Spotlight Hero Section with advanced Prism background, Rotating Text, and ProfileCard */}
+        {/* Spotlight Hero Section with advanced Prism background and ProfileCard */}
   <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
           {/* Dark gradient base */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
             {/* Prism background (lazy) */}
-            <div className={`absolute inset-0 ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
+            <div className={`absolute inset-0 overflow-hidden ${isMounted && enablePrism ? 'opacity-100 transition-opacity duration-[2500ms] ease-out' : 'opacity-0'}`}>
               {enablePrism && (
                 <Suspense fallback={<div className="w-full h-full" />}> 
                   <Prism
@@ -1013,25 +998,6 @@ const App = () => {
               <div className="absolute inset-0 pointer-events-none mix-blend-overlay" style={{background:'radial-gradient(circle at 50% 35%, rgba(255,255,255,0.22), rgba(40,0,80,0.05) 55%, rgba(0,0,0,0.9) 90%)'}} />
               <div className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none" style={{background:'linear-gradient(to bottom, rgba(5,3,9,0) 0%, #050309 65%, #050309 100%)'}} />
             </div>
-            {/* Rotating Text Overlay (shows when menu open) */}
-            {showRotatingText && (
-              <Suspense fallback={null}>
-                <div className="absolute top-[10%] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center text-center px-4 rotating-text-enter rotating-text-active transition-opacity duration-1000 ease-in-out" aria-live="polite">
-                  <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-[#ffffff] to-[#b8b0ff] drop-shadow-[0_0_10px_rgba(255,255,255,0.15)]">
-                    <span className="inline-block mr-3">Driven</span>
-                    <RotatingText
-                      texts={["Result","Creativity","Coding"]}
-                      splitBy="characters"
-                      rotationInterval={2500}
-                      staggerDuration={0.025}
-                      staggerFrom="center"
-                      transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                      elementLevelClassName="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4]"
-                    />
-                  </h2>
-                </div>
-              </Suspense>
-            )}
             {/* Profile Card in spotlight */}
             <div className={`relative z-10 transform transition-all duration-1000 ease-out px-4 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <ProfileCard
