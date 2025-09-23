@@ -974,7 +974,7 @@ const App = () => {
                   }
                 }}
                 className="scale-[0.88] md:scale-100"
-                backgroundColor="transparent"
+                backgroundColor="linear-gradient(to bottom, #2E3192, #00FFE9)"
               />
             </div>
         </section>
