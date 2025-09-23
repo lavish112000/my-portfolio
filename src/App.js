@@ -955,7 +955,7 @@ const App = () => {
         </Suspense>
 
         {/* Spotlight Hero Section with ProfileCard */}
-  <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-[#06040a]">
+  <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-gradient-to-b from-[#2E3192] to-[#00FFE9]">
           {/* Dark gradient base */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,#1a0f29_0%,#08060d_55%,#050309_100%)] opacity-90" />
             {/* Profile Card in spotlight */}
@@ -974,6 +974,7 @@ const App = () => {
                   }
                 }}
                 className="scale-[0.88] md:scale-100"
+                backgroundColor="transparent"
               />
             </div>
         </section>
