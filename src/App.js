@@ -938,42 +938,50 @@ const App = () => {
         className={`w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] transition-opacity duration-1000 ease-in-out ${isMounted && isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         ref={containerRef}
       >
-        {/* Profile Card positioned at top left */}
-        <div className="absolute top-8 left-8 z-20">
-          <ProfileCard
-            avatarUrl={profileImage}
-            name="LALIT CHOUDHARY"
-            title="FULL STACK WEB & APP DEVELOPER"
-            handle="lavish112000"
-            status="Available"
-            contactText="Contact"
-            onContactClick={() => {
-              if (containerRef.current) {
-                const connectEl = containerRef.current.querySelector('#connect');
-                connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
-              }
-            }}
-            className="scale-[0.7] origin-top-left"
-            backgroundColor="linear-gradient(to bottom, #2E3192, #00FFE9)"
-          />
-        </div>
+        
 
-        <Suspense fallback={null}>
-          <StaggeredMenu
-            position="right"
-            items={menuItems}
-            socialItems={socialItems}
-            displaySocials={true}
-            displayItemNumbering={true}
-            menuButtonColor="#000"
-            openMenuButtonColor="#000"
-            changeMenuColorOnOpen={true}
-            colors={['#B19EEF', '#5227FF']}
-            logoUrl="/path-to-your-logo.svg"
-            accentColor="#ff6b6b"
-          />
-        </Suspense>
-
+        {/* Spotlight Hero Section with ProfileCard */}
+  <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-gradient-to-b from-[#2E3192] to-[#00FFE9]">
+          {/* Dark gradient base */}
+            <div className="linear-gradient(to bottom, #2E3192, #00FFE9)" />
+            {/* Profile Card in spotlight */}
+            <div className={`relative z-10 transform transition-all duration-1000 ease-out px-4 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              <ProfileCard
+                avatarUrl={profileImage}
+                name="LALIT CHOUDHARY"
+                title="FULL STACK WEB & APP DEVELOPER"
+                handle="lavish112000"
+                status="Available"
+                contactText="Contact"
+                onContactClick={() => {
+                  if (containerRef.current) {
+                    const connectEl = containerRef.current.querySelector('#connect');
+                    connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className="scale-[0.88] md:scale-100"
+                backgroundColor="linear-gradient(to bottom, #2E3192, #00FFE9)"
+              />
+            </div>
+            {/* Staggered Menu in top right corner */}
+            <div className="absolute top-4 right-4 z-50">
+              <Suspense fallback={null}>
+                <StaggeredMenu
+                  position="right"
+                  items={menuItems}
+                  socialItems={socialItems}
+                  displaySocials={true}
+                  displayItemNumbering={true}
+                  menuButtonColor="#000"
+                  openMenuButtonColor="#000"
+                  changeMenuColorOnOpen={true}
+                  colors={['#B19EEF', '#5227FF']}
+                  logoUrl="/path-to-your-logo.svg"
+                  accentColor="#ff6b6b"
+                />
+              </Suspense>
+            </div>
+        </section>
         {/* About Section separated below spotlight */}
         <section id="about" className="w-full max-w-5xl mx-auto mt-24 px-8">
           <div className={`rounded-xl shadow-2xl p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
