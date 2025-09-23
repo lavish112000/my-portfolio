@@ -964,7 +964,7 @@ const App = () => {
               />
             </div>
             {/* Staggered Menu in top right corner */}
-            <div className="absolute top-4 right-4 z-50">
+            <div className="absolute top-0 right-0 h-full flex-auto z-50">
               <Suspense fallback={null}>
                 <StaggeredMenu
                   position="right"
@@ -985,7 +985,7 @@ const App = () => {
         {/* About Section separated below spotlight */}
         <section id="about" className="w-full max-w-5xl mx-auto mt-24 px-8">
           <div className={`rounded-xl shadow-2xl p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h2 className="text-4xl font-bold font-[Playfair Display] mb-6">About Me</h2>
+            <h2 className="text-6xl font-bold font-[Playfair Display] mb-6">About Me</h2>
             <p className="text-lg leading-relaxed text-white">
               {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
             </p>
@@ -997,11 +997,11 @@ const App = () => {
             <ScrollFloat
               scrollContainerRef={containerRef}
               animationDuration={1}
-              ease='back.inOut(2)'
+              ease='back.inOut(4)'
               scrollStart='center bottom+=50%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.03}
-              textClassName="text-white font-extrabold font-sans"
+              textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
             >
               MY WORK
             </ScrollFloat>
@@ -1042,11 +1042,11 @@ const App = () => {
               <ScrollFloat
                 scrollContainerRef={containerRef}
                 animationDuration={1}
-                ease='back.inOut(2)'
+                ease='back.inOut(4)'
                 scrollStart='center bottom+=50%'
                 scrollEnd='bottom bottom-=40%'
                 stagger={0.03}
-                textClassName="text-white font-extrabold font-sans"
+                textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
               >
                 SKILLSETS
               </ScrollFloat>
@@ -1094,11 +1094,11 @@ const App = () => {
             <ScrollFloat
               scrollContainerRef={containerRef}
               animationDuration={1}
-              ease='back.inOut(2)'
+              ease='back.inOut(4)'
               scrollStart='center bottom+=50%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.03}
-              textClassName="text-white font-extrabold font-sans"
+              textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
             >
               Connect with me
             </ScrollFloat>
