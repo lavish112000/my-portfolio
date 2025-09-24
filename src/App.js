@@ -986,7 +986,7 @@ const App = () => {
         {/* About Section separated below spotlight */}
         <section id="about" className="w-full max-w-5xl mx-auto mt-24 px-8">
           <div className={`rounded-xl shadow-2xl p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h2 className="text-6xl font-bold font-[Playfair Display] mb-4">
+            <h2 className="text-6xl font-bold font-[Playfair Display] mb-0">
               <div style={{position: 'relative', height: '300px'}}>
                    <TextPressure
                       text="About Me!"
