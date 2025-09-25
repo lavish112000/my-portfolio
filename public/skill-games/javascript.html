@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../public/skill-games/javascript.css">
+    <link rel="stylesheet" href="javascript.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 </head>
 </head>
@@ -44,8 +44,22 @@
         const backButton = document.getElementById('back-button');
 
         // --- CANVAS SETUP ---
-        canvas.width = 800;
-        canvas.height = 600;
+        const gameContainer = document.getElementById('game-container');
+        canvas.width = gameContainer.clientWidth;
+        canvas.height = gameContainer.clientHeight;
+
+        // --- RESIZE HANDLER ---
+        function resizeCanvas() {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            // Reinitialize game elements if needed
+            if (player) {
+                player.x = canvas.width / 2;
+                player.y = canvas.height - 60;
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
 
         // --- SOUND SETUP ---
         const sounds = {
