@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../public/skill-games/python.css">
+    <link rel="stylesheet" href="python.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 </head>
 </head>
@@ -346,6 +346,15 @@
 
         blockArea.addEventListener('dragover', e => e.preventDefault());
         blockArea.addEventListener('drop', () => { sounds.drop(); blockArea.appendChild(draggedBlock); });
+
+        // --- RESIZE HANDLER ---
+        window.addEventListener('resize', () => {
+            // Re-adjust canvas size if game is active
+            if (chatbotCanvas && chatbotCanvas.offsetWidth > 0) {
+                chatbotCanvas.width = chatbotCanvas.offsetWidth;
+                chatbotCanvas.height = chatbotCanvas.offsetHeight;
+            }
+        });
         
     </script>
 </body>
