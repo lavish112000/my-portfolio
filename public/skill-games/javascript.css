@@ -25,6 +25,11 @@ body {
     border: 2px solid var(--secondary-color);
     box-shadow: 0 0 30px var(--secondary-color);
     cursor: none; /* Hide cursor over game */
+    width: 95vw;
+    max-width: 800px;
+    height: 90vh;
+    max-height: 600px;
+    margin: 0 auto;
 }
 
 canvas {
@@ -115,6 +120,48 @@ p {
     cursor: pointer;
     transition: all 0.3s ease;
     animation: pulse-glow 2s infinite;
+}
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 768px) {
+    #game-container {
+        width: 98vw;
+        height: 85vh;
+        max-height: 500px;
+    }
+    
+    .action-button {
+        padding: 12px 25px;
+        font-size: 1.2em;
+    }
+    
+    #ui-layer {
+        padding: 15px;
+    }
+    
+    #score {
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 480px) {
+    #game-container {
+        width: 100vw;
+        height: 80vh;
+        border: 1px solid var(--secondary-color);
+    }
+    
+    .action-button {
+        padding: 10px 20px;
+        font-size: 1em;
+    }
+    
+    #back-button {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
 }
 .action-button:hover {
     transform: scale(1.05);
