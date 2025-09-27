@@ -234,12 +234,29 @@ const ProfileCardComponent = ({
     const deviceOrientationHandler = handleDeviceOrientation;
 
     const handleClick = () => {
-  const isHttps = typeof window !== 'undefined' && window.location && window.location.protocol === 'https:';
-  if (!enableMobileTilt || !isHttps) return;
-      if (typeof window.DeviceMotionEvent?.requestPermission === 'function') {
-        window.DeviceMotionEvent.requestPermission().then(state => { if (state === 'granted') window.addEventListener('deviceorientation', deviceOrientationHandler); }).catch(console.error);
-      } else { window.addEventListener('deviceorientation', deviceOrientationHandler); }
+      if (!enableMobileTilt) return;
+      
+      if (typeof window.DeviceOrientationEvent?.requestPermission === 'function') {
+        // iOS 13+ requires permission
+        window.DeviceOrientationEvent.requestPermission()
+          .then(state => {
+            if (state === 'granted') {
+              window.addEventListener('deviceorientation', deviceOrientationHandler);
+              console.log('Gyroscope permission granted!');
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Android and other devices
+        window.addEventListener('deviceorientation', deviceOrientationHandler);
+        console.log('Gyroscope activated!');
+      }
     };
+
+    // Auto-activate gyroscope for mobile devices (non-iOS)
+    if (enableMobileTilt && typeof window.DeviceOrientationEvent?.requestPermission !== 'function') {
+      window.addEventListener('deviceorientation', deviceOrientationHandler);
+    }
 
   // Attach events to wrapper so the entire visual area (including top half where card had pointer-events none) responds.
   wrap.addEventListener('pointerenter', pointerEnterHandler);
