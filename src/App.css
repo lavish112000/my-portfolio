@@ -1,10 +1,16 @@
 .App {
   text-align: center;
+  /* Prevent horizontal overflow */
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+  /* Responsive sizing */
+  max-height: 200px;
+  min-height: 80px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -16,12 +22,14 @@
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: clamp(1rem, 4vw, 2rem);
   color: white;
+  padding: 1rem;
 }
 
 .App-link {
@@ -37,6 +45,7 @@
   }
 }
 
+/* Enhanced cosmic button with responsive design */
 .cosmic-button {
   position: relative;
   overflow: hidden;
@@ -44,6 +53,25 @@
   color: white;
   border: 2px solid transparent;
   transition: all 0.3s ease;
+  /* Touch optimization */
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  /* Responsive font size */
+  font-size: clamp(0.875rem, 2.5vw, 1rem);
+}
+
+/* Mobile-specific button adjustments */
+@media (max-width: 768px) {
+  .cosmic-button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
 }
 
 .cosmic-button::before {
