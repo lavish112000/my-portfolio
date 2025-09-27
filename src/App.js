@@ -97,6 +97,41 @@ const App = () => {
    */
   const [currentSection, setCurrentSection] = useState('');
 
+  /**
+   * Gyroscope hint visibility for mobile users
+   * @type {boolean} showGyroscopeHint - Controls gyroscope hint display
+   */
+  const [showGyroscopeHint, setShowGyroscopeHint] = useState(false);
+
+  // ============================================================================
+  // HELPER FUNCTIONS
+  // ============================================================================
+  
+  // Mobile device detection
+  const isMobileDevice = useCallback(() => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (typeof window !== 'undefined' && window.innerWidth <= 1024);
+  }, []);
+
+
+
+  // ============================================================================
+  // GYROSCOPE INITIALIZATION
+  // ============================================================================
+  
+  useEffect(() => {
+    // Show gyroscope hint for mobile users
+    if (isMobileDevice()) {
+      const timer = setTimeout(() => {
+        setShowGyroscopeHint(true);
+        // Auto-hide after 6 seconds
+        setTimeout(() => setShowGyroscopeHint(false), 6000);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isMobileDevice]);
+
   // ============================================================================
   // STATIC DATA
   // ============================================================================
@@ -482,11 +517,11 @@ const App = () => {
     }, [onTransitionEnd]);
 
     return (
-      <div className={`relative w-screen h-screen overflow-hidden bg-gradient-to-b ${backgroundGradient}`}>
+      <div className={`relative w-screen h-[100dvh] overflow-hidden bg-gradient-to-b ${backgroundGradient}`}>
         <div ref={mountRef} className="absolute inset-0"></div>
-        
-        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ease-in-out ${showButton ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div key={currentHello} className="text-white text-6xl font-bold transition-all duration-200 ease-in-out scale-[400%]">
+
+        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ease-in-out p-4 ${showButton ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div key={currentHello} className="text-white text-responsive-4xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold transition-all duration-200 ease-in-out text-center break-words">
             {currentHello}
           </div>
         </div>
@@ -641,38 +676,38 @@ const App = () => {
     const allSkills = Object.values(skillsByCategory).flat();
 
     return (
-      <div className="w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] p-10">
+      <div className="w-screen h-[100dvh] text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] p-4 md:p-10">
         <div className="container mx-auto max-w-7xl">
-          <button onClick={onBack} className="text-white text-xl font-bold hover:text-blue-400 transition-colors duration-200 mb-8">
+          <button onClick={onBack} className="text-white text-lg md:text-xl font-bold hover:text-blue-400 transition-colors duration-200 mb-6 md:mb-8 flex items-center gap-2">
             ← Back to My Work
           </button>
-          <div className="flex flex-col lg:flex-row gap-12">
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-12">
             {/* Left Column */}
             <div className="lg:w-1/2">
-              <div ref={el => panelRefs.current[0]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
-                <div className="w-full h-auto mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
-                  <img src={project.image} alt={project.title} className="w-full object-cover"/>
+              <div ref={el => panelRefs.current[0]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
+                <div className="w-full h-48 md:h-auto mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
+                  <img src={project.image} alt={project.title} className="w-full h-full object-cover"/>
                   <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': '#00FFE9'}}></div>
                 </div>
-                <h3 className="text-4xl font-bold mt-4">{project.title}</h3>
-                <p className="text-gray-300 text-lg mt-2">{project.details}</p>
+                <h3 className="text-responsive-2xl md:text-3xl lg:text-4xl font-bold mt-4">{project.title}</h3>
+                <p className="text-gray-300 text-responsive-base md:text-lg mt-2">{project.details}</p>
               </div>
             </div>
             {/* Right Column */}
             <div className="lg:w-1/2">
-              <div ref={el => panelRefs.current[1]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-8">
-                <h4 className="text-3xl font-bold mb-4">Project Impact</h4>
-                <p className="text-gray-300 text-lg leading-relaxed">{project.impact}</p>
+              <div ref={el => panelRefs.current[1]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
+                <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Project Impact</h4>
+                <p className="text-gray-300 text-responsive-base md:text-lg leading-relaxed">{project.impact}</p>
               </div>
-              <div ref={el => panelRefs.current[2]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-8">
-                <h4 className="text-3xl font-bold mb-4">Key Features</h4>
-                <ul className="list-disc list-inside text-gray-300 text-lg space-y-2">
+              <div ref={el => panelRefs.current[2]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
+                <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Key Features</h4>
+                <ul className="list-disc list-inside text-gray-300 text-responsive-base md:text-lg space-y-2">
                   {project.keyFeatures.map(feature => <li key={feature}>{feature}</li>)}
                 </ul>
               </div>
-              <div ref={el => panelRefs.current[3]=el} className="pd-panel p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
-                <h4 className="text-3xl font-bold mb-4">Technologies Used</h4>
-                <div className="flex flex-wrap gap-4">
+              <div ref={el => panelRefs.current[3]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
+                <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Technologies Used</h4>
+                <div className="flex flex-wrap gap-2 md:gap-4">
                   {project.tech.split(',').map((techName, index) => {
                     const tech = allSkills.find(t => t.name.toLowerCase() === techName.trim().toLowerCase());
                     if (tech) {
@@ -942,11 +977,11 @@ const App = () => {
         
 
         {/* Spotlight Hero Section with ProfileCard */}
-  <section className="relative w-full flex items-center justify-center min-h-[92vh] overflow-visible bg-gradient-to-b from-[#2E3192] to-[#00FFE9]">
+  <section className="relative w-full flex items-center justify-center min-h-[92dvh] overflow-visible bg-gradient-to-b from-[#2E3192] to-[#00FFE9] px-4 py-8">
           {/* Dark gradient base */}
             <div className="linear-gradient(to bottom, #2E3192, #00FFE9)" />
             {/* Profile Card in spotlight */}
-            <div className={`relative z-10 transform transition-all duration-1000 ease-out px-4 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`relative z-10 transform transition-all duration-1000 ease-out w-full max-w-sm xs:max-w-md sm:max-w-lg md:max-w-xl ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <ProfileCard
                 avatarUrl={profileImage}
                 name="LALIT CHOUDHARY"
@@ -954,18 +989,23 @@ const App = () => {
                 handle="lavish112000"
                 status="Available"
                 contactText="Contact"
+                enableMobileTilt={isMobileDevice()}
+                mobileTiltSensitivity={3}
+                maxTiltX={20}
+                maxTiltY={20}
+                maxTiltZ={10}
                 onContactClick={() => {
                   if (containerRef.current) {
                     const connectEl = containerRef.current.querySelector('#connect');
                     connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
                   }
                 }}
-                className="scale-[0.88] md:scale-100"
+                className="scale-75 xs:scale-80 sm:scale-90 md:scale-95 lg:scale-100"
                 backgroundColor="linear-gradient(to bottom, #2E3192, #00FFE9)"
               />
             </div>
             {/* Staggered Menu in top right corner */}
-            <div className="absolute top-0 right-0 h-full flex-auto z-50">
+            <div className="absolute top-2 md:top-0 right-2 md:right-0 h-full flex-auto z-50">
               <Suspense fallback={null}>
                 <StaggeredMenu
                   position="right"
@@ -984,10 +1024,10 @@ const App = () => {
             </div>
         </section>
         {/* About Section separated below spotlight */}
-        <section id="about" className="w-full max-w-5xl mx-auto mt-24 px-8">
-          <div className={`rounded-xl shadow-2xl p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-            <h2 className="text-6xl font-bold font-[Playfair Display] mb-0">
-              <div style={{position: 'relative', height: '300px'}}>
+        <section id="about" className="w-full max-w-5xl mx-auto mt-12 md:mt-24 px-4 md:px-8">
+          <div className={`rounded-xl shadow-2xl p-6 md:p-10 bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 backdrop-blur-sm transform transition-all duration-1000 ease-out hover:scale-[1.01] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <h2 className="text-responsive-3xl md:text-6xl font-bold font-[Playfair Display] mb-0">
+              <div style={{position: 'relative', height: 'clamp(200px, 30vw, 300px)'}}>
                    <TextPressure
                       text="About Me!"
                       flex={true}
@@ -998,18 +1038,18 @@ const App = () => {
                         italic={true}
                         textColor="#ffffff"
                         strokeColor="#ff0000"
-                        minFontSize={24}
+                        minFontSize={16}
                      />
               </div>
               </h2>
-            <p className="text-lg leading-relaxed text-white">
+            <p className="text-responsive-base md:text-lg leading-relaxed text-white">
               {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
             </p>
           </div>
         </section>
 
           {/* My Work Section */}
-          <div id="projects" className="w-full max-w-7xl mx-auto mt-20 p-10 bg-transparent text-center">
+          <div id="projects" className="w-full max-w-7xl mx-auto mt-12 md:mt-20 p-4 md:p-10 bg-transparent text-center">
            <ScrollFloat
               scrollContainerRef={containerRef}
               animationDuration={1}
@@ -1017,11 +1057,11 @@ const App = () => {
               scrollStart='center bottom+=50%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.03}
-              textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
+              textClassName="text-white font-extrabold font-sans text-responsive-3xl md:text-5xl lg:text-7xl"
             >
             MY WORK
              </ScrollFloat>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mt-12 md:mt-20">
                
               {projectData.map((project, index) => {
                 const isLeft = index % 2 === 0;
@@ -1031,21 +1071,21 @@ const App = () => {
                   <div
                     key={project.id}
                     ref={el => projectsRef.current[index] = el}
-                    className={`relative group p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover cursor-pointer ${animationClass}`}
+                    className={`relative group p-4 md:p-6 rounded-xl shadow-2xl bg-gray-800 bg-opacity-50 backdrop-blur-sm skill-card-hover cursor-pointer transition-transform duration-300 hover:scale-105 ${animationClass}`}
                     onClick={() => onProjectClick(project, containerRef)}
                   >
                     <div className="flex flex-col items-center text-center">
                       {/* Project Box Content */}
-                      <div className="w-full h-64 mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
+                      <div className="w-full h-48 md:h-64 mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
                         <img
                           src={project.image}
                           alt={project.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': index % 2 === 0 ? '#00FFE9' : '#f042ff'}}></div>
                       </div>
-                      <h3 className="text-3xl font-bold cursor-pointer">{project.title}</h3>
-                      <p className="text-gray-300">{project.tech}</p>
+                      <h3 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold cursor-pointer text-white">{project.title}</h3>
+                      <p className="text-gray-300 text-responsive-sm md:text-base mt-2">{project.tech}</p>
                     </div>
                   </div>
                 );
@@ -1054,7 +1094,7 @@ const App = () => {
           </div>
           
           {/* Skillset Section */}
-          <div id="skills" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
+          <div id="skills" className="w-full max-w-7xl mx-auto mt-12 md:mt-20 p-4 md:p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
             <div onClick={handleSkillsetsClick} className="cursor-pointer">
               <ScrollFloat
                 scrollContainerRef={containerRef}
@@ -1063,16 +1103,16 @@ const App = () => {
                 scrollStart='center bottom+=50%'
                 scrollEnd='bottom bottom-=40%'
                 stagger={0.03}
-                textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
+                textClassName="text-white font-extrabold font-sans text-responsive-3xl md:text-5xl lg:text-7xl"
               >
                 SKILLSETS
               </ScrollFloat>
             </div>
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               {Object.entries(skillsByCategory).map(([category, skills], categoryIndex) => (
                 <div key={category}>
-                  <h2 className="text-3xl font-bold text-white mb-4 mt-20">{category}</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <h2 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold text-white mb-4 mt-12 md:mt-20">{category}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                     {skills.map((item, skillIndex) => {
                       const globalIndex = Object.values(skillsByCategory).flat().findIndex(s => s.name === item.name);
                       let animationClass = '';
@@ -1089,13 +1129,13 @@ const App = () => {
                           key={`${item.name}-${category}`}
                           ref={el => skillsRef.current[globalIndex] = el}
                           onClick={() => handleSkillClick(item.name)}
-                          className={`p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 ${animationClass}`}
+                          className={`p-4 md:p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-3 md:space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 transition-all duration-300 hover:scale-105 hover:bg-opacity-80 min-h-[60px] ${animationClass}`}
                         >
-                          <div className="w-12 h-12 flex-shrink-0">
+                          <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
                             {item.customIcon ? item.customIcon : <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />}
                           </div>
-                          <div>
-                            <h3 className="text-2xl font-bold text-left">{item.name}</h3>
+                          <div className="flex-1">
+                            <h3 className="text-responsive-base md:text-xl lg:text-2xl font-bold text-left text-white">{item.name}</h3>
                           </div>
                         </button>
                       );
@@ -1107,7 +1147,7 @@ const App = () => {
           </div>
           
           {/* Connect with me Section */}
-          <div id="connect" className="w-full max-w-7xl mx-auto mt-20 p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
+          <div id="connect" className="w-full max-w-7xl mx-auto mt-12 md:mt-20 p-4 md:p-10 rounded-xl shadow-2xl bg-gradient-to-b from-[#f042ff] via-[#ffe51] to-[#87f5f5] bg-opacity-50 text-center transform transition-transform duration-300 hover:scale-[1.01]">
             <ScrollFloat
               scrollContainerRef={containerRef}
               animationDuration={1}
@@ -1115,48 +1155,48 @@ const App = () => {
               scrollStart='center bottom+=50%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.03}
-              textClassName="text-white font-extrabold font-sans text-5xl md:text-7xl"
+              textClassName="text-white font-extrabold font-sans text-responsive-3xl md:text-5xl lg:text-7xl"
             >
               Connect with me
             </ScrollFloat>
-            <div className="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-12 mt-20">
+            <div className="flex flex-col lg:flex-row items-center justify-center space-y-8 lg:space-y-0 lg:space-x-12 mt-12 md:mt-20">
               
               {/* Gmail Form */}
-              <form ref={form} onSubmit={sendEmail} className="w-full md:w-1/2 p-8 rounded-lg shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex flex-col space-y-4">
-                <input type="text" name="user_name" placeholder="Your Name" required className="p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                <input type="email" name="user_email" placeholder="Your Email" required className="p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                <input type="text" name="subject" placeholder="Subject" required className="p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                <textarea name="message" placeholder="Your Message" rows="5" required className="p-3 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
-                <button type="submit" disabled={isSending} className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white font-bold py-3 px-6 rounded-full disabled:bg-gray-500 disabled:cursor-not-allowed">
+              <form ref={form} onSubmit={sendEmail} className="w-full lg:w-1/2 p-4 md:p-8 rounded-lg shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex flex-col space-y-4">
+                <input type="text" name="user_name" placeholder="Your Name" required className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base" />
+                <input type="email" name="user_email" placeholder="Your Email" required className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base" />
+                <input type="text" name="subject" placeholder="Subject" required className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base" />
+                <textarea name="message" placeholder="Your Message" rows="5" required className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition-all duration-200 text-base"></textarea>
+                <button type="submit" disabled={isSending} className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-full disabled:bg-gray-500 disabled:cursor-not-allowed min-h-[48px] text-base md:text-lg">
                   {isSending ? 'Sending...' : 'Send Message'}
                 </button>
                 {sendStatus === 'success' && (
-                  <p className="text-green-400 mt-2">Message sent successfully! I\'ll get back to you soon.</p>
+                  <p className="text-green-400 mt-2 text-sm md:text-base">Message sent successfully! I\'ll get back to you soon.</p>
                 )}
                 {sendStatus === 'error' && (
-                  <p className="text-red-400 mt-2">Failed to send message. Please try again or contact me via my social links.</p>
+                  <p className="text-red-400 mt-2 text-sm md:text-base">Failed to send message. Please try again or contact me via my social links.</p>
                 )}
               </form>
 
               {/* Social Media Icons */}
-              <div className="w-full md:w-1/2 flex flex-col items-center justify-center space-y-8">
+              <div className="w-full lg:w-1/2 flex flex-col items-center justify-center space-y-6 md:space-y-8">
                 {/* GitHub Icon */}
-                <a href="https://github.com/lavish112000" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300">
+                <a href="https://github.com/lavish112000" target="_blank" rel="noopener noreferrer" aria-label="GitHub Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-1 p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 md:w-16 md:h-16">
                     <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                   </svg>
                 </a>
                 {/* LinkedIn Icon */}
-                <a href="https://linkedin.com/in/lalit11" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400">
+                <a href="https://linkedin.com/in/lalit11" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-2 p-2 rounded-full hover:bg-blue-400 hover:bg-opacity-10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400 md:w-16 md:h-16">
                     <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
                     <rect x="2" y="9" width="4" height="12"></rect>
                     <circle cx="4" cy="4" r="2"></circle>
                   </svg>
                 </a>
                 {/* Twitter/X Icon */}
-                <a href="https://twitter.com/your-username" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                <a href="https://twitter.com/your-username" target="_blank" rel="noopener noreferrer" aria-label="Twitter Profile" className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-3 p-2 rounded-full hover:bg-white hover:bg-opacity-10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white md:w-16 md:h-16">
                     <path d="M18 6 6 18"></path>
                     <path d="m6 6 12 12"></path>
                   </svg>
@@ -1289,6 +1329,34 @@ const App = () => {
       <div style={{ position: 'relative', zIndex: 1 }}>
         <PageContent />
       </div>
+      
+      {/* Gyroscope Hint for Mobile Users */}
+      {showGyroscopeHint && isMobileDevice() && (
+        <div className="fixed top-20 left-4 right-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4 rounded-lg shadow-2xl z-50 animate-pulse border border-white/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="text-3xl animate-spin">🌀</div>
+              <div>
+                <p className="text-white font-bold text-sm flex items-center gap-1">
+                  <span>🎮</span> Gyroscope Mode Active!
+                </p>
+                <p className="text-blue-100 text-xs">
+                  <span className="font-semibold">📱 Tilt</span> your device to interact with the profile card
+                </p>
+                <p className="text-purple-100 text-xs mt-1">
+                  <span className="font-semibold">👆 Tap</span> the profile card on iOS for permission
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowGyroscopeHint(false)}
+              className="text-white hover:text-gray-300 text-xl font-bold bg-white/10 rounded-full w-8 h-8 flex items-center justify-center"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
