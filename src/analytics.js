@@ -39,10 +39,10 @@
 
 /**
  * Google Analytics Tracking ID
- * @description Retrieves GA tracking ID from environment variables
- * @constant {string|undefined} GA_TRACKING_ID - GA4 measurement ID from REACT_APP_GA_TRACKING_ID
+ * @description Uses the configured GA4 measurement ID
+ * @constant {string} GA_TRACKING_ID - GA4 measurement ID
  */
-export const GA_TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID;
+export const GA_TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID || 'G-4JTCMWN4MB';
 
 // ============================================================================
 // PAGE VIEW TRACKING
