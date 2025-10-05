@@ -1,17 +1,29 @@
 import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useAnimation, useTransform } from 'motion/react';
 
+// Import local images
+import HomePage from './RollingGalleryImg/HomePage.png';
+import Aboutme from './RollingGalleryImg/Aboutme.png';
+import ConnectWithMe from './RollingGalleryImg/ConnectWithMe.png';
+import DSA from './RollingGalleryImg/DSA.png';
+import Menu from './RollingGalleryImg/Menu.png';
+import Mywork from './RollingGalleryImg/Mywork.png';
+import PortfolioPage from './RollingGalleryImg/PortfolioPage.png';
+import Skillsets from './RollingGalleryImg/Skillsets.png';
+import Tailwind from './RollingGalleryImg/Tailwind.png';
+import ThreeJS from './RollingGalleryImg/Three.js.png';
+
 const IMGS = [
-  'https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1495103033382-fe343886b671?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1506781961370-37a89d6b3095?q=80&w=3264&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1599576838688-8a6c11263108?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1494094892896-7f14a4433b7a?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://plus.unsplash.com/premium_photo-1664910706524-e783eed89e71?q=80&w=3869&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1503788311183-fa3bf9c4bc32?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  'https://images.unsplash.com/photo-1585970480901-90d6bb2a48b5?q=80&w=3774&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+  HomePage,
+  Aboutme,
+  ConnectWithMe,
+  DSA,
+  Menu,
+  Mywork,
+  PortfolioPage,
+  Skillsets,
+  Tailwind,
+  ThreeJS
 ];
 
 const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] }) => {
@@ -25,9 +37,9 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const cylinderWidth = isScreenSizeSm ? 1100 : 1800;
+  const cylinderWidth = isScreenSizeSm ? 1400 : 2800;
   const faceCount = images.length;
-  const faceWidth = (cylinderWidth / faceCount) * 1.5;
+  const faceWidth = (cylinderWidth / faceCount) * 1.8;
   const radius = cylinderWidth / (2 * Math.PI);
 
   const dragFactor = 0.05;
@@ -91,7 +103,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
   };
 
   return (
-    <div className="relative h-[500px] w-full overflow-hidden">
+    <div className="relative h-[600px] w-full overflow-hidden">
       <div
         className="absolute top-0 left-0 h-full w-[48px] z-10"
         style={{
@@ -126,7 +138,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
           {images.map((url, i) => (
             <div
               key={i}
-              className="group absolute flex h-fit items-center justify-center p-[8%] [backface-visibility:hidden] md:p-[6%]"
+              className="group absolute flex h-fit items-center justify-center [backface-visibility:hidden]"
               style={{
                 width: `${faceWidth}px`,
                 transform: `rotateY(${(360 / faceCount) * i}deg) translateZ(${radius}px)`
@@ -135,9 +147,9 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
               <img
                 src={url}
                 alt="gallery"
-                className="pointer-events-none h-[120px] w-[300px] rounded-[15px] border-[3px] border-white object-cover
+                className="pointer-events-none h-[400px] w-[600px] rounded-[15px] border-[3px] border-white object-contain
                            transition-transform duration-300 ease-out group-hover:scale-105
-                           sm:h-[100px] sm:w-[220px]"
+                           sm:h-[250px] sm:w-[400px] md:h-[350px] md:w-[550px]"
               />
             </div>
           ))}
