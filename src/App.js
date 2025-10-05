@@ -43,6 +43,7 @@ import * as THREE from 'three';
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import ProfileCard from './components/ProfileCard';
+import RollingGallery from './components/RollingGallery';
 import videoPlayerProfileImage from './Videoplayerprofile.png';
 import TaskTracker from './TaskTracker.png';
 import ResumeParser from './ResumeParser.png';
@@ -722,6 +723,14 @@ const App = () => {
                   })}
                 </div>
               </div>
+            </div>
+          </div>
+          
+          {/* Gallery Section */}
+          <div className="mt-12">
+            <div ref={el => panelRefs.current[4]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
+              <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center">Gallery</h4>
+              <RollingGallery autoplay={true} pauseOnHover={true} />
             </div>
           </div>
         </div>
