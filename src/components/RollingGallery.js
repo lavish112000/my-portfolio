@@ -37,7 +37,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const cylinderWidth = isScreenSizeSm ? 1400 : 2800;
+  const cylinderWidth = isScreenSizeSm ? 1320 : 2160;
   const faceCount = images.length;
   const faceWidth = (cylinderWidth / faceCount) * 1.8;
   const radius = cylinderWidth / (2 * Math.PI);
@@ -141,15 +141,17 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
               className="group absolute flex h-fit items-center justify-center [backface-visibility:hidden]"
               style={{
                 width: `${faceWidth}px`,
-                transform: `rotateY(${(360 / faceCount) * i}deg) translateZ(${radius}px)`
+                transform: `rotateY(${(360 / faceCount) * i}deg) translateZ(${radius}px)`,
+                backgroundColor: 'transparent'
               }}
             >
               <img
                 src={url}
                 alt="gallery"
-                className="pointer-events-none h-[400px] w-[600px] rounded-[15px] border-[3px] border-white object-contain
-                           transition-transform duration-300 ease-out group-hover:scale-105
-                           sm:h-[250px] sm:w-[400px] md:h-[350px] md:w-[550px]"
+                className="pointer-events-none h-[144px] w-[360px] rounded-[15px] object-contain
+                           transition-transform duration-300 ease-out group-hover:scale-110
+                           sm:h-[120px] sm:w-[264px]"
+                style={{ backgroundColor: 'transparent' }}
               />
             </div>
           ))}
