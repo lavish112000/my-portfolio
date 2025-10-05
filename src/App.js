@@ -69,16 +69,18 @@ const App = () => {
   // ============================================================================
 
   /**
-   * Navigation state for managing different views
-   * @type {string} currentPage - Current active page ('home', 'profile', 'project-details')
+   * Landing page visibility state - managed through currentPage state
    */
-  const [currentPage, setCurrentPage] = useState('home');
 
   /**
-   * Profile page visibility state
-   * @type {boolean} showProfile - Controls profile page display
+   * Navigation state for managing different views
+   * @type {string} currentPage - Current active page ('landing', 'home', 'profile', 'project-details')
    */
-  const [showProfile, setShowProfile] = useState(false);
+  const [currentPage, setCurrentPage] = useState('landing');
+
+  /**
+   * Profile page visibility - managed through currentPage state
+   */
 
   /**
    * Selected project for detailed view
@@ -465,18 +467,29 @@ const App = () => {
     };
   }, [handleWindowFocus]);
 
-  const HomeAndLandingPage = ({ onTransitionEnd }) => {
+  // ============================================================================
+  // LANDING PAGE COMPONENT (Separate from Home Page)
+  // ============================================================================
+  
+  const LandingPage = ({ onComplete }) => {
     const mountRef = useRef(null);
     const [currentHello, setCurrentHello] = useState(hellos[0]);
-    const [showButton, setShowButton] = useState(false);
-    const backgroundGradient = 'from-[#2E3192] to-[#00FFE9]';
+    const [isComplete, setIsComplete] = useState(false);
 
     useEffect(() => {
+      console.log('🚀 Landing page mounted, starting multilingual greeting animation');
       const currentMount = mountRef.current;
+      if (!currentMount) {
+        console.error('❌ mountRef.current is null');
+        return;
+      }
+      
+      // Initialize Three.js scene for visual effects
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x000000, 0);
       currentMount.appendChild(renderer.domElement);
       camera.position.z = 5;
 
@@ -485,17 +498,22 @@ const App = () => {
         renderer.render(scene, camera);
       };
 
+      // Cycle through multilingual greetings
       let index = 0;
       const intervalId = setInterval(() => {
         index = (index + 1) % hellos.length;
         setCurrentHello(hellos[index]);
-      }, 250);
+      }, 300);
 
+      // Complete landing page after showing all greetings
       const timerId = setTimeout(() => {
         clearInterval(intervalId);
-        setShowButton(true);
-        setTimeout(onTransitionEnd, 1000); // Signal to the parent component to start the transition
-      }, 2500);
+        setIsComplete(true);
+        setTimeout(() => {
+          console.log('✅ Landing page complete, transitioning to home page');
+          onComplete();
+        }, 1000);
+      }, 5500);
 
       const handleResize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -510,19 +528,38 @@ const App = () => {
         clearInterval(intervalId);
         clearTimeout(timerId);
         window.removeEventListener('resize', handleResize);
-        if (currentMount) {
+        if (currentMount && currentMount.contains(renderer.domElement)) {
           currentMount.removeChild(renderer.domElement);
         }
         renderer.dispose();
       };
-    }, [onTransitionEnd]);
+    }, [onComplete]);
 
     return (
-      <div className={`relative w-screen h-[100dvh] overflow-hidden bg-gradient-to-b ${backgroundGradient}`}>
-        <div ref={mountRef} className="absolute inset-0"></div>
+      <div 
+        className="relative w-screen h-screen overflow-hidden"
+        style={{
+          background: 'linear-gradient(to bottom, #2E3192, #00FFE9)',
+          minHeight: '100vh',
+          width: '100vw'
+        }}
+      >
+        <div ref={mountRef} className="absolute inset-0 z-0" style={{ pointerEvents: 'none' }}></div>
 
-        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ease-in-out p-4 ${showButton ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div key={currentHello} className="text-white text-responsive-4xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold transition-all duration-200 ease-in-out text-center break-words">
+        <div 
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-1000 ease-in-out p-4 z-10 ${
+            isComplete ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <div 
+            key={currentHello} 
+            className="text-white font-bold text-center break-words"
+            style={{ 
+              fontSize: 'clamp(2.5rem, 10vw, 10.5rem)',
+              textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)',
+              animation: 'fadeIn 0.3s ease-in-out'
+            }}
+          >
             {currentHello}
           </div>
         </div>
@@ -1306,30 +1343,57 @@ const App = () => {
   };
 
   // Main component rendering logic based on the current page state
-  const handleTransitionEnd = () => {
-    setCurrentPage('profile');
-    setShowProfile(true);
+  const handleLandingComplete = () => {
+    console.log('🎬 Landing complete, showing home page');
+    setCurrentPage('home');
   };
 
   const PageContent = () => {
     switch (currentPage) {
+      case 'landing':
+        return (
+          <div className="page-transition page-enter-active">
+            <LandingPage onComplete={handleLandingComplete} />
+          </div>
+        );
+      
       case 'home':
         return (
-          <>
-            <div className={`absolute inset-0 page-transition ${!showProfile ? 'page-enter-active' : 'page-exit-active'}`}>
-              <HomeAndLandingPage onTransitionEnd={handleTransitionEnd} />
-            </div>
-            <div className={`absolute inset-0 page-transition ${showProfile ? 'page-enter-active' : 'page-exit-active'}`}>
-              {showProfile && <ProfilePage onProjectClick={handleProjectClick} previousScrollY={previousScrollY} setPreviousScrollY={setPreviousScrollY} isVisible={showProfile} />}
-            </div>
-          </>
+          <div className="page-transition page-enter-active">
+            <ProfilePage 
+              onProjectClick={handleProjectClick} 
+              previousScrollY={previousScrollY} 
+              setPreviousScrollY={setPreviousScrollY} 
+              isVisible={true} 
+            />
+          </div>
         );
+      
       case 'profile':
-        return <div className="page-transition page-enter-active"><ProfilePage onProjectClick={handleProjectClick} previousScrollY={previousScrollY} setPreviousScrollY={setPreviousScrollY} isVisible={true} /></div>;
+        return (
+          <div className="page-transition page-enter-active">
+            <ProfilePage 
+              onProjectClick={handleProjectClick} 
+              previousScrollY={previousScrollY} 
+              setPreviousScrollY={setPreviousScrollY} 
+              isVisible={true} 
+            />
+          </div>
+        );
+      
       case 'project-details':
-          return <div className="page-transition page-enter-active"><ProjectDetailsPage project={selectedProject} onBack={handleBackToProjects} /></div>;
+        return (
+          <div className="page-transition page-enter-active">
+            <ProjectDetailsPage project={selectedProject} onBack={handleBackToProjects} />
+          </div>
+        );
+      
       default:
-        return <div className="page-transition page-enter-active"><HomeAndLandingPage onTransitionEnd={handleTransitionEnd} /></div>;
+        return (
+          <div className="page-transition page-enter-active">
+            <LandingPage onComplete={handleLandingComplete} />
+          </div>
+        );
     }
   };
 
