@@ -503,7 +503,7 @@ const App = () => {
       const intervalId = setInterval(() => {
         index = (index + 1) % hellos.length;
         setCurrentHello(hellos[index]);
-      }, 300);
+      }, 200);
 
       // Complete landing page after showing all greetings
       const timerId = setTimeout(() => {
@@ -513,7 +513,7 @@ const App = () => {
           console.log('✅ Landing page complete, transitioning to home page');
           onComplete();
         }, 1000);
-      }, 5500);
+      }, 3500);
 
       const handleResize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
