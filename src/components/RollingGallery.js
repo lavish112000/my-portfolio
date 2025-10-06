@@ -30,6 +30,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
   images = images.length > 0 ? images : IMGS;
 
   const [isScreenSizeSm, setIsScreenSizeSm] = useState(typeof window !== 'undefined' ? window.innerWidth <= 640 : false);
+  const [currentRotation, setCurrentRotation] = useState(0);
   
   useEffect(() => {
     const handleResize = () => setIsScreenSizeSm(window.innerWidth <= 640);
@@ -40,11 +41,24 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
   const cylinderWidth = isScreenSizeSm ? 1320 : 2160;
   const faceCount = images.length;
   const faceWidth = (cylinderWidth / faceCount) * 1.8;
-  const radius = cylinderWidth / (2 * Math.PI);
+  const radius = (cylinderWidth / (2 * Math.PI)) * 1.5; // Increased radius by 50% for more spacing
 
   const dragFactor = 0.05;
   const rotation = useMotionValue(0);
   const controls = useAnimation();
+  
+  // Helper function to calculate visibility based on angle
+  const calculateVisibility = (imageAngle, currentRot) => {
+    const totalAngle = (imageAngle - currentRot) % 360;
+    const normalizedAngle = totalAngle > 180 ? totalAngle - 360 : totalAngle < -180 ? totalAngle + 360 : totalAngle;
+    const angleDiff = Math.abs(normalizedAngle);
+    
+    // Fade out images beyond 90 degrees from center
+    if (angleDiff > 90) {
+      return { opacity: Math.max(0, 1 - (angleDiff - 90) / 45), zIndex: Math.round(500 - angleDiff) };
+    }
+    return { opacity: 1, zIndex: Math.round(1000 - angleDiff) };
+  };
 
   const transform = useTransform(rotation, val => `rotate3d(0,1,0,${val}deg)`);
 
@@ -72,6 +86,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
   const handleUpdate = latest => {
     if (typeof latest.rotateY === 'number') {
       rotation.set(latest.rotateY);
+      setCurrentRotation(latest.rotateY);
     }
   };
 
@@ -117,7 +132,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
         }}
       />
 
-      <div className="flex h-full items-center justify-center [perspective:1000px] [transform-style:preserve-3d]">
+      <div className="flex h-full items-center justify-center [perspective:2000px] [transform-style:preserve-3d]">
         <motion.div
           drag="x"
           dragElastic={0}
@@ -135,26 +150,40 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
           }}
           className="flex min-h-[200px] cursor-grab items-center justify-center [transform-style:preserve-3d]"
         >
-          {images.map((url, i) => (
-            <div
-              key={i}
-              className="group absolute flex h-fit items-center justify-center [backface-visibility:hidden]"
-              style={{
-                width: `${faceWidth}px`,
-                transform: `rotateY(${(360 / faceCount) * i}deg) translateZ(${radius}px)`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <img
-                src={url}
-                alt="gallery"
-                className="pointer-events-none h-[144px] w-[360px] rounded-[15px] object-contain
-                           transition-transform duration-300 ease-out group-hover:scale-110
-                           sm:h-[120px] sm:w-[264px]"
-                style={{ backgroundColor: 'transparent' }}
-              />
-            </div>
-          ))}
+          {images.map((url, i) => {
+            // Calculate angle for this image in the carousel
+            const angle = (360 / faceCount) * i;
+            
+            // Get dynamic visibility based on current rotation
+            const { opacity, zIndex } = calculateVisibility(angle, currentRotation);
+            
+            return (
+              <div
+                key={i}
+                className="group absolute flex h-fit items-center justify-center"
+                style={{
+                  width: `${faceWidth}px`,
+                  transform: `rotateY(${angle}deg) translateZ(${radius}px)`,
+                  backgroundColor: 'transparent',
+                  backfaceVisibility: 'hidden',
+                  WebkitBackfaceVisibility: 'hidden',
+                  opacity: opacity,
+                  zIndex: zIndex,
+                  transition: 'opacity 0.2s ease-out',
+                  willChange: 'opacity, z-index'
+                }}
+              >
+                <img
+                  src={url}
+                  alt="gallery"
+                  className="pointer-events-none h-[144px] w-[360px] rounded-[15px] object-contain
+                             transition-transform duration-300 ease-out group-hover:scale-110
+                             sm:h-[120px] sm:w-[264px]"
+                  style={{ backgroundColor: 'transparent' }}
+                />
+              </div>
+            );
+          })}
         </motion.div>
       </div>
     </div>
