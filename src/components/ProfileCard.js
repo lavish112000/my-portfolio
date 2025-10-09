@@ -310,7 +310,7 @@ const ProfileCardComponent = ({
           <p className="pc-title">{title}</p>
         </header>
         <div className="pc-image-shell">
-          <img className="pc-avatar-img" src={avatarUrl} alt={name} loading="lazy" onError={e => { e.target.style.visibility='hidden'; }} />
+          <img className="pc-avatar-img" src={avatarUrl} alt={name} loading="eager" fetchpriority="high" onError={e => { e.target.style.visibility='hidden'; }} />
         </div>
         {showUserInfo && (
           <div className="pc-glassbar" role="contentinfo">

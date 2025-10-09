@@ -724,7 +724,7 @@ const App = () => {
             <div className="lg:w-1/2">
               <div ref={el => panelRefs.current[0]=el} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
                 <div className="w-full h-48 md:h-auto mb-4 overflow-hidden rounded-lg border-4 border-gray-700 shadow-xl relative">
-                  <img src={project.image} alt={project.title} className="w-full h-full object-cover"/>
+                  <img src={project.image} alt={project.title} className="w-full h-full object-cover" loading="eager" fetchpriority="high"/>
                   <div className="absolute inset-0 border-4 border-transparent rounded-lg animate-glow" style={{'--glow-color': '#00FFE9'}}></div>
                 </div>
                 <h3 className="text-responsive-2xl md:text-3xl lg:text-4xl font-bold mt-4">{project.title}</h3>
