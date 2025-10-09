@@ -13,7 +13,7 @@
 
 #### Files Modified
 
-```
+```text
 public/index.html          - Added preload links
 src/components/ProfileCard.js - Updated main avatar image
 src/App.js                 - Updated project detail images
@@ -217,7 +217,7 @@ npm install vite-plugin-ssr
 
 ### LCP Improvement Strategy
 
-```
+```text
 Before:
 HTML Load → JS Parse → React Render → Image Request → LCP
   ↓           ↓          ↓              ↓              ↓
