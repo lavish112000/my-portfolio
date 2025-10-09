@@ -29,19 +29,41 @@ const IMGS = [
 const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] }) => {
   images = images.length > 0 ? images : IMGS;
 
-  const [isScreenSizeSm, setIsScreenSizeSm] = useState(typeof window !== 'undefined' ? window.innerWidth <= 640 : false);
+  const [screenSize, setScreenSize] = useState(() => {
+    if (typeof window === 'undefined') return 'desktop';
+    const width = window.innerWidth;
+    if (width <= 480) return 'mobile';
+    if (width <= 768) return 'tablet';
+    if (width <= 1024) return 'laptop';
+    return 'desktop';
+  });
   const [currentRotation, setCurrentRotation] = useState(0);
   
   useEffect(() => {
-    const handleResize = () => setIsScreenSizeSm(window.innerWidth <= 640);
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width <= 480) setScreenSize('mobile');
+      else if (width <= 768) setScreenSize('tablet');
+      else if (width <= 1024) setScreenSize('laptop');
+      else setScreenSize('desktop');
+    };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const cylinderWidth = isScreenSizeSm ? 1320 : 2160;
+  // Device-specific cylinder dimensions for optimal viewing
+  const cylinderConfig = {
+    mobile: { width: 1000, multiplier: 1.5, radius: 1.3 },
+    tablet: { width: 1400, multiplier: 1.6, radius: 1.4 },
+    laptop: { width: 1800, multiplier: 1.7, radius: 1.45 },
+    desktop: { width: 2160, multiplier: 1.8, radius: 1.5 }
+  };
+  
+  const config = cylinderConfig[screenSize] || cylinderConfig.desktop;
+  const cylinderWidth = config.width;
   const faceCount = images.length;
-  const faceWidth = (cylinderWidth / faceCount) * 1.8;
-  const radius = (cylinderWidth / (2 * Math.PI)) * 1.5; // Increased radius by 50% for more spacing
+  const faceWidth = (cylinderWidth / faceCount) * config.multiplier;
+  const radius = (cylinderWidth / (2 * Math.PI)) * config.radius;
 
   const dragFactor = 0.05;
   const rotation = useMotionValue(0);
@@ -54,8 +76,8 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
     const angleDiff = Math.abs(normalizedAngle);
     
     // Fade out images beyond 90 degrees from center
-    if (angleDiff > 90) {
-      return { opacity: Math.max(0, 1 - (angleDiff - 90) / 45), zIndex: Math.round(500 - angleDiff) };
+    if (angleDiff > 120) {
+      return { opacity: Math.max(0, 1 - (angleDiff - 120) / 60), zIndex: Math.round(500 - angleDiff) };
     }
     return { opacity: 1, zIndex: Math.round(1000 - angleDiff) };
   };
@@ -118,7 +140,7 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
   };
 
   return (
-    <div className="relative h-[600px] w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden" style={{ height: screenSize === 'mobile' ? '400px' : screenSize === 'tablet' ? '500px' : '600px' }}>
       <div
         className="absolute top-0 left-0 h-full w-[48px] z-10"
         style={{
@@ -176,10 +198,12 @@ const RollingGallery = ({ autoplay = false, pauseOnHover = false, images = [] })
                 <img
                   src={url}
                   alt="gallery"
-                  className="pointer-events-none h-[144px] w-[360px] rounded-[15px] object-contain
-                             transition-transform duration-300 ease-out group-hover:scale-110
-                             sm:h-[120px] sm:w-[264px]"
-                  style={{ backgroundColor: 'transparent' }}
+                  className="pointer-events-none rounded-[15px] object-contain transition-transform duration-300 ease-out group-hover:scale-110"
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    height: screenSize === 'mobile' ? '100px' : screenSize === 'tablet' ? '120px' : '144px',
+                    width: screenSize === 'mobile' ? '240px' : screenSize === 'tablet' ? '288px' : '360px'
+                  }}
                 />
               </div>
             );
