@@ -310,7 +310,7 @@ After:
 
 ### Application Flow
 
-```
+```text
 1. Landing Page (5.5s)
    └─> Multilingual greetings (10 languages)
        └─> Fade transition
@@ -350,7 +350,7 @@ After:
 
 ### Bundle Sizes
 
-```
+```text
 Main JS: 277.63 kB (gzipped)
 CSS: 7.56 kB (gzipped)
 Chunks: 4.37 kB + 1.77 kB
@@ -360,7 +360,7 @@ Total: ~291 kB (✅ Excellent)
 
 ### Loading Performance
 
-```
+```text
 ✅ Code splitting (React.lazy)
 ✅ Image optimization (object-contain)
 ✅ Lazy component loading
