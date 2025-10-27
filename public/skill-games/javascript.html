@@ -3,392 +3,455 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asteroid Blitz</title>
+    <title>Interactive JavaScript Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="javascript.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-</head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Mystical Purple -> Cyan Gradient */
+            --bg-color-start: #312e81; /* Indigo 900 */
+            --bg-color-mid: #5b21b6;   /* Violet 800 */
+            --bg-color-end: #0e7490;   /* Cyan 700 */
+            --primary-color: #00f6ff; /* Cyan */
+            --secondary-color: #f021b2; /* Hot Pink */
+            --text-color-dark: #f9fafb; /* Gray 50 */
+            --text-color-light: #d1d5db; /* Gray 300 */
+            --border-color: rgba(0, 246, 255, 0.3);
+            --panel-bg: rgba(31, 41, 59, 0.6); /* Gray 800 with alpha */
+        }
+
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slide-in-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px var(--secondary-color); } 50% { box-shadow: 0 0 25px var(--secondary-color); } }
+        @keyframes sparkle { 
+            0%, 100% { opacity: 0.5; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color-light);
+            line-height: 1.7;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-mid), var(--bg-color-end));
+            background-size: 200% 200%;
+            animation: gradient-bg 20s ease infinite;
+            background-attachment: fixed;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: var(--text-color-dark);
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+             text-shadow: 0 0 20px var(--primary-color);
+        }
+
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s, scale 0.3s;
+        }
+        
+        .tutorial-section:hover {
+            transform: translateY(20px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--text-color-dark);
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: rgba(17, 24, 39, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 10px rgba(0, 246, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .viz-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter';
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .viz-button:hover { background-color: #f021b2; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(240, 33, 178, 0.3); }
+
+        /* Specific Viz Styles */
+        .magic-item {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 5px;
+            width: 80%;
+            background: rgba(0,0,0,0.2);
+        }
+        .magic-item label { font-weight: bold; color: var(--primary-color); }
+        .magic-item input { background: #111827; padding: 5px; border-radius: 4px; border: 1px solid #4b5563; margin-left: 5px; color: var(--text-color-light); }
+        
+        #datatypes-viz { gap: 10px; }
+        .potion-ingredient { background: var(--secondary-color); color: white; padding: 8px 12px; border-radius: 5px; cursor: grab; }
+        .cauldron { border: 2px dashed var(--border-color); border-radius: 10px; padding: 10px; text-align: center; width: 100px; height: 150px; transition: all 0.2s; }
+        .cauldron.over { background: rgba(240, 33, 178, 0.1); border-style: solid; }
+        
+        .spell-book { text-align: center; }
+        .spell-icon { font-size: 3em; transition: transform 0.3s; }
+        .spell-icon.casting { transform: scale(1.5) rotate(15deg); filter: drop-shadow(0 0 10px var(--primary-color)); }
+
+        .magic-element { width: 150px; height: 150px; background: var(--secondary-color); border-radius: 8px; transition: all 0.3s ease-in-out; }
+        .dom-controls button { margin: 5px; }
+
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
+        }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .further-exploration h2 { color: var(--primary-color); }
+        .exploration-column h3 { color: var(--secondary-color); }
+        .exploration-column a:hover { color: var(--primary-color); }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%2300f6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .tutorial-section {
+                grid-template-columns: 1fr;
+            }
+            .visualization {
+                height: auto;
+                min-height: 400px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        <div id="ui-layer">
-            <div id="back-button" class="back-button">← Back to Portfolio</div>
-            <div id="score">SCORE: 0</div>
-        </div>
-        <div id="start-screen">
-            <h2>ASTEROID BLITZ</h2>
-            <p>Mouse or Arrow Keys to Move | Left Click or Spacebar to Shoot</p>
-            <button id="start-button" class="action-button">Start Game</button>
-        </div>
-        <div id="game-over-screen">
-            <h2>GAME OVER</h2>
-            <p>Final Score: <span id="final-score">0</span></p>
-            <button id="restart-button" class="action-button">Play Again</button>
-        </div>
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">JavaScript</span> Spellbook</h1>
+            <p>An interactive guide to the magic language of the web, explained using the real-life situation of casting spells!</p>
+        </header>
+
+        <!-- SECTION 1: What is JS? -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. The Magic Words (JavaScript)</h2>
+                <p>Think of HTML as the structure of a magic castle and CSS as its decorations. <strong>JavaScript</strong> is the book of magic words (code) that brings the castle to life! It lets you make things move, react to clicks, and change dynamically.</p>
+                <p>It's the core language for adding interactivity to websites.</p>
+            </div>
+            <div id="intro-viz" class="visualization">
+                 <div class="text-center font-bold">
+                    <div class="text-4xl mb-4">🏰<br>HTML (Structure)</div>
+                    <div class="text-2xl my-2">+</div>
+                    <div class="text-4xl mb-4">🎨<br>CSS (Looks)</div>
+                    <div class="text-2xl my-2">+</div>
+                    <div class="text-4xl mb-4">✨<br>JavaScript (Magic Actions)</div>
+                     <div class="text-2xl my-2">=</div>
+                    <div class="text-4xl mb-4">🪄<br>Interactive Website!</div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Variables -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. Magic Pouches (Variables)</h2>
+                <p>In spellcasting, you need pouches to hold ingredients. In JavaScript, you use <strong>variables</strong> to store information (like numbers or text) and give it a name. Use <code>let</code> or <code>const</code> to declare a variable.</p>
+                <p>Try putting your own magic item in the pouch below!</p>
+                 <div class="code-block">let potionName = "Invisibility";<br>const manaCost = 50;</div>
+            </div>
+            <div id="variables-viz" class="visualization flex-col gap-4">
+                 <div class="magic-item">
+                    <label for="var-name">Pouch Label:</label>
+                    <input type="text" id="var-name" value="gem_color">
+                    <span> = </span>
+                    <label for="var-value">Contents:</label>
+                    <input type="text" id="var-value" value="'Ruby Red'">
+                 </div>
+                 <div id="variable-output" class="text-center font-mono"></div>
+            </div>
+        </section>
+        
+        <!-- SECTION 3: Data Types -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Potion Ingredients (Data Types)</h2>
+                <p>Spells need different kinds of ingredients: magic words (text), number of drops (numbers), or whether a charm is active (true/false). JavaScript has different <strong>data types</strong>:</p>
+                <ul>
+                    <li><strong>String:</strong> Text, like <code>"Abracadabra"</code></li>
+                    <li><strong>Number:</strong> <code>10</code> or <code>3.14</code></li>
+                    <li><strong>Boolean:</strong> <code>true</code> or <code>false</code></li>
+                </ul>
+                <p>Drag the ingredients into the correct cauldrons!</p>
+            </div>
+            <div id="datatypes-viz" class="visualization">
+                <div class="flex flex-col gap-2 mr-4">
+                    <div class="potion-ingredient" draggable="true" data-type="string">"Fireball"</div>
+                    <div class="potion-ingredient" draggable="true" data-type="number">7</div>
+                    <div class="potion-ingredient" draggable="true" data-type="boolean">true</div>
+                </div>
+                 <div class="flex gap-4">
+                    <div class="cauldron" data-type="string"><h4>String</h4>(Words)</div>
+                    <div class="cauldron" data-type="number"><h4>Number</h4>(Counts)</div>
+                    <div class="cauldron" data-type="boolean"><h4>Boolean</h4>(Yes/No)</div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Functions -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Reusable Spells (Functions)</h2>
+                <p>Wizards don't rewrite a spell every time! They define it once and reuse it. In JavaScript, you group reusable code into <strong>functions</strong>. You give the function a name and can then "call" it whenever you need to cast that spell.</p>
+                 <div class="code-block">function castHeal() {<br>&nbsp;&nbsp;console.log("Healing ✨");<br>}<br><br>castHeal(); // Cast the spell</div>
+            </div>
+            <div id="functions-viz" class="visualization">
+                <div class="spell-book">
+                    <h4 class="font-bold mb-4">Spell: `castSparkle()`</h4>
+                     <div id="spell-icon" class="spell-icon">🪄</div>
+                    <button id="function-call-btn" class="viz-button mt-8">Cast Spell</button>
+                    <div id="spell-output" class="mt-4 font-bold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: DOM Manipulation -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. Enchanting the Page (DOM)</h2>
+                <p>This is where the real magic happens! JavaScript can interact with the HTML structure (the <strong>Document Object Model</strong> or DOM). You can select elements on the page and change their style, content, or position using JavaScript spells.</p>
+                <p>Try casting spells on the magic square!</p>
+            </div>
+            <div id="dom-viz" class="visualization flex-col gap-4">
+                <div id="magic-element" class="magic-element"></div>
+                <div class="dom-controls">
+                    <button class="viz-button" data-spell="color">Change Color</button>
+                    <button class="viz-button" data-spell="size">Change Size</button>
+                    <button class="viz-button" data-spell="reset">Reset</button>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Magic Studies</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Core Learning Resources</h3>
+                        <ul>
+                            <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank" rel="noopener">MDN JavaScript Guide</a></li>
+                            <li><a href="https://javascript.info/" target="_blank" rel="noopener">The Modern JavaScript Tutorial</a></li>
+                            <li><a href="https://eloquentjavascript.net/" target="_blank" rel="noopener">Eloquent JavaScript (Book)</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/js/" target="_blank" rel="noopener">W3Schools JavaScript</a></li>
+                            <li><a href="https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/" target="_blank" rel="noopener">freeCodeCamp Curriculum</a></li>
+                            <li><a href="https://www.codewars.com/kata/search/javascript" target="_blank" rel="noopener">Codewars (Challenges)</a></li>
+                            <li><a href="https://www.codecademy.com/learn/introduction-to-javascript" target="_blank" rel="noopener">Codecademy</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Project Ideas</h3>
+                        <ul>
+                            <li>A simple calculator</li>
+                            <li>A "to-do list" application</li>
+                            <li>A color-changing button</li>
+                            <li>A simple image slideshow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
     </div>
 
     <script>
-        // --- DOM ELEMENTS ---
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        const scoreEl = document.getElementById('score');
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over-screen');
-        const finalScoreEl = document.getElementById('final-score');
-        const startButton = document.getElementById('start-button');
-        const restartButton = document.getElementById('restart-button');
-        const backButton = document.getElementById('back-button');
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
 
-        // --- CANVAS SETUP ---
-        const gameContainer = document.getElementById('game-container');
-        canvas.width = gameContainer.clientWidth;
-        canvas.height = gameContainer.clientHeight;
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
-        // --- RESIZE HANDLER ---
-        function resizeCanvas() {
-            canvas.width = gameContainer.clientWidth;
-            canvas.height = gameContainer.clientHeight;
-            // Reinitialize game elements if needed
-            if (player) {
-                player.x = canvas.width / 2;
-                player.y = canvas.height - 60;
-            }
+        // --- Viz 2: Variables ---
+        const varNameInput = document.getElementById('var-name');
+        const varValueInput = document.getElementById('var-value');
+        const variableOutput = document.getElementById('variable-output');
+        function updateVariableViz() {
+             variableOutput.textContent = `let ${varNameInput.value} = ${varValueInput.value};`;
         }
+        varNameInput.addEventListener('input', updateVariableViz);
+        varValueInput.addEventListener('input', updateVariableViz);
+        updateVariableViz();
 
-        window.addEventListener('resize', resizeCanvas);
+        // --- Viz 3: Data Types ---
+        const ingredients = document.querySelectorAll('.potion-ingredient');
+        const cauldrons = document.querySelectorAll('.cauldron');
+        ingredients.forEach(item => {
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', item.dataset.type);
+                e.dataTransfer.setData('elementId', item.id || Math.random().toString()); 
+            });
+        });
+        cauldrons.forEach(cauldron => {
+            cauldron.addEventListener('dragover', e => {
+                e.preventDefault();
+                cauldron.classList.add('over');
+            });
+            cauldron.addEventListener('dragleave', () => cauldron.classList.remove('over'));
+            cauldron.addEventListener('drop', e => {
+                e.preventDefault();
+                cauldron.classList.remove('over');
+                const droppedType = e.dataTransfer.getData('text/plain');
+                const elementId = e.dataTransfer.getData('elementId');
+                const draggedElement = document.querySelector(`.potion-ingredient[data-type='${droppedType}']`); // Simple match
 
-        // --- SOUND SETUP ---
-        const sounds = {
-            laser: new Tone.Synth({ oscillator: { type: 'triangle' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 } }).toDestination(),
-            // FIX: Use PolySynth to prevent scheduling errors on rapid explosions
-            explosion: new Tone.PolySynth(Tone.NoiseSynth, { noise: { type: 'white' }, envelope: { attack: 0.005, decay: 0.2, sustain: 0 } }).toDestination(),
-            gameOver: new Tone.MembraneSynth({ pitchDecay: 0.1, octaves: 5, oscillator: { type: 'sine' }, envelope: { attack: 0.001, decay: 0.8, sustain: 0.01, release: 1.4 } }).toDestination(),
-            click: new Tone.MetalSynth({ frequency: 400, envelope: { attack: 0.001, decay: 0.1, release: 0.1 }, harmonicity: 3.1, modulationIndex: 16, resonance: 4000, octaves: 1.5 }).toDestination()
+                if (cauldron.dataset.type === droppedType && draggedElement) {
+                    cauldron.textContent = '✨ Correct!';
+                    draggedElement.style.opacity = '0.5';
+                    draggedElement.draggable = false;
+                    setTimeout(() => cauldron.innerHTML = `<h4>${cauldron.dataset.type.charAt(0).toUpperCase() + cauldron.dataset.type.slice(1)}</h4>`, 1500);
+                } else {
+                     cauldron.textContent = '❌ Oops!';
+                     setTimeout(() => cauldron.innerHTML = `<h4>${cauldron.dataset.type.charAt(0).toUpperCase() + cauldron.dataset.type.slice(1)}</h4>`, 1500);
+                }
+            });
+        });
+
+        // --- Viz 4: Functions ---
+        const functionCallBtn = document.getElementById('function-call-btn');
+        const spellOutput = document.getElementById('spell-output');
+        const spellIcon = document.getElementById('spell-icon');
+        functionCallBtn.onclick = async () => {
+             spellOutput.textContent = "Casting...";
+             spellIcon.classList.add('casting');
+             await sleep(1000);
+             spellOutput.textContent = "✨ Sparkles Everywhere! ✨";
+             spellIcon.classList.remove('casting');
+             // Add sparkle effect
+             for (let i = 0; i < 5; i++){
+                 const sparkle = document.createElement('div');
+                 sparkle.textContent = '✨';
+                 sparkle.style.position = 'absolute';
+                 sparkle.style.left = `${Math.random() * 80 + 10}%`;
+                 sparkle.style.top = `${Math.random() * 80 + 10}%`;
+                 sparkle.style.fontSize = `${Math.random() * 1 + 0.5}em`;
+                 sparkle.style.animation = `sparkle 0.5s ease-out both`;
+                 spellIcon.parentElement.appendChild(sparkle);
+                 setTimeout(() => sparkle.remove(), 500);
+             }
+
         };
-        
-        // --- GAME STATE & CONFIG ---
-        let player, keys, lasers, asteroids, particles, score, isGameOver;
-        // FIX: Initialize mouse object globally to prevent error on early clicks
-        let mouse = { down: false };
-        let lastLaserTime = 0;
-        const PLAYER_SPEED = 5;
-        const LASER_SPEED = 7;
-        const ASTEROID_SPEED = 1.5;
-        const LASER_COOLDOWN = 150;
-        let starfield = [];
 
-        // --- CLASSES ---
-        class Player {
-            constructor() {
-                this.x = canvas.width / 2;
-                this.y = canvas.height - 60;
-                this.width = 50;
-                this.height = 50;
-                this.engineParticles = [];
-            }
-            draw() {
-                // Engine thruster
-                this.engineParticles.forEach((p, i) => {
-                    p.update();
-                    if (p.alpha <= 0) this.engineParticles.splice(i, 1);
-                });
+        // --- Viz 5: DOM Manipulation ---
+        const magicElement = document.getElementById('magic-element');
+        const domButtons = document.querySelectorAll('.dom-controls button');
+        const original = { bg: 'var(--secondary-color)', width: '150px', height: '150px' };
 
-                // Ship body
-                ctx.fillStyle = '#c0c0c0'; // Silver
-                ctx.beginPath();
-                ctx.moveTo(this.x, this.y - this.height / 2);
-                ctx.lineTo(this.x - this.width / 2, this.y + this.height / 2);
-                ctx.lineTo(this.x + this.width / 2, this.y + this.height / 2);
-                ctx.closePath();
-                ctx.fill();
-
-                // Cockpit
-                ctx.fillStyle = '#00e5ff';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-            update() {
-                if (keys['ArrowLeft'] || keys['KeyA']) this.x -= PLAYER_SPEED;
-                if (keys['ArrowRight'] || keys['KeyD']) this.x += PLAYER_SPEED;
-                if (this.x - this.width / 2 < 0) this.x = this.width / 2;
-                if (this.x + this.width / 2 > canvas.width) this.x = canvas.width - this.width / 2;
-                
-                // Add engine particles
-                this.engineParticles.push(new EngineParticle(this.x, this.y + this.height / 2));
-
-                this.draw();
-            }
-        }
-
-        class Laser {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.width = 5;
-                this.height = 20;
-                this.color = '#ff073a';
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = this.color;
-            }
-            update() {
-                this.y -= LASER_SPEED;
-                this.draw();
-            }
-        }
-
-        class Asteroid {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = -50;
-                this.radius = Math.random() * 30 + 15;
-                this.speed = Math.random() * ASTEROID_SPEED + 1;
-                this.angle = 0;
-                this.angleSpeed = Math.random() * 0.05 - 0.025;
-            }
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                ctx.strokeStyle = '#a9a9a9'; // Dark Gray
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0, -this.radius);
-                for (let i = 1; i < 8; i++) {
-                    const angle = i * Math.PI / 4;
-                    const radius = this.radius * (0.8 + Math.random() * 0.4);
-                    ctx.lineTo(Math.sin(angle) * radius, -Math.cos(angle) * radius);
-                }
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
-            }
-            update() {
-                this.y += this.speed;
-                this.angle += this.angleSpeed;
-                this.draw();
-            }
-        }
-        
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.radius = Math.random() * 3 + 1;
-                this.color = color || `hsl(${Math.random() * 60 + 200}, 100%, 50%)`;
-                this.velocity = {
-                    x: (Math.random() - 0.5) * 5,
-                    y: (Math.random() - 0.5) * 5
-                };
-                this.alpha = 1;
-            }
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.restore();
-            }
-            update() {
-                this.x += this.velocity.x;
-                this.y += this.velocity.y;
-                this.alpha -= 0.02;
-                this.draw();
-            }
-        }
-
-        class EngineParticle extends Particle {
-             constructor(x, y) {
-                super(x, y);
-                this.color = `hsl(${Math.random() * 30 + 10}, 100%, 50%)`;
-                this.velocity = {
-                    x: (Math.random() - 0.5) * 2,
-                    y: Math.random() * 3 + 1
-                };
-                this.alpha = 0.8;
-             }
-             update() {
-                this.x += this.velocity.x;
-                this.y += this.velocity.y;
-                this.alpha -= 0.05;
-                this.draw();
-             }
-        }
-
-        // --- BACKGROUND ---
-        function createStarfield() {
-            starfield = [];
-            for(let i=0; i < 300; i++) {
-                starfield.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 1.5,
-                    speed: Math.random() * 0.5 + 0.1
-                });
-            }
-        }
-        function drawStarfield() {
-            ctx.fillStyle = 'white';
-            starfield.forEach(star => {
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                ctx.fill();
-                star.y += star.speed;
-                if (star.y > canvas.height) {
-                    star.y = 0;
-                    star.x = Math.random() * canvas.width;
+        domButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const spell = btn.dataset.spell;
+                if (spell === 'color') {
+                    magicElement.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                } else if (spell === 'size') {
+                    magicElement.style.width = `${Math.random() * 100 + 100}px`;
+                    magicElement.style.height = `${Math.random() * 100 + 100}px`;
+                } else if (spell === 'reset') {
+                     magicElement.style.backgroundColor = original.bg;
+                     magicElement.style.width = original.width;
+                     magicElement.style.height = original.height;
                 }
             });
-        }
-
-
-        // --- GAME LOGIC ---
-        function init() {
-            player = new Player();
-            keys = {};
-            mouse.down = false;
-            lasers = [];
-            asteroids = [];
-            particles = [];
-            score = 0;
-            isGameOver = false;
-            scoreEl.textContent = `SCORE: ${score}`;
-            startScreen.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            if(starfield.length === 0) createStarfield();
-            gameLoop();
-        }
-        
-        function createExplosion(x, y) {
-            sounds.explosion.triggerAttackRelease("2n");
-            for(let i = 0; i < 30; i++) {
-                particles.push(new Particle(x, y, `hsl(${Math.random() * 60}, 100%, 50%)`));
-            }
-        }
-        
-        function shootLaser() {
-             if (!isGameOver) {
-                lasers.push(new Laser(player.x, player.y - player.height / 2));
-                sounds.laser.triggerAttackRelease("C6", "16n");
-            }
-        }
-
-        function gameLoop() {
-            if (isGameOver) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.shadowBlur = 0;
-
-            drawStarfield();
-            player.update();
-
-            // Handle continuous shooting
-            const now = Date.now();
-            if ((keys['Space'] || mouse.down) && now - lastLaserTime > LASER_COOLDOWN) {
-                shootLaser();
-                lastLaserTime = now;
-            }
-
-            // Lasers
-            lasers.forEach((laser, laserIndex) => {
-                laser.update();
-                if (laser.y < 0) lasers.splice(laserIndex, 1);
-            });
-
-            // Asteroids
-            if (Math.random() < 0.02) asteroids.push(new Asteroid());
-            asteroids.forEach((asteroid, asteroidIndex) => {
-                asteroid.update();
-                if (asteroid.y > canvas.height + 50) asteroids.splice(asteroidIndex, 1);
-
-                // Collision: Player vs Asteroid
-                const distPlayer = Math.hypot(player.x - asteroid.x, player.y - asteroid.y);
-                if(distPlayer - asteroid.radius - player.width / 2 < 1) {
-                    endGame();
-                }
-
-                // Collision: Laser vs Asteroid
-                lasers.forEach((laser, laserIndex) => {
-                    const distLaser = Math.hypot(laser.x - asteroid.x, laser.y - asteroid.y);
-                    if (distLaser - asteroid.radius - laser.height / 2 < 1) {
-                        createExplosion(asteroid.x, asteroid.y);
-                        score += Math.floor(asteroid.radius);
-                        scoreEl.textContent = `SCORE: ${score}`;
-                        asteroids.splice(asteroidIndex, 1);
-                        lasers.splice(laserIndex, 1);
-                    }
-                });
-            });
-            
-            // Particles
-            particles.forEach((p, i) => {
-                if(p.alpha <= 0) particles.splice(i, 1);
-                else p.update();
-            });
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        function endGame() {
-            isGameOver = true;
-            sounds.gameOver.triggerAttackRelease("C2", "1n");
-            finalScoreEl.textContent = score;
-            gameOverScreen.style.display = 'flex';
-        }
-
-        // --- EVENT LISTENERS ---
-        window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-        
-        canvas.addEventListener('mousemove', (e) => {
-            if(player && !isGameOver) {
-                const rect = canvas.getBoundingClientRect();
-                player.x = e.clientX - rect.left;
-            }
         });
-
-        canvas.addEventListener('mousedown', (e) => {
-            if(e.button === 0) mouse.down = true;
-        });
-        
-        window.addEventListener('mouseup', (e) => {
-            if(e.button === 0) mouse.down = false;
-        });
-        
-        canvas.addEventListener('mouseleave', () => {
-            mouse.down = false;
-        });
-
-        startButton.addEventListener('click', () => {
-            sounds.click.triggerAttackRelease("C5", "8n");
-            init();
-        });
-        restartButton.addEventListener('click', () => {
-            sounds.click.triggerAttackRelease("C5", "8n");
-            init();
-        });
-        backButton.addEventListener('click', () => {
-            window.close(); // Close the current tab/window
-        });
-
-        // Start audio context on first interaction
-        document.body.addEventListener('click', () => Tone.start(), { once: true });
-        
-        // Initial draw of starfield for start screen
-        createStarfield();
-        drawStarfield();
 
     </script>
 </body>

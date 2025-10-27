@@ -3,210 +3,453 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java Skill Game - Lavish Kumar</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Interactive Java Tutorial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Blue -> Purple -> Indigo Gradient */
+            --bg-color-start: #3b82f6; /* Blue 500 */
+            --bg-color-mid: #8b5cf6;   /* Violet 500 */
+            --bg-color-end: #4f46e5;   /* Indigo 600 */
+            --primary-color: #60a5fa; /* Blue 400 */
+            --secondary-color: #a78bfa; /* Violet 400 */
+            --text-color-dark: #f9fafb; /* Gray 50 */
+            --text-color-light: #d1d5db; /* Gray 300 */
+            --border-color: rgba(96, 165, 250, 0.3);
+            --panel-bg: rgba(31, 41, 59, 0.6); /* Gray 800 with alpha */
+        }
+
+        @keyframes pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slide-in-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes gradient-bg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 15px var(--secondary-color); } 50% { box-shadow: 0 0 25px var(--secondary-color); } }
+        @keyframes robot-walk { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background: linear-gradient(135deg, #007396, #28a745);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color-light);
+            line-height: 1.7;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-mid), var(--bg-color-end));
+            background-size: 200% 200%;
+            animation: gradient-bg 20s ease infinite;
+            background-attachment: fixed;
+        }
+        
+        .tutorial-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .gradient-text {
-            background: linear-gradient(to right, #007396, #28a745);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .card {
-            background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        header h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2.5em, 8vw, 4.5em);
+            color: var(--text-color-dark);
+            margin: 0;
+        }
+        
+        header h1 .highlight {
+             color: var(--primary-color);
+             text-shadow: 0 0 20px var(--primary-color);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        header p {
+            font-size: clamp(1em, 3vw, 1.2em);
+            max-width: 700px;
+            margin: 15px auto 0;
+        }
+        
+        .tutorial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            padding: 60px 20px;
+            border-bottom: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.3s, scale 0.3s;
+        }
+        
+        .tutorial-section:hover {
+            transform: translateY(20px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
 
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
+        .tutorial-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .explanation h2 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: var(--text-color-dark);
+            font-size: 2.2em;
+            margin-top: 0;
+        }
+
+        .code-block {
+            background: rgba(17, 24, 39, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+        }
+        
+        .visualization {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            height: 450px;
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 10px rgba(96, 165, 250, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .viz-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
+            font-family: 'Inter';
+            font-weight: 500;
+            transition: background-color 0.2s, transform 0.2s;
         }
+        .viz-button:hover { background-color: #7c3aed; transform: translateY(-2px); }
 
-        .back-button:hover {
-            background: white;
-            transform: scale(1.1);
+        /* Specific Viz Styles */
+        .blueprint { border: 2px dashed var(--border-color); padding: 15px; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
+        .blueprint:hover { border-color: var(--primary-color); transform: scale(1.05); }
+        .robot-display { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .robot-instance { font-size: 2em; animation: pop-in 0.3s; }
+        
+        .robot-spec { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; margin-bottom: 5px; }
+        
+        .robot-actions button { margin: 5px; }
+        .robot-status { margin-top: 15px; font-weight: bold; }
+        
+        .sensor-reading { text-align: center; }
+        .battery { width: 100px; height: 30px; border: 2px solid var(--border-color); border-radius: 5px; position: relative; }
+        .battery-level { height: 100%; background: var(--primary-color); border-radius: 3px; transition: width 0.3s; }
+        .battery::after { content: ''; width: 5px; height: 10px; background: var(--border-color); position: absolute; right: -7px; top: 10px; border-radius: 0 2px 2px 0;}
+
+        .robot-loop { font-size: 3em; animation-duration: 0.5s; }
+        
+        footer {
+            text-align: center;
+            padding: 50px 20px;
+            margin-top: 20px;
         }
+        .further-exploration {
+            text-align: left;
+            background: var(--panel-bg);
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .further-exploration h2 { color: var(--primary-color); }
+        .exploration-column h3 { color: var(--secondary-color); }
+        .exploration-column a:hover { color: var(--primary-color); }
+        .exploration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin-top: 20px; }
+        .exploration-column ul { list-style: none; padding: 0; }
+        .exploration-column li { margin-bottom: 10px; background: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="%2360a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3ccheck-circle%3e%3cpath d="M22 11.08V12a10 10 0 1 1-5.93-9.14"%3e%3c/path%3e%3cpolyline points="22 4 12 14.01 9 11.01"%3e%3c/polyline%3e%3c/check-circle%3e%3c/svg%3e') no-repeat left center; padding-left: 30px; }
 
-        /* --- RESPONSIVE DESIGN --- */
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .container {
-                padding: 2rem 1rem;
-            }
-            
-            header h1 {
-                font-size: 3rem;
-            }
-            
-            header p {
-                font-size: 1.1rem;
-            }
-            
-            .card {
-                padding: 1rem;
-            }
-            
-            .card h3 {
-                font-size: 1.3rem;
-            }
-            
-            .card p {
-                font-size: 0.9rem;
-            }
-            
-            .back-button {
-                width: 45px;
-                height: 45px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 2.5rem;
-            }
-            
-            .grid {
+            .tutorial-section {
                 grid-template-columns: 1fr;
-                gap: 1rem;
             }
-            
-            .back-button {
-                width: 40px;
-                height: 40px;
-                top: 15px;
-                left: 15px;
+            .visualization {
+                height: auto;
+                min-height: 400px;
             }
         }
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.close()" title="Back to Portfolio">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#007396" stroke-width="2">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-    </button>
 
-    <div class="container mx-auto px-4 py-16">
-        <header class="text-center mb-16">
-            <h1 class="text-6xl font-bold text-white mb-4 gradient-text">Java</h1>
-            <p class="text-xl text-white opacity-90">Master Object-Oriented Programming</p>
+    <div class="tutorial-container">
+        <header>
+            <h1>The <span class="highlight">Java</span> Robot Workshop</h1>
+            <p>An interactive guide to the powerful and versatile programming language, explained through the real-life situation of building a robot!</p>
         </header>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            <div class="card p-6">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">OOP Concepts</h3>
-                <p class="text-gray-600 mb-4">Learn the four pillars of Object-Oriented Programming: Encapsulation, Inheritance, Polymorphism, and Abstraction.</p>
-                <div class="space-y-2">
-                    <div class="bg-blue-100 p-3 rounded">🔒 Encapsulation</div>
-                    <div class="bg-green-100 p-3 rounded">📈 Inheritance</div>
-                    <div class="bg-purple-100 p-3 rounded">🎭 Polymorphism</div>
-                    <div class="bg-orange-100 p-3 rounded">🎯 Abstraction</div>
+        <!-- SECTION 1: What is Java? -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>1. The Robot Factory (Java)</h2>
+                <p>Think of <strong>Java</strong> as a high-tech robot factory. It provides the blueprints (code) and tools (compiler & JVM) to build sophisticated robots (applications) that can run almost anywhere – on computers, phones, servers, and more!</p>
+                <p>Java is known for being reliable, secure, and running on many different platforms ("Write Once, Run Anywhere").</p>
+            </div>
+            <div id="intro-viz" class="visualization">
+                 <div class="text-center font-bold">
+                    <div class="text-6xl mb-4">📜</div>
+                    <p>Java Code (Robot Blueprints)</p>
+                    <div class="text-4xl my-4">↓</div>
+                    <div class="text-6xl mb-4">🏭</div>
+                    <p>Java Compiler & JVM (The Factory)</p>
+                    <div class="text-4xl my-4">↓</div>
+                    <div class="text-6xl mb-4">🤖</div>
+                    <p>Working Robot (Your Program)</p>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Classes & Objects -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>2. Blueprints & Robots (Classes/Objects)</h2>
+                <p>In Java, a <strong>Class</strong> is like a detailed blueprint for building a robot. It defines what parts it has (data) and what it can do (actions).</p>
+                <p>An <strong>Object</strong> is an actual robot built using that blueprint. You can create many robot objects from the same class blueprint.</p>
+                <p>Click the blueprint to build a new robot!</p>
+            </div>
+            <div id="class-object-viz" class="visualization flex-col gap-4">
+                 <div id="robot-blueprint" class="blueprint">
+                    <h4 class="font-bold">📄 Class: BasicBot</h4>
+                    <p class="text-sm">Data: name, battery<br>Actions: walk(), speak()</p>
+                 </div>
+                 <div id="robot-display">
+                     <!-- Robots added here -->
+                 </div>
+            </div>
+        </section>
+        
+        <!-- SECTION 3: Variables -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>3. Robot Specs (Variables)</h2>
+                <p><strong>Variables</strong> are like the robot's specification sheet or memory. They store pieces of information, like its name (text, called a <code>String</code>), battery level (a number, like an <code>int</code>), or if its light is on (true/false, a <code>boolean</code>).</p>
+                <div class="code-block">String robotName = "Bolt";<br>int batteryLevel = 100;<br>boolean lightOn = false;</div>
+            </div>
+            <div id="variables-viz" class="visualization flex-col gap-4">
+                <div class="robot-spec">Name: <span id="robot-name-val" class="font-mono text-cyan-300">"Bolt"</span></div>
+                <div class="robot-spec">Battery: <span id="robot-battery-val" class="font-mono text-pink-300">100</span>%</div>
+                <div class="robot-spec">Light: <span id="robot-light-val" class="font-mono text-green-300">false</span></div>
+                <button id="charge-btn" class="viz-button mt-4">Charge Battery</button>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Methods -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>4. Robot Actions (Methods)</h2>
+                <p><strong>Methods</strong> are the actions or commands your robot can perform. They are defined within the class blueprint. When you want a specific robot object to do something, you "call" its method.</p>
+                 <div class="code-block">public void walk() {<br>&nbsp;&nbsp;// Code for walking... <br>}<br><br>myRobot.walk(); // Call the method</div>
+            </div>
+            <div id="methods-viz" class="visualization flex-col gap-4">
+                <div class="text-6xl" id="robot-icon">🤖</div>
+                <div class="robot-actions">
+                    <button class="viz-button" data-action="walk">Walk</button>
+                    <button class="viz-button" data-action="speak">Speak</button>
+                    <button class="viz-button" data-action="stop">Stop</button>
+                </div>
+                <div id="robot-status" class="robot-status">Status: Idle</div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Conditionals -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>5. Robot Decisions (If/Else)</h2>
+                <p>Robots need to make decisions! Java uses <code>if</code>, <code>else if</code>, and <code>else</code> statements to check conditions. For example: "<strong>If</strong> the battery is low, find the charger, <strong>else</strong> continue the task."</p>
+                 <div class="code-block">if (batteryLevel < 20) {<br>&nbsp;&nbsp;findCharger();<br>} else {<br>&nbsp;&nbsp;continueTask();<br>}</div>
+            </div>
+            <div id="conditionals-viz" class="visualization">
+                 <div class="sensor-reading">
+                    <h4 class="font-bold">Battery Sensor</h4>
+                    <div class="battery my-2"><div id="battery-level-bar" class="battery-level w-full"></div></div>
+                    <label>Adjust Level: <input type="range" id="battery-slider" min="0" max="100" value="100"></label>
+                    <div id="robot-decision" class="mt-4 font-bold text-xl"></div>
+                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: Loops -->
+        <section class="tutorial-section">
+            <div class="explanation">
+                <h2>6. Repeating Tasks (Loops)</h2>
+                <p>Sometimes a robot needs to repeat an action, like taking 5 steps forward. Python uses <strong>loops</strong> (like <code>for</code> or <code>while</code>) to execute a block of code multiple times.</p>
+                <div class="code-block">for (int i = 0; i < 5; i++) {<br>&nbsp;&nbsp;robot.takeStep();<br>}</div>
+            </div>
+            <div id="loops-viz" class="visualization">
+                <div class="text-center">
+                     <div id="robot-loop" class="robot-loop">🤖</div>
+                     <button id="loop-btn" class="viz-button mt-4">Walk 5 Steps</button>
+                     <div id="loop-count" class="mt-2">Steps Taken: 0</div>
                 </div>
             </div>
-
-            <div class="card p-6">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">Java Features</h3>
-                <p class="text-gray-600 mb-4">Explore the key features that make Java powerful and versatile.</p>
-                <div class="space-y-2">
-                    <div class="bg-red-100 p-3 rounded">☕ Platform Independent</div>
-                    <div class="bg-yellow-100 p-3 rounded">🛡️ Secure</div>
-                    <div class="bg-indigo-100 p-3 rounded">🔧 Robust</div>
-                    <div class="bg-pink-100 p-3 rounded">🏃‍♂️ Multithreaded</div>
+        </section>
+        
+        <footer class="tutorial-section further-exploration">
+            <div style="grid-column: 1 / -1;">
+                <h2>Continue Your Robot Building</h2>
+                <div class="exploration-grid">
+                    <div class="exploration-column">
+                        <h3>Official & Core Resources</h3>
+                        <ul>
+                            <li><a href="https://docs.oracle.com/en/java/" target="_blank" rel="noopener">Official Java Docs (Oracle)</a></li>
+                            <li><a href="https://dev.java/learn/" target="_blank" rel="noopener">Java Learning Portal</a></li>
+                            <li><a href="https://openjdk.org/" target="_blank" rel="noopener">OpenJDK</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Learning Platforms</h3>
+                        <ul>
+                            <li><a href="https://www.w3schools.com/java/" target="_blank" rel="noopener">W3Schools Java Tutorial</a></li>
+                            <li><a href="https://www.freecodecamp.org/news/tag/java/" target="_blank" rel="noopener">freeCodeCamp Articles</a></li>
+                            <li><a href="https://www.codecademy.com/learn/learn-java" target="_blank" rel="noopener">Codecademy</a></li>
+                            <li><a href="https://java-programming.mooc.fi/" target="_blank" rel="noopener">MOOC.fi (University of Helsinki)</a></li>
+                        </ul>
+                    </div>
+                    <div class="exploration-column">
+                        <h3>Practice Project Ideas</h3>
+                        <ul>
+                            <li>A simple calculator application</li>
+                            <li>A text-based adventure game</li>
+                            <li>A basic bank account simulator</li>
+                            <li>A contact management system</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
+        </footer>
 
-            <div class="card p-6">
-                <h3 class="text-2xl font-bold text-gray-800 mb-4">Collections Framework</h3>
-                <p class="text-gray-600 mb-4">Master Java's powerful collections for data manipulation.</p>
-                <div class="space-y-2">
-                    <div class="bg-teal-100 p-3 rounded">📋 List Interface</div>
-                    <div class="bg-cyan-100 p-3 rounded">🔑 Set Interface</div>
-                    <div class="bg-lime-100 p-3 rounded">🗺️ Map Interface</div>
-                    <div class="bg-emerald-100 p-3 rounded">📊 Queue Interface</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl p-8 shadow-lg">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Java Code Example</h2>
-            <div class="bg-gray-900 text-green-400 p-6 rounded-lg font-mono text-sm overflow-x-auto">
-                <pre><code>// Hello World in Java
-public class HelloWorld {
-    public static void main(String[] args) {
-        System.out.println("Hello, Java World!");
-
-        // OOP Example
-        Person person = new Person("John Doe", 25);
-        person.displayInfo();
-    }
-}
-
-class Person {
-    private String name;
-    private int age;
-
-    public Person(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
-
-    public void displayInfo() {
-        System.out.println("Name: " + name + ", Age: " + age);
-    }
-}</code></pre>
-            </div>
-        </div>
-
-        <div class="mt-16 text-center">
-            <h2 class="text-3xl font-bold text-white mb-8">Java Learning Path</h2>
-            <div class="grid md:grid-cols-4 gap-6">
-                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
-                    <div class="text-4xl mb-4">📚</div>
-                    <h3 class="text-xl font-bold text-white mb-2">Basics</h3>
-                    <p class="text-white opacity-80">Variables, Data Types, Operators</p>
-                </div>
-                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
-                    <div class="text-4xl mb-4">🏗️</div>
-                    <h3 class="text-xl font-bold text-white mb-2">OOP</h3>
-                    <p class="text-white opacity-80">Classes, Objects, Inheritance</p>
-                </div>
-                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
-                    <div class="text-4xl mb-4">🔧</div>
-                    <h3 class="text-xl font-bold text-white mb-2">Advanced</h3>
-                    <p class="text-white opacity-80">Collections, Exceptions, Threads</p>
-                </div>
-                <div class="bg-white bg-opacity-10 p-6 rounded-lg">
-                    <div class="text-4xl mb-4">🚀</div>
-                    <h3 class="text-xl font-bold text-white mb-2">Frameworks</h3>
-                    <p class="text-white opacity-80">Spring, Hibernate, Maven</p>
-                </div>
-            </div>
-        </div>
     </div>
+
+    <script>
+        // --- Animate on Scroll ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('.tutorial-section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        // --- Viz 2: Classes & Objects ---
+        const blueprint = document.getElementById('robot-blueprint');
+        const robotDisplay = document.getElementById('robot-display');
+        let robotCount = 0;
+        blueprint.onclick = () => {
+            if (robotCount < 8) {
+                robotCount++;
+                const robot = document.createElement('div');
+                robot.className = 'robot-instance';
+                robot.textContent = '🤖';
+                robot.title = `Bot ${robotCount}`;
+                robotDisplay.appendChild(robot);
+            }
+        };
+
+        // --- Viz 3: Variables ---
+        const robotBatteryVal = document.getElementById('robot-battery-val');
+        const chargeBtn = document.getElementById('charge-btn');
+        let batteryLevel = 100;
+        chargeBtn.onclick = () => {
+             batteryLevel = Math.min(100, batteryLevel + 10);
+             robotBatteryVal.textContent = batteryLevel;
+        };
+        // Simulate battery drain
+        setInterval(() => {
+            if (batteryLevel > 0) {
+                batteryLevel--;
+                robotBatteryVal.textContent = batteryLevel;
+            }
+        }, 2000);
+
+        // --- Viz 4: Methods ---
+        const robotIcon = document.getElementById('robot-icon');
+        const robotStatus = document.getElementById('robot-status');
+        const actionButtons = document.querySelectorAll('.robot-actions button');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                robotIcon.style.animation = ''; // Reset animation
+                void robotIcon.offsetWidth; // Trigger reflow
+                
+                if (action === 'walk') {
+                    robotStatus.textContent = "Status: Walking...";
+                    robotIcon.style.animation = 'robot-walk 1s infinite linear';
+                } else if (action === 'speak') {
+                    robotStatus.textContent = "Status: Beep Boop!";
+                    robotIcon.style.transform = 'scale(1.1)';
+                    setTimeout(() => robotIcon.style.transform = 'scale(1)', 200);
+                } else {
+                    robotStatus.textContent = "Status: Idle";
+                     robotIcon.style.animation = '';
+                }
+            });
+        });
+
+        // --- Viz 5: Conditionals ---
+        const batterySlider = document.getElementById('battery-slider');
+        const batteryLevelBar = document.getElementById('battery-level-bar');
+        const robotDecision = document.getElementById('robot-decision');
+        function updateConditionalViz() {
+            const level = parseInt(batterySlider.value, 10);
+            batteryLevelBar.style.width = `${level}%`;
+            if (level < 20) {
+                 robotDecision.textContent = "Decision: Battery Low! Find Charger 🔌";
+            } else {
+                 robotDecision.textContent = "Decision: Battery OK. Continue Task 👍";
+            }
+        }
+        batterySlider.addEventListener('input', updateConditionalViz);
+        updateConditionalViz();
+
+        // --- Viz 6: Loops ---
+        const robotLoop = document.getElementById('robot-loop');
+        const loopBtn = document.getElementById('loop-btn');
+        const loopCount = document.getElementById('loop-count');
+        let stepsTaken = 0;
+        loopBtn.onclick = async () => {
+            loopBtn.disabled = true;
+            stepsTaken = 0;
+            loopCount.textContent = `Steps Taken: ${stepsTaken}`;
+             robotLoop.style.animation = 'robot-walk 0.5s infinite linear';
+             for(let i=0; i<5; i++) {
+                 await sleep(500);
+                 stepsTaken++;
+                 loopCount.textContent = `Steps Taken: ${stepsTaken}`;
+             }
+             robotLoop.style.animation = '';
+             loopBtn.disabled = false;
+        };
+
+    </script>
 </body>
 </html>
