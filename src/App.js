@@ -241,13 +241,22 @@ const App = () => {
       setPreviousScrollY(containerRef.current.scrollTop);
     }
 
-    // Update application state for project details view
-    setSelectedProject(project);
-    setCurrentPage('project-details');
-    setCurrentSection('projects'); // Track navigation context
+    // Smooth fade out before navigation
+    gsap.to(window, {
+      scrollTo: { y: 0, autoKill: false },
+      duration: 0.4,
+      ease: 'power2.inOut'
+    });
 
-    // Track user interaction for analytics
-    trackProjectView(project.title);
+    // Update application state for project details view with slight delay
+    setTimeout(() => {
+      setSelectedProject(project);
+      setCurrentPage('project-details');
+      setCurrentSection('projects'); // Track navigation context
+      
+      // Track user interaction for analytics
+      trackProjectView(project.title);
+    }, 200);
   };
 
   /**
@@ -260,17 +269,46 @@ const App = () => {
    * - Uses timeout to ensure DOM is ready for scrolling
    */
   const handleBackToProjects = () => {
-    // Reset navigation state
-    setCurrentPage('profile');
-    setSelectedProject(null);
+    // Smooth fade out transition
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) {
+      gsap.to(mainContent, {
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+        onComplete: () => {
+          // Reset navigation state
+          setCurrentPage('profile');
+          setSelectedProject(null);
+          
+          // Fade back in
+          gsap.to(mainContent, {
+            opacity: 1,
+            duration: 0.3,
+            ease: 'power2.in'
+          });
 
-    // Smooth scroll to projects section after page transition
-    setTimeout(() => {
-      const projectsElement = document.getElementById('projects');
-      if (projectsElement) {
-        projectsElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100); // Brief delay for DOM readiness
+          // Smooth scroll to projects section after page transition
+          setTimeout(() => {
+            const projectsElement = document.getElementById('projects');
+            if (projectsElement) {
+              projectsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }, 150);
+        }
+      });
+    } else {
+      // Fallback without animation
+      setCurrentPage('profile');
+      setSelectedProject(null);
+      
+      setTimeout(() => {
+        const projectsElement = document.getElementById('projects');
+        if (projectsElement) {
+          projectsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
   };
 
   /**
@@ -423,24 +461,46 @@ const App = () => {
     // ============================================================================
     // SMOOTH PAGE TRANSITION
     // ============================================================================
-    // Apply fade-out effect before opening new window
-    document.body.classList.add('fade-out');
-
-    // Open skill tutorial in new tab with transition delay
-    setTimeout(() => {
+    // Apply GSAP fade-out effect before opening new window
+    const body = document.body;
+    if (body) {
+      gsap.to(body, {
+        opacity: 0.7,
+        duration: 0.2,
+        ease: 'power2.out',
+        onComplete: () => {
+          // Open skill tutorial in new tab
+          window.open(targetPath, '_blank');
+          
+          // Fade back in
+          gsap.to(body, {
+            opacity: 1,
+            duration: 0.2,
+            ease: 'power2.in'
+          });
+        }
+      });
+    } else {
+      // Fallback without animation
       window.open(targetPath, '_blank');
-    }, 300); // 300ms delay to allow fade-out animation to complete
+    }
   };
 
   // Handle back navigation from skill games
   const handleBackFromSkills = useCallback(() => {
-    // Scroll to skills section after a brief delay to allow page transition
-    setTimeout(() => {
-      const skillsElement = document.getElementById('skills');
-      if (skillsElement) {
-        skillsElement.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
+    // Smooth GSAP scroll to skills section
+    const skillsElement = document.getElementById('skills');
+    if (skillsElement) {
+      gsap.to(window, {
+        scrollTo: {
+          y: skillsElement,
+          autoKill: false,
+          offsetY: 20
+        },
+        duration: 0.6,
+        ease: 'power2.inOut'
+      });
+    }
   }, []);
 
   // Handle smooth transition when returning from skill games
@@ -513,7 +573,7 @@ const App = () => {
           console.log('✅ Landing page complete, transitioning to home page');
           onComplete();
         }, 1000);
-      }, 3500);
+      }, 2500);
 
       const handleResize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -1043,7 +1103,18 @@ const App = () => {
                 onContactClick={() => {
                   if (containerRef.current) {
                     const connectEl = containerRef.current.querySelector('#connect');
-                    connectEl && connectEl.scrollIntoView({ behavior: 'smooth' });
+                    if (connectEl) {
+                      // Smooth GSAP scroll to connect section
+                      gsap.to(window, {
+                        scrollTo: {
+                          y: connectEl,
+                          autoKill: false,
+                          offsetY: 20
+                        },
+                        duration: 0.6,
+                        ease: 'power2.inOut'
+                      });
+                    }
                   }
                 }}
                 className="scale-75 xs:scale-80 sm:scale-90 md:scale-95 lg:scale-100"
@@ -1345,7 +1416,29 @@ const App = () => {
   // Main component rendering logic based on the current page state
   const handleLandingComplete = () => {
     console.log('🎬 Landing complete, showing home page');
-    setCurrentPage('home');
+    
+    // Smooth fade transition from landing to home
+    const appElement = document.querySelector('.App');
+    if (appElement) {
+      gsap.to(appElement, {
+        opacity: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+        onComplete: () => {
+          setCurrentPage('home');
+          
+          // Fade back in
+          gsap.to(appElement, {
+            opacity: 1,
+            duration: 0.4,
+            ease: 'power2.in'
+          });
+        }
+      });
+    } else {
+      // Fallback without animation
+      setCurrentPage('home');
+    }
   };
 
   const PageContent = () => {

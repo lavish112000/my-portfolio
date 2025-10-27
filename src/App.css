@@ -104,3 +104,68 @@
     background-position: 0% 50%;
   }
 }
+
+/* Smooth page transitions */
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+/* Smooth fade transitions for main content areas */
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Smooth scroll behavior enhancement */
+* {
+  scroll-margin-top: 20px;
+}
+
+/* Link and interactive element transitions */
+a, button {
+  transition: color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+
+a:active, button:active {
+  transform: scale(0.98);
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-enter-active,
+  .page-transition-exit-active,
+  .fade-enter-active,
+  .fade-exit-active,
+  a, button {
+    transition-duration: 0.01ms !important;
+  }
+}
