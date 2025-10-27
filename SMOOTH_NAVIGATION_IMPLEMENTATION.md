@@ -13,6 +13,7 @@ October 27, 2025
 ### 1. GSAP-Powered Page Transitions
 
 #### Project Navigation
+
 - **handleProjectClick**: Enhanced with smooth scroll-to-top animation
   - Duration: 0.4s with power2.inOut easing
   - GSAP scrollTo plugin with autoKill: false
@@ -25,6 +26,7 @@ October 27, 2025
   - Graceful fallback for missing DOM elements
 
 #### Skills Navigation
+
 - **handleSkillClick**: Enhanced with body fade effect
   - Quick 0.2s opacity fade (0.7) before opening new tab
   - Fade back to full opacity (1.0) after navigation
@@ -37,6 +39,7 @@ October 27, 2025
   - power2.inOut easing for professional feel
 
 #### Landing Page Transition
+
 - **handleLandingComplete**: Enhanced landing-to-home navigation
   - 0.3s fade out transition
   - 0.4s fade in transition
@@ -44,6 +47,7 @@ October 27, 2025
   - Fallback for edge cases
 
 #### Profile Card Interactions
+
 - **onContactClick**: Enhanced Connect button scroll
   - GSAP scrollTo with 0.6s duration
   - 20px offset for optimal positioning
