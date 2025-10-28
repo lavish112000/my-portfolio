@@ -2,7 +2,7 @@
  * useTextDecryption Hook
  * Handles the animated text decryption effect
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { RANDOM_CHARS } from '../constants/navigation';
 
 export const useTextDecryption = (fullText, shouldAnimate = true) => {
@@ -45,3 +45,5 @@ export const useTextDecryption = (fullText, shouldAnimate = true) => {
     startDecryption
   };
 };
+
+export default useTextDecryption;
