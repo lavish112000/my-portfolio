@@ -51,10 +51,6 @@ import NeonFlux from './NeonFlux.png';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
 import ScrollFloat from './ScrollFloat';
 import TextPressure from './TextPressure';
-import { menuItems, socialItems, ABOUT_TEXT, RANDOM_CHARS } from './constants/navigation';
-import { getSkillFilePath } from './constants/skillMappings';
-import useTextDecryption from './hooks/useTextDecryption';
-import { scrollToSection, scrollToTop, isElementInViewport } from './utils/scrollUtils';
 // Lazy load StaggeredMenu
 const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
 
@@ -339,13 +335,121 @@ const App = () => {
     // Track navigation context for return navigation
     setCurrentSection('skills');
 
-    // Get the target file path from the skill mapping
-    const targetPath = getSkillFilePath(skillName);
-    
-    // Exit if skill is not mapped
-    if (!targetPath) {
-      console.log(`No specific page found for skill: ${skillName}`);
-      return;
+    // Initialize target path variable
+    let targetPath = '';
+
+    // ============================================================================
+    // SKILL NAME TO FILE PATH MAPPING
+    // ============================================================================
+    // Maps user-friendly skill names to their corresponding HTML tutorial files
+    // All paths are relative to the public folder and serve static HTML content
+    switch (skillName.toLowerCase()) {
+      // Programming Languages
+      case 'python':
+        targetPath = '/skill-games/python.html';
+        break;
+      case 'java':
+        targetPath = '/skill-games/Java.html';
+        break;
+      case 'javascript':
+        targetPath = '/skill-games/javascript.html';
+        break;
+
+      // Frontend Technologies
+      case 'html':
+        targetPath = '/skill-games/HTML.html';
+        break;
+      case 'css':
+        targetPath = '/skill-games/HTML.html'; // CSS tutorial is combined with HTML
+        break;
+      case 'react':
+        targetPath = '/skill-games/React.html';
+        break;
+      case 'react native':
+        targetPath = '/skill-games/ReactNative.html';
+        break;
+      case 'next.js':
+        targetPath = '/skill-games/NextJS.html';
+        break;
+      case 'flutter':
+        targetPath = '/skill-games/flutter.html';
+        break;
+      case 'tailwind css':
+        targetPath = '/skill-games/Tailwind.html';
+        break;
+      case 'three.js':
+        targetPath = '/skill-games/ThreeJS.html';
+        break;
+
+      // Backend Technologies
+      case 'apache':
+        targetPath = '/skill-games/Apache.html';
+        break;
+      case 'rest api':
+        targetPath = '/skill-games/HTML.html'; // REST API tutorial combined with HTML
+        break;
+      case 'dsa':
+        targetPath = '/skill-games/DSA.html';
+        break;
+      case 'version control':
+        targetPath = '/skill-games/VersionControl.html';
+        break;
+      case 'express.js':
+        targetPath = '/skill-games/ExpressJS.html';
+        break;
+      case 'node.js':
+        targetPath = '/skill-games/NodeJS.html';
+        break;
+      case 'django':
+        targetPath = '/skill-games/Django.html';
+        break;
+      case 'flask':
+        targetPath = '/skill-games/Flask.html';
+        break;
+      case 'tensorflow':
+        targetPath = '/skill-games/TensorFlow.html';
+        break;
+
+      // Database Technologies
+      case 'oracle':
+        targetPath = '/skill-games/OracleDB.html';
+        break;
+      case 'sql':
+        targetPath = '/skill-games/SQL.html';
+        break;
+      case 'postgresql':
+        targetPath = '/skill-games/PostgreSQL.html';
+        break;
+      case 'mongodb':
+        targetPath = '/skill-games/MongoDB.html';
+        break;
+
+      // Cloud Platforms
+      case 'gcp':
+        targetPath = '/skill-games/HTML.html'; // GCP tutorial combined with HTML
+        break;
+      case 'aws':
+        targetPath = '/skill-games/AWS.html';
+        break;
+      case 'azure':
+        targetPath = '/skill-games/HTML.html'; // Azure tutorial combined with HTML
+        break;
+
+      // Development Tools
+      case 'github':
+        targetPath = '/skill-games/GitHub.html';
+        break;
+      case 'docker':
+        targetPath = '/skill-games/Docker.html';
+        break;
+      case 'kubernetes':
+        targetPath = '/skill-games/HTML.html'; // Kubernetes tutorial combined with HTML
+        break;
+
+      // Default case for unmapped skills
+      default:
+        console.log(`No specific page found for skill: ${skillName}`);
+        return; // Exit function if skill is not mapped
     }
 
     // ============================================================================
@@ -769,8 +873,25 @@ const App = () => {
     const containerRef = useRef(null);
     const [isMounted, setIsMounted] = useState(false);
 
-    // Use custom text decryption hook
-    const { displayedText, startDecryption } = useTextDecryption(ABOUT_TEXT, RANDOM_CHARS);
+    // Decrypted text animation state
+    const [displayedText, setDisplayedText] = useState('');
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [animationCompleted, setAnimationCompleted] = useState(false);
+    const fullText = "Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.";
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
+
+    const menuItems = [
+      { label: 'Home', ariaLabel: 'Go to home page', link: '#' },
+      { label: 'My Work', ariaLabel: 'View my work', link: '#projects' },
+      { label: 'Skills', ariaLabel: 'View skills', link: '#skills' },
+      { label: 'About Me', ariaLabel: 'Learn about me', link: '#about' }
+    ];
+
+    const socialItems = [
+      { label: 'Twitter', link: 'https://twitter.com' },
+      { label: 'GitHub', link: 'https://github.com' },
+      { label: 'LinkedIn', link: 'https://linkedin.com' }
+    ];
 
     const handleSkillsetsClick = () => {
       document.body.classList.add('fade-out');
@@ -818,16 +939,19 @@ const App = () => {
       const handleScroll = () => {
         const currentRef = containerRef.current;
         if (currentRef) {
+          const viewportHeight = window.innerHeight;
           skillsRef.current.forEach((ref, index) => {
             if (ref) {
-              const isVisible = isElementInViewport(ref, 100);
+              const rect = ref.getBoundingClientRect();
+              const isVisible = rect.top < viewportHeight - 100;
               setSkillsVisible(prev => ({ ...prev, [index]: isVisible }));
             }
           });
 
           projectsRef.current.forEach((ref, index) => {
             if (ref) {
-              const isVisible = isElementInViewport(ref, 100);
+              const rect = ref.getBoundingClientRect();
+              const isVisible = rect.top < viewportHeight - 100;
               setProjectsVisible(prev => ({ ...prev, [index]: isVisible }));
             }
           });
@@ -858,12 +982,51 @@ const App = () => {
       trackPageView(`/${currentPage}`);
     }, []);
 
-    // Start text decryption animation when component mounts
+    // Decrypted text animation effect
     useEffect(() => {
-      if (isMounted) {
-        startDecryption();
+      if (isMounted && !isAnimating && !animationCompleted) {
+        setIsAnimating(true);
+        let currentIndex = 0;
+        let animationInterval;
+
+        const animateText = () => {
+          if (currentIndex < fullText.length) {
+            // Calculate how many characters to reveal per step to complete in 1500ms
+            const totalSteps = 1500 / 50; // 50ms intervals for 1500ms total
+            const charsPerStep = Math.ceil(fullText.length / totalSteps);
+
+            // Reveal multiple characters at once
+            const nextIndex = Math.min(currentIndex + charsPerStep, fullText.length);
+
+            // Create random characters for the remaining text
+            const randomText = fullText.slice(nextIndex).split('').map(() =>
+              chars[Math.floor(Math.random() * chars.length)]
+            ).join('');
+
+            // Update displayed text with correct characters up to next index + random for rest
+            setDisplayedText(fullText.slice(0, nextIndex) + randomText);
+            currentIndex = nextIndex;
+          } else {
+            // Animation complete - show full text
+            setDisplayedText(fullText);
+            setIsAnimating(false);
+            setAnimationCompleted(true);
+            clearInterval(animationInterval);
+          }
+        };
+
+        // Start animation with a slight delay after the box slides in
+        setTimeout(() => {
+          animationInterval = setInterval(animateText, 50); // 50ms delay between steps
+        }, 500); // Wait 500ms after slide-in animation
+
+        return () => {
+          if (animationInterval) {
+            clearInterval(animationInterval);
+          }
+        };
       }
-    }, [isMounted, startDecryption]);
+    }, [isMounted, isAnimating, animationCompleted, fullText, chars]);
 
     const skillsByCategory = {
       'Languages': [
