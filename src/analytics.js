@@ -58,7 +58,9 @@ export const GA_TRACKING_ID = process.env.REACT_APP_GA_TRACKING_ID || 'G-4JTCMWN
  */
 export const trackPageView = (pagePath) => {
   // Safety check: ensure we're in browser environment with gtag available
-  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
+  const isAnalyticsReady = typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID;
+  
+  if (isAnalyticsReady) {
     window.gtag('config', GA_TRACKING_ID, {
       page_path: pagePath, // Override default page path with custom path
     });
@@ -82,7 +84,9 @@ export const trackPageView = (pagePath) => {
  */
 export const trackEvent = (action, category, label, value) => {
   // Safety check: ensure we're in browser environment with gtag available
-  if (typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID) {
+  const isAnalyticsReady = typeof window !== 'undefined' && window.gtag && GA_TRACKING_ID;
+  
+  if (isAnalyticsReady) {
     window.gtag('event', action, {
       event_category: category,    // GA4 event category parameter
       event_label: label,          // GA4 event label parameter
