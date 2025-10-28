@@ -64,8 +64,12 @@ const ProfileCardComponent = ({
     let MAX_TILT_X = parseFloat(wrapRef.current?.dataset.maxTiltX) || 14; // affects rotateX (derived from pointer Y)
     let MAX_TILT_Y = parseFloat(wrapRef.current?.dataset.maxTiltY) || 14; // affects rotateY (derived from pointer X)
     let MAX_TILT_Z = parseFloat(wrapRef.current?.dataset.maxTiltZ) || 8;  // subtle spin on circular pointer movement
+    
     // Auto scaling for small screens (will be optionally adjusted later by prop logic)
-    if (responsiveTilt && typeof window !== 'undefined' && window.innerWidth < 480) {
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 480;
+    const shouldApplyResponsiveTilt = responsiveTilt && isSmallScreen;
+    
+    if (shouldApplyResponsiveTilt) {
       MAX_TILT_X *= 0.8; MAX_TILT_Y *= 0.8; MAX_TILT_Z *= 0.8;
     }
 
@@ -114,8 +118,14 @@ const ProfileCardComponent = ({
             const dx = targetRot.x - currentRot.x;
             const dy = targetRot.y - currentRot.y;
             const dz = targetRot.z - currentRot.z;
+            
+            // Check if movement is negligible
+            const isMovementNegligible = Math.abs(dx) < 0.01 && 
+                                        Math.abs(dy) < 0.01 && 
+                                        Math.abs(dz) < 0.01;
+            
             // If movement is negligible skip extra writes next frame
-            if (Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01 && Math.abs(dz) < 0.01) {
+            if (isMovementNegligible) {
               currentRot.x = targetRot.x; currentRot.y = targetRot.y; currentRot.z = targetRot.z;
               wrap.style.setProperty('--rotate-x', `${round(currentRot.x)}deg`);
               wrap.style.setProperty('--rotate-y', `${round(currentRot.y)}deg`);
