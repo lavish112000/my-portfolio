@@ -53,8 +53,7 @@ export const StaggeredMenu = ({
       const icon = iconRef.current;
       const textInner = textInnerRef.current;
 
-      const hasRequiredRefs = panel && plusH && plusV && icon && textInner;
-      if (!hasRequiredRefs) return;
+      if (!panel || !plusH || !plusV || !icon || !textInner) return;
 
       let preLayers = [];
       if (preContainer) {
@@ -215,9 +214,7 @@ export const StaggeredMenu = ({
     const icon = iconRef.current;
     const h = plusHRef.current;
     const v = plusVRef.current;
-    
-    const hasIconRefs = icon && h && v;
-    if (!hasIconRefs) return;
+    if (!icon || !h || !v) return;
 
     spinTweenRef.current?.kill();
 
