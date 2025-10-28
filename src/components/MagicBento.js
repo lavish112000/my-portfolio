@@ -335,7 +335,8 @@ const GlobalSpotlight = ({
   const isInsideSection = useRef(false);
 
   useEffect(() => {
-    if (disableAnimations || !gridRef?.current || !enabled) return;
+    const shouldSkipEffect = disableAnimations || !gridRef?.current || !enabled;
+    if (shouldSkipEffect) return;
 
     const spotlight = document.createElement('div');
     spotlight.className = 'global-spotlight';
@@ -362,17 +363,21 @@ const GlobalSpotlight = ({
     spotlightRef.current = spotlight;
 
     const handleMouseMove = e => {
-      if (!spotlightRef.current || !gridRef.current) return;
+      const hasRequiredRefs = spotlightRef.current && gridRef.current;
+      if (!hasRequiredRefs) return;
 
       const section = gridRef.current.closest('.bento-section');
       const rect = section?.getBoundingClientRect();
-      const mouseInside =
-        rect && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      const isMouseInsideRect = rect && 
+        e.clientX >= rect.left && 
+        e.clientX <= rect.right && 
+        e.clientY >= rect.top && 
+        e.clientY <= rect.bottom;
 
-      isInsideSection.current = mouseInside || false;
+      isInsideSection.current = isMouseInsideRect || false;
       const cards = gridRef.current.querySelectorAll('.card');
 
-      if (!mouseInside) {
+      if (!isMouseInsideRect) {
         gsap.to(spotlightRef.current, {
           opacity: 0,
           duration: 0.3,
