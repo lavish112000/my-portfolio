@@ -39,7 +39,11 @@
 
 import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { gsap } from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import * as THREE from 'three';
+
+// Register GSAP ScrollToPlugin
+gsap.registerPlugin(ScrollToPlugin);
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import ProfileCard from './components/ProfileCard';
