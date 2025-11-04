@@ -52,6 +52,10 @@ import NeonFlux from './NeonFlux.png';
 import { trackPageView, trackProjectView, trackSkillGameInteraction, trackContactSubmission } from './analytics';
 import ScrollFloat from './ScrollFloat';
 import TextPressure from './TextPressure';
+
+// Register GSAP ScrollToPlugin for smooth scroll animations
+gsap.registerPlugin(ScrollToPlugin);
+
 // Lazy load StaggeredMenu
 const StaggeredMenu = lazy(() => import('./StaggeredMenu'));
 
