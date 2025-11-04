@@ -41,9 +41,6 @@ import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 
 import { gsap } from 'gsap';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import * as THREE from 'three';
-
-// Register GSAP ScrollToPlugin
-gsap.registerPlugin(ScrollToPlugin);
 import emailjs from '@emailjs/browser';
 import profileImage from './profile.jpg';
 import ProfileCard from './components/ProfileCard';
@@ -1164,7 +1161,7 @@ const App = () => {
               </div>
               </h2>
             <p className="text-responsive-base md:text-lg leading-relaxed text-white">
-              {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented frontend developer with over 5 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.'}
+              {displayedText || 'Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented Full Stack developer with over 4 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, Next.js and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction. Currently building this portfolio site to showcase my work and skills.'}
             </p>
           </div>
         </section>
