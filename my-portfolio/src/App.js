@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import emailjs from '@emailjs/browser';
-import profileImage from './profile.jpg';
-import videoPlayerProfileImage from './Videoplayerprofile.png';
+import React from 'react';
 
+// Legacy placeholder: this nested app copy is not used by the active CRA build
+// (which is rooted at the workspace-level `src/`). Keeping this file minimal
+// prevents duplicate analysis noise (e.g., CodeScene warnings) without affecting
+// runtime behavior of the real app.
+const App = () => null;
 
+export default App;
 
+/*
 // This is a self-contained React component for the entire portfolio website.
 // It uses modern React hooks and Tailwind CSS for styling and responsiveness.
 
@@ -667,3 +670,5 @@ const App = () => {
 };
 
 export default App;
+
+*/

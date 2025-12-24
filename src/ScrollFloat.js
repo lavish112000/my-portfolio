@@ -33,13 +33,15 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
 // ============================================================================
 // GSAP PLUGIN REGISTRATION
 // ============================================================================
 // Register ScrollTrigger plugin for scroll-based animations
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 /**
  * ============================================================================

@@ -21,6 +21,18 @@ const round = (value, precision = 3) => parseFloat(value.toFixed(precision));
 const adjust = (value, fromMin, fromMax, toMin, toMax) => round(toMin + ((toMax - toMin) * (value - fromMin)) / (fromMax - fromMin));
 const easeInOutCubic = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 
+const isSmallScreen = () => typeof window !== 'undefined' && window.innerWidth < 480;
+
+const prefersReducedMotion = () => {
+  try {
+    return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  } catch (_) {
+    return false;
+  }
+};
+
+const supportsIOSGyroPermission = () => typeof window.DeviceOrientationEvent?.requestPermission === 'function';
+
 const ProfileCardComponent = ({
   avatarUrl = '<Placeholder for avatar URL>',
   iconUrl = '<Placeholder for icon URL>',
@@ -65,7 +77,7 @@ const ProfileCardComponent = ({
     let MAX_TILT_Y = parseFloat(wrapRef.current?.dataset.maxTiltY) || 14; // affects rotateY (derived from pointer X)
     let MAX_TILT_Z = parseFloat(wrapRef.current?.dataset.maxTiltZ) || 8;  // subtle spin on circular pointer movement
     // Auto scaling for small screens (will be optionally adjusted later by prop logic)
-    if (responsiveTilt && typeof window !== 'undefined' && window.innerWidth < 480) {
+    if (responsiveTilt && isSmallScreen()) {
       MAX_TILT_X *= 0.8; MAX_TILT_Y *= 0.8; MAX_TILT_Z *= 0.8;
     }
 
@@ -90,8 +102,7 @@ const ProfileCardComponent = ({
       // Z spin scales with angle and radial distance so nearer center contributes less.
       const rotateZDeg = (angleDeg * (MAX_TILT_Z / 180)) * radial;
       // Respect reduced motion preference (disable dynamic tilt/spin beyond light tilt)
-      let reduceMotion = false;
-      try { reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(_) { /* no-op */ }
+      const reduceMotion = prefersReducedMotion();
 
       // Update instantaneous pointer-related variables (not smoothed)
       const immediate = {
@@ -141,7 +152,7 @@ const ProfileCardComponent = ({
       }
     };
 
-    const createSmoothAnimation = (duration, startX, startY, card, wrap) => {
+    const createSmoothAnimation = ({ duration, startX, startY, card, wrap }) => {
       const startTime = performance.now();
       const targetX = wrap.clientWidth / 2;
       const targetY = wrap.clientHeight / 2;
@@ -177,7 +188,7 @@ const ProfileCardComponent = ({
 
   const handlePointerLeave = useCallback(event => {
     const card = cardRef.current; const wrap = wrapRef.current; if (!card || !wrap || !animationHandlers) return;
-    animationHandlers.createSmoothAnimation(600, event.offsetX, event.offsetY, card, wrap);
+    animationHandlers.createSmoothAnimation({ duration: 600, startX: event.offsetX, startY: event.offsetY, card, wrap });
     wrap.classList.remove('active'); card.classList.remove('active');
   }, [animationHandlers]);
 
@@ -210,7 +221,7 @@ const ProfileCardComponent = ({
     const onTouchEnd = e => {
       if (!active) return;
       active = false;
-      animationHandlers.createSmoothAnimation(500, (rect.width/2), (rect.height/2), card, wrap);
+      animationHandlers.createSmoothAnimation({ duration: 500, startX: rect.width / 2, startY: rect.height / 2, card, wrap });
       wrap.classList.remove('active'); card.classList.remove('active');
     };
     wrap.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -236,7 +247,7 @@ const ProfileCardComponent = ({
     const handleClick = () => {
       if (!enableMobileTilt) return;
       
-      if (typeof window.DeviceOrientationEvent?.requestPermission === 'function') {
+      if (supportsIOSGyroPermission()) {
         // iOS 13+ requires permission
         window.DeviceOrientationEvent.requestPermission()
           .then(state => {
@@ -254,7 +265,7 @@ const ProfileCardComponent = ({
     };
 
     // Auto-activate gyroscope for mobile devices (non-iOS)
-    if (enableMobileTilt && typeof window.DeviceOrientationEvent?.requestPermission !== 'function') {
+    if (enableMobileTilt && !supportsIOSGyroPermission()) {
       window.addEventListener('deviceorientation', deviceOrientationHandler);
     }
 
@@ -266,7 +277,7 @@ const ProfileCardComponent = ({
 
     const initialX = wrap.clientWidth - 70; const initialY = 60;
     animationHandlers.updateCardTransform(initialX, initialY, card, wrap);
-    animationHandlers.createSmoothAnimation(1500, initialX, initialY, card, wrap);
+    animationHandlers.createSmoothAnimation({ duration: 1500, startX: initialX, startY: initialY, card, wrap });
 
     return () => {
   wrap.removeEventListener('pointerenter', pointerEnterHandler);

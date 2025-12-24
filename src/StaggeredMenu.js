@@ -1,6 +1,187 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 
+const getOffscreenXPercent = (position) => (position === 'left' ? -100 : 100);
+
+const areInitialRefsReady = ({ panel, plusH, plusV, icon, textInner }) => {
+  return Boolean(panel && plusH && plusV && icon && textInner);
+};
+
+const areIconRefsReady = ({ icon, h, v }) => {
+  return Boolean(icon && h && v);
+};
+
+const queryPrelayers = (preContainer) => {
+  if (!preContainer) return [];
+  return Array.from(preContainer.querySelectorAll('.sm-prelayer'));
+};
+
+const getPrelayerColors = (colors) => {
+  const raw = colors && colors.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c'];
+  const arr = [...raw];
+  if (arr.length >= 3) {
+    const mid = Math.floor(arr.length / 2);
+    arr.splice(mid, 1);
+  }
+  return arr;
+};
+
+const queryPanelEls = (panel) => {
+  return {
+    itemEls: Array.from(panel.querySelectorAll('.sm-panel-itemLabel')),
+    numberEls: Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item')),
+    socialTitle: panel.querySelector('.sm-socials-title'),
+    socialLinks: Array.from(panel.querySelectorAll('.sm-socials-link'))
+  };
+};
+
+const setPanelClosedState = ({ itemEls, numberEls, socialTitle, socialLinks }) => {
+  if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
+  if (numberEls.length) gsap.set(numberEls, { '--sm-num-opacity': 0 });
+  if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
+  if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+};
+
+const MenuPrelayers = ({ colors, position, preLayersRef }) => {
+  const prelayerColors = getPrelayerColors(colors);
+  const positionClass = position === 'left' ? 'left-0' : 'right-0';
+
+  return (
+    <div
+      ref={preLayersRef}
+      className={`sm-prelayers absolute top-0 ${positionClass} bottom-0 pointer-events-none z-[5]`}
+      aria-hidden="true"
+    >
+      {prelayerColors.map((c, i) => (
+        <div
+          key={i}
+          className={`sm-prelayer absolute top-0 ${positionClass} h-full w-full translate-x-0`}
+          style={{ background: c }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const MenuToggleButton = ({ open, toggleMenu, refs, textLines, className, accentColor, position }) => {
+  return (
+    <div
+      className={(className ? className + ' ' : '') + 'staggered-menu-wrapper relative w-full h-full z-40'}
+      style={accentColor ? { '--sm-accent': accentColor } : undefined}
+      data-position={position}
+      data-open={open || undefined}
+    >
+      <header
+        className="staggered-menu-header absolute top-0 right-0 w-full flex items-center justify-end p-[2em] bg-transparent pointer-events-none z-20"
+        aria-label="Main navigation header"
+      >
+        <button
+          ref={refs.toggleBtnRef}
+          className="sm-toggle relative inline-flex items-center gap-[0.3rem] bg-transparent border-0 cursor-pointer text-[#e9e9ef] font-bold leading-none overflow-visible pointer-events-auto"
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
+          aria-controls="staggered-menu-panel"
+          onClick={toggleMenu}
+          type="button"
+        >
+          <span
+            ref={refs.textWrapRef}
+            className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
+            aria-hidden="true"
+          >
+            <span ref={refs.textInnerRef} className="sm-toggle-textInner flex flex-col leading-none">
+              {textLines.map((l, i) => (
+                <span className="sm-toggle-line block h-[1em] leading-none" key={i}>
+                  {l}
+                </span>
+              ))}
+            </span>
+          </span>
+
+          <span
+            ref={refs.iconRef}
+            className="sm-icon relative w-[14px] h-[14px] shrink-0 inline-flex items-center justify-center [will-change:transform]"
+            aria-hidden="true"
+          >
+            <span
+              ref={refs.plusHRef}
+              className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
+            />
+            <span
+              ref={refs.plusVRef}
+              className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
+            />
+          </span>
+        </button>
+      </header>
+    </div>
+  );
+};
+
+const MenuPanel = ({ open, panelRef, items, displayItemNumbering, displaySocials, socialItems }) => {
+  return (
+    <aside
+      id="staggered-menu-panel"
+      ref={panelRef}
+      className="staggered-menu-panel absolute top-0 right-0 h-full bg-white flex flex-col p-[6em_2em_2em_2em] overflow-y-auto z-10 backdrop-blur-[12px]"
+      style={{ WebkitBackdropFilter: 'blur(12px)' }}
+      aria-hidden={!open}
+    >
+      <div className="sm-panel-inner flex-1 flex flex-col gap-5">
+        <ul
+          className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"
+          data-numbering={displayItemNumbering || undefined}
+        >
+          {items && items.length ? (
+            items.map((it, idx) => (
+              <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}>
+                <a
+                  className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"
+                  href={it.link}
+                  aria-label={it.ariaLabel}
+                  data-index={idx + 1}
+                >
+                  <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
+                    {it.label}
+                  </span>
+                </a>
+              </li>
+            ))
+          ) : (
+            <li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true">
+              <span className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]">
+                <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
+                  No items
+                </span>
+              </span>
+            </li>
+          )}
+        </ul>
+
+        {displaySocials && socialItems && socialItems.length > 0 && (
+          <div className="sm-socials mt-auto pt-8 flex flex-col gap-3" aria-label="Social links">
+            <h3 className="sm-socials-title m-0 text-base font-medium [color:var(--sm-accent,#ff0000)]">Socials</h3>
+            <ul className="sm-socials-list list-none m-0 p-0 flex flex-row items-center gap-4 flex-wrap">
+              {socialItems.map((s, i) => (
+                <li key={s.label + i} className="sm-socials-item">
+                  <a
+                    href={s.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="sm-socials-link text-[1.2rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear"
+                  >
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+};
+
 export const StaggeredMenu = ({
   position = 'right',
   colors = ['#B19EEF', '#5227FF'],
@@ -53,15 +234,13 @@ export const StaggeredMenu = ({
       const icon = iconRef.current;
       const textInner = textInnerRef.current;
 
-      if (!panel || !plusH || !plusV || !icon || !textInner) return;
+      const refsReady = areInitialRefsReady({ panel, plusH, plusV, icon, textInner });
+      if (!refsReady) return;
 
-      let preLayers = [];
-      if (preContainer) {
-        preLayers = Array.from(preContainer.querySelectorAll('.sm-prelayer'));
-      }
+      const preLayers = queryPrelayers(preContainer);
       preLayerElsRef.current = preLayers;
 
-      const offscreen = position === 'left' ? -100 : 100;
+      const offscreen = getOffscreenXPercent(position);
       gsap.set([panel, ...preLayers], { xPercent: offscreen });
 
       gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
@@ -87,18 +266,12 @@ export const StaggeredMenu = ({
     }
     itemEntranceTweenRef.current?.kill();
 
-    const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
-    const numberEls = Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'));
-    const socialTitle = panel.querySelector('.sm-socials-title');
-    const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link'));
+    const { itemEls, numberEls, socialTitle, socialLinks } = queryPanelEls(panel);
 
     const layerStates = layers.map(el => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }));
     const panelStart = Number(gsap.getProperty(panel, 'xPercent'));
 
-    if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
-    if (numberEls.length) gsap.set(numberEls, { '--sm-num-opacity': 0 });
-    if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
-    if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+    setPanelClosedState({ itemEls, numberEls, socialTitle, socialLinks });
 
     const tl = gsap.timeline({ paused: true });
 
@@ -186,7 +359,7 @@ export const StaggeredMenu = ({
     const all = [...layers, panel];
     closeTweenRef.current?.kill();
 
-    const offscreen = position === 'left' ? -100 : 100;
+    const offscreen = getOffscreenXPercent(position);
 
     closeTweenRef.current = gsap.to(all, {
       xPercent: offscreen,
@@ -194,16 +367,7 @@ export const StaggeredMenu = ({
       ease: 'power3.in',
       overwrite: 'auto',
       onComplete: () => {
-        const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
-        if (itemEls.length) gsap.set(itemEls, { yPercent: 140, rotate: 10 });
-
-        const numberEls = Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item'));
-        if (numberEls.length) gsap.set(numberEls, { '--sm-num-opacity': 0 });
-
-        const socialTitle = panel.querySelector('.sm-socials-title');
-        const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link'));
-        if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
-        if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+        setPanelClosedState(queryPanelEls(panel));
 
         busyRef.current = false;
       }
@@ -214,7 +378,7 @@ export const StaggeredMenu = ({
     const icon = iconRef.current;
     const h = plusHRef.current;
     const v = plusVRef.current;
-    if (!icon || !h || !v) return;
+    if (!areIconRefsReady({ icon, h, v })) return;
 
     spinTweenRef.current?.kill();
 
@@ -292,159 +456,49 @@ export const StaggeredMenu = ({
   }, []);
 
   const toggleMenu = useCallback(() => {
-    const target = !openRef.current;
-    openRef.current = target;
-    setOpen(target);
+    const nextOpenState = !openRef.current;
+    openRef.current = nextOpenState;
+    setOpen(nextOpenState);
 
-    if (target) {
-      onMenuOpen?.();
-      playOpen();
-    } else {
-      onMenuClose?.();
-      playClose();
-    }
+    const notify = nextOpenState ? onMenuOpen : onMenuClose;
+    const play = nextOpenState ? playOpen : playClose;
+    notify?.();
+    play();
 
-    animateIcon(target);
-    animateColor(target);
-    animateText(target);
+    animateIcon(nextOpenState);
+    animateColor(nextOpenState);
+    animateText(nextOpenState);
   }, [playOpen, playClose, animateIcon, animateColor, animateText, onMenuOpen, onMenuClose]);
 
   return (
     <div className="sm-scope w-full h-full">
-      <div
-        className={(className ? className + ' ' : '') + 'staggered-menu-wrapper relative w-full h-full z-40'}
-        style={accentColor ? { '--sm-accent': accentColor } : undefined}
-        data-position={position}
-        data-open={open || undefined}
-      >
-        <div
-          ref={preLayersRef}
-          className="sm-prelayers absolute top-0 right-0 bottom-0 pointer-events-none z-[5]"
-          aria-hidden="true"
-        >
-          {(() => {
-            const raw = colors && colors.length ? colors.slice(0, 4) : ['#1e1e22', '#35353c'];
-            let arr = [...raw];
-            if (arr.length >= 3) {
-              const mid = Math.floor(arr.length / 2);
-              arr.splice(mid, 1);
-            }
-            return arr.map((c, i) => (
-              <div
-                key={i}
-                className="sm-prelayer absolute top-0 right-0 h-full w-full translate-x-0"
-                style={{ background: c }}
-              />
-            ));
-          })()}
-        </div>
+      <MenuPrelayers colors={colors} position={position} preLayersRef={preLayersRef} />
 
-        <header
-          className="staggered-menu-header absolute top-0 right-0 w-full flex items-center justify-end p-[2em] bg-transparent pointer-events-none z-20"
-          aria-label="Main navigation header"
-        >
-          <button
-            ref={toggleBtnRef}
-            className="sm-toggle relative inline-flex items-center gap-[0.3rem] bg-transparent border-0 cursor-pointer text-[#e9e9ef] font-bold leading-none overflow-visible pointer-events-auto"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            aria-expanded={open}
-            aria-controls="staggered-menu-panel"
-            onClick={toggleMenu}
-            type="button"
-          >
-            <span
-              ref={textWrapRef}
-              className="sm-toggle-textWrap relative inline-block h-[1em] overflow-hidden whitespace-nowrap w-[var(--sm-toggle-width,auto)] min-w-[var(--sm-toggle-width,auto)]"
-              aria-hidden="true"
-            >
-              <span ref={textInnerRef} className="sm-toggle-textInner flex flex-col leading-none">
-                {textLines.map((l, i) => (
-                  <span className="sm-toggle-line block h-[1em] leading-none" key={i}>
-                    {l}
-                  </span>
-                ))}
-              </span>
-            </span>
+      <MenuToggleButton
+        open={open}
+        toggleMenu={toggleMenu}
+        refs={{
+          toggleBtnRef,
+          textWrapRef,
+          textInnerRef,
+          iconRef,
+          plusHRef,
+          plusVRef
+        }}
+        textLines={textLines}
+        className={className}
+        accentColor={accentColor}
+        position={position}
+      />
 
-            <span
-              ref={iconRef}
-              className="sm-icon relative w-[14px] h-[14px] shrink-0 inline-flex items-center justify-center [will-change:transform]"
-              aria-hidden="true"
-            >
-              <span
-                ref={plusHRef}
-                className="sm-icon-line absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
-              />
-              <span
-                ref={plusVRef}
-                className="sm-icon-line sm-icon-line-v absolute left-1/2 top-1/2 w-full h-[2px] bg-current rounded-[2px] -translate-x-1/2 -translate-y-1/2 [will-change:transform]"
-              />
-            </span>
-          </button>
-        </header>
-
-        <aside
-          id="staggered-menu-panel"
-          ref={panelRef}
-          className="staggered-menu-panel absolute top-0 right-0 h-full bg-white flex flex-col p-[6em_2em_2em_2em] overflow-y-auto z-10 backdrop-blur-[12px]"
-          style={{ WebkitBackdropFilter: 'blur(12px)' }}
-          aria-hidden={!open}
-        >
-          <div className="sm-panel-inner flex-1 flex flex-col gap-5">
-            <ul
-              className="sm-panel-list list-none m-0 p-0 flex flex-col gap-2"
-              data-numbering={displayItemNumbering || undefined}
-            >
-              {items && items.length ? (
-                items.map((it, idx) => (
-                  <li className="sm-panel-itemWrap relative overflow-hidden leading-none" key={it.label + idx}>
-                    <a
-                      className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]"
-                      href={it.link}
-                      aria-label={it.ariaLabel}
-                      data-index={idx + 1}
-                    >
-                      <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
-                        {it.label}
-                      </span>
-                    </a>
-                  </li>
-                ))
-              ) : (
-                <li className="sm-panel-itemWrap relative overflow-hidden leading-none" aria-hidden="true">
-                  <span className="sm-panel-item relative text-black font-semibold text-[4rem] cursor-pointer leading-none tracking-[-2px] uppercase transition-[background,color] duration-150 ease-linear inline-block no-underline pr-[1.4em]">
-                    <span className="sm-panel-itemLabel inline-block [transform-origin:50%_100%] will-change-transform">
-                      No items
-                    </span>
-                  </span>
-                </li>
-              )}
-            </ul>
-
-            {displaySocials && socialItems && socialItems.length > 0 && (
-              <div className="sm-socials mt-auto pt-8 flex flex-col gap-3" aria-label="Social links">
-                <h3 className="sm-socials-title m-0 text-base font-medium [color:var(--sm-accent,#ff0000)]">Socials</h3>
-                <ul
-                  className="sm-socials-list list-none m-0 p-0 flex flex-row items-center gap-4 flex-wrap"
-                >
-                  {socialItems.map((s, i) => (
-                    <li key={s.label + i} className="sm-socials-item">
-                      <a
-                        href={s.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="sm-socials-link text-[1.2rem] font-medium text-[#111] no-underline relative inline-block py-[2px] transition-[color,opacity] duration-300 ease-linear"
-                      >
-                        {s.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </aside>
-      </div>
+      <MenuPanel
+        open={open}
+        panelRef={panelRef}
+        items={items}
+        displayItemNumbering={displayItemNumbering}
+        displaySocials={displaySocials}
+        socialItems={socialItems}
+      />
 
       <style>{`
 .sm-scope .staggered-menu-wrapper { position: fixed; top: 0; right: 0; width: auto; height: 100vh; z-index: 40; pointer-events: none; }

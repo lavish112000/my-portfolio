@@ -76,7 +76,7 @@ const calculateSpotlightValues = radius => ({
   fadeDistance: radius * 0.75
 });
 
-const updateCardGlowProperties = (card, mouseX, mouseY, glow, radius) => {
+const updateCardGlowProperties = ({ card, mouseX, mouseY, glow, radius }) => {
   const rect = card.getBoundingClientRect();
   const relativeX = ((mouseX - rect.left) / rect.width) * 100;
   const relativeY = ((mouseY - rect.top) / rect.height) * 100;
@@ -85,6 +85,43 @@ const updateCardGlowProperties = (card, mouseX, mouseY, glow, radius) => {
   card.style.setProperty('--glow-y', `${relativeY}%`);
   card.style.setProperty('--glow-intensity', glow.toString());
   card.style.setProperty('--glow-radius', `${radius}px`);
+};
+
+const getRectFromGridSection = (gridEl) => {
+  const section = gridEl.closest('.bento-section');
+  return section?.getBoundingClientRect() ?? null;
+};
+
+const isPointInsideRect = (x, y, rect) => {
+  if (!rect) return false;
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+};
+
+const computeGlowIntensity = (effectiveDistance, proximity, fadeDistance) => {
+  if (effectiveDistance <= proximity) return 1;
+  if (effectiveDistance <= fadeDistance) {
+    return (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
+  }
+  return 0;
+};
+
+const computeSpotlightOpacity = (minDistance, proximity, fadeDistance) => {
+  if (minDistance <= proximity) return 0.8;
+  if (minDistance <= fadeDistance) {
+    return ((fadeDistance - minDistance) / (fadeDistance - proximity)) * 0.8;
+  }
+  return 0;
+};
+
+const hideSpotlightAndResetCards = ({ spotlightEl, cards }) => {
+  gsap.to(spotlightEl, {
+    opacity: 0,
+    duration: 0.3,
+    ease: 'power2.out'
+  });
+  cards.forEach(card => {
+    card.style.setProperty('--glow-intensity', '0');
+  });
 };
 
 const ParticleCard = ({
@@ -364,48 +401,37 @@ const GlobalSpotlight = ({
     const handleMouseMove = e => {
       if (!spotlightRef.current || !gridRef.current) return;
 
-      const section = gridRef.current.closest('.bento-section');
-      const rect = section?.getBoundingClientRect();
-      const mouseInside =
-        rect && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+      const rect = getRectFromGridSection(gridRef.current);
+      const mouseInside = isPointInsideRect(e.clientX, e.clientY, rect);
+      isInsideSection.current = mouseInside;
 
-      isInsideSection.current = mouseInside || false;
-      const cards = gridRef.current.querySelectorAll('.card');
-
+      const cards = Array.from(gridRef.current.querySelectorAll('.card'));
       if (!mouseInside) {
-        gsap.to(spotlightRef.current, {
-          opacity: 0,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-        cards.forEach(card => {
-          card.style.setProperty('--glow-intensity', '0');
-        });
+        hideSpotlightAndResetCards({ spotlightEl: spotlightRef.current, cards });
         return;
       }
 
       const { proximity, fadeDistance } = calculateSpotlightValues(spotlightRadius);
       let minDistance = Infinity;
 
-      cards.forEach(card => {
-        const cardElement = card;
+      cards.forEach(cardElement => {
         const cardRect = cardElement.getBoundingClientRect();
         const centerX = cardRect.left + cardRect.width / 2;
         const centerY = cardRect.top + cardRect.height / 2;
-        const distance =
+        const distanceFromEdge =
           Math.hypot(e.clientX - centerX, e.clientY - centerY) - Math.max(cardRect.width, cardRect.height) / 2;
-        const effectiveDistance = Math.max(0, distance);
+        const effectiveDistance = Math.max(0, distanceFromEdge);
 
         minDistance = Math.min(minDistance, effectiveDistance);
 
-        let glowIntensity = 0;
-        if (effectiveDistance <= proximity) {
-          glowIntensity = 1;
-        } else if (effectiveDistance <= fadeDistance) {
-          glowIntensity = (fadeDistance - effectiveDistance) / (fadeDistance - proximity);
-        }
-
-        updateCardGlowProperties(cardElement, e.clientX, e.clientY, glowIntensity, spotlightRadius);
+        const glowIntensity = computeGlowIntensity(effectiveDistance, proximity, fadeDistance);
+        updateCardGlowProperties({
+          card: cardElement,
+          mouseX: e.clientX,
+          mouseY: e.clientY,
+          glow: glowIntensity,
+          radius: spotlightRadius
+        });
       });
 
       gsap.to(spotlightRef.current, {
@@ -415,13 +441,7 @@ const GlobalSpotlight = ({
         ease: 'power2.out'
       });
 
-      const targetOpacity =
-        minDistance <= proximity
-          ? 0.8
-          : minDistance <= fadeDistance
-            ? ((fadeDistance - minDistance) / (fadeDistance - proximity)) * 0.8
-            : 0;
-
+      const targetOpacity = computeSpotlightOpacity(minDistance, proximity, fadeDistance);
       gsap.to(spotlightRef.current, {
         opacity: targetOpacity,
         duration: targetOpacity > 0 ? 0.2 : 0.5,
@@ -481,27 +501,7 @@ const useMobileDetection = () => {
   return isMobile;
 };
 
-const MagicBento = ({
-  textAutoHide = true,
-  enableStars = true,
-  enableSpotlight = true,
-  enableBorderGlow = true,
-  disableAnimations = false,
-  spotlightRadius = DEFAULT_SPOTLIGHT_RADIUS,
-  particleCount = DEFAULT_PARTICLE_COUNT,
-  enableTilt = false,
-  glowColor = DEFAULT_GLOW_COLOR,
-  clickEffect = true,
-  enableMagnetism = true
-}) => {
-  const gridRef = useRef(null);
-  const isMobile = useMobileDetection();
-  const shouldDisableAnimations = disableAnimations || isMobile;
-
-  return (
-    <>
-      <style>
-        {`
+const getMagicBentoStyles = (glowColor) => `
           .bento-section {
             --glow-x: 50%;
             --glow-y: 50%;
@@ -624,7 +624,29 @@ const MagicBento = ({
               min-height: 180px;
             }
           }
-        `}
+        `;
+
+const MagicBento = ({
+  textAutoHide = true,
+  enableStars = true,
+  enableSpotlight = true,
+  enableBorderGlow = true,
+  disableAnimations = false,
+  spotlightRadius = DEFAULT_SPOTLIGHT_RADIUS,
+  particleCount = DEFAULT_PARTICLE_COUNT,
+  enableTilt = false,
+  glowColor = DEFAULT_GLOW_COLOR,
+  clickEffect = true,
+  enableMagnetism = true
+}) => {
+  const gridRef = useRef(null);
+  const isMobile = useMobileDetection();
+  const shouldDisableAnimations = disableAnimations || isMobile;
+
+  return (
+    <>
+      <style>
+        {getMagicBentoStyles(glowColor)}
       </style>
 
       {enableSpotlight && (

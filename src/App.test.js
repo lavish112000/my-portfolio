@@ -1,7 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import App from './App.js';
 
 // Mock Three.js to avoid canvas-related issues in tests
 jest.mock('three', () => ({
@@ -15,6 +14,7 @@ jest.mock('three', () => ({
   })),
   WebGLRenderer: jest.fn().mockImplementation(() => ({
     setSize: jest.fn(),
+    setClearColor: jest.fn(),
     domElement: {
       tagName: 'CANVAS',
       getContext: jest.fn(),
@@ -40,6 +40,8 @@ jest.mock('./analytics', () => ({
   trackContactSubmission: jest.fn(),
   trackSocialClick: jest.fn(),
 }));
+
+const App = require('./App.js').default;
 
 describe('App Component', () => {
   beforeEach(() => {
