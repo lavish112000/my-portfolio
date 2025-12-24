@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import emailjs from '@emailjs/browser';
 
@@ -136,13 +136,27 @@ const useMountedAfterDelay = (delayMs) => {
   return isMounted;
 };
 
+const shouldStartScrambleReveal = ({ enabled, isAnimating, animationCompleted }) => {
+  return Boolean(enabled && !isAnimating && !animationCompleted);
+};
+
+const buildScrambleFrameText = ({ text, revealedCount }) => {
+  const randomTail = text
+    .slice(revealedCount)
+    .split('')
+    .map(() => RANDOM_CHARS[Math.floor(Math.random() * RANDOM_CHARS.length)])
+    .join('');
+  return text.slice(0, revealedCount) + randomTail;
+};
+
 const useScrambleRevealText = ({ enabled, text }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationCompleted, setAnimationCompleted] = useState(false);
 
   useEffect(() => {
-    if (!enabled || isAnimating || animationCompleted) return;
+    const shouldStart = shouldStartScrambleReveal({ enabled, isAnimating, animationCompleted });
+    if (!shouldStart) return;
 
     setIsAnimating(true);
     let currentIndex = 0;
@@ -154,13 +168,7 @@ const useScrambleRevealText = ({ enabled, text }) => {
         const charsPerStep = Math.ceil(text.length / totalSteps);
         const nextIndex = Math.min(currentIndex + charsPerStep, text.length);
 
-        const randomText = text
-          .slice(nextIndex)
-          .split('')
-          .map(() => RANDOM_CHARS[Math.floor(Math.random() * RANDOM_CHARS.length)])
-          .join('');
-
-        setDisplayedText(text.slice(0, nextIndex) + randomText);
+        setDisplayedText(buildScrambleFrameText({ text, revealedCount: nextIndex }));
         currentIndex = nextIndex;
         return;
       }
@@ -185,6 +193,195 @@ const useScrambleRevealText = ({ enabled, text }) => {
 
   return { displayedText, animationCompleted };
 };
+
+const getSkillAnimationClass = ({ skillIndex, isVisible }) => {
+  const mod = skillIndex % 3;
+  if (mod === 0) return isVisible ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0';
+  if (mod === 2) return isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0';
+  return isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0';
+};
+
+const SkillCard = ({ item, category, animationClass, onSkillClick, setElRef }) => {
+  return (
+    <button
+      key={`${item.name}-${category}`}
+      ref={setElRef}
+      onClick={() => onSkillClick(item.name)}
+      className={`p-4 md:p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-3 md:space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 transition-all duration-300 hover:scale-105 hover:bg-opacity-80 min-h-[60px] ${animationClass}`}
+    >
+      <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
+        {item.customIcon ? (
+          item.customIcon
+        ) : (
+          <img src={item.icon} alt={`${item.name} icon`} className="w-full h-full object-contain animate-spin-slow" />
+        )}
+      </div>
+      <div className="flex-1">
+        <h3 className="text-responsive-base md:text-xl lg:text-2xl font-bold text-left text-white">{item.name}</h3>
+      </div>
+    </button>
+  );
+};
+
+const ContactStatusMessage = ({ sendStatus }) => {
+  if (sendStatus === 'success') {
+    return <p className="text-green-400 mt-2 text-sm md:text-base">Message sent successfully! I'll get back to you soon.</p>;
+  }
+  if (sendStatus === 'error') {
+    return (
+      <p className="text-red-400 mt-2 text-sm md:text-base">
+        Failed to send message. Please try again or contact me via my social links.
+      </p>
+    );
+  }
+  return null;
+};
+
+const ContactForm = ({ formRef, onSubmit, isSending, sendStatus }) => {
+  return (
+    <form
+      ref={formRef}
+      onSubmit={onSubmit}
+      className="w-full lg:w-1/2 p-4 md:p-8 rounded-lg shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex flex-col space-y-4"
+    >
+      <input
+        type="text"
+        name="user_name"
+        placeholder="Your Name"
+        required
+        className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
+      />
+      <input
+        type="email"
+        name="user_email"
+        placeholder="Your Email"
+        required
+        className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
+      />
+      <input
+        type="text"
+        name="subject"
+        placeholder="Subject"
+        required
+        className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
+      />
+      <textarea
+        name="message"
+        placeholder="Your Message"
+        rows="5"
+        required
+        className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition-all duration-200 text-base"
+      ></textarea>
+      <button
+        type="submit"
+        disabled={isSending}
+        className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-full disabled:bg-gray-500 disabled:cursor-not-allowed min-h-[48px] text-base md:text-lg"
+      >
+        {isSending ? 'Sending...' : 'Send Message'}
+      </button>
+      <ContactStatusMessage sendStatus={sendStatus} />
+    </form>
+  );
+};
+
+const SocialIconLink = ({ href, ariaLabel, className, children }) => {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={ariaLabel}
+      className={className}
+    >
+      {children}
+    </a>
+  );
+};
+
+const PROFILE_PAGE_CSS = `
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+          body { font-family: 'Playfair Display', serif; }
+
+          @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 5s linear infinite;
+          }
+
+          @keyframes glow {
+            0% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+            50% { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
+            100% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+          }
+          .animate-glow {
+            animation: glow 2s ease-in-out infinite;
+          }
+          @keyframes float-up-down {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+          }
+          .animate-float-icon-1 {
+            animation: float-up-down 2s ease-in-out infinite;
+          }
+          .animate-float-icon-2 {
+            animation: float-up-down 2.2s ease-in-out infinite;
+          }
+          .animate-float-icon-3 {
+            animation: float-up-down 2.4s ease-in-out infinite;
+          }
+          body.fade-out {
+            opacity: 0;
+            transform: scale(0.98);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          body.fade-in {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-enter {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+
+          .page-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .page-exit {
+            opacity: 1;
+            transform: translateY(0);
+          }
+
+          .page-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .skill-card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .skill-card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          }
+
+          @keyframes fade-in-slow { from { opacity:0 } to { opacity:1 } }
+          .animate-fade-in-slow { animation: fade-in-slow 2.5s ease forwards; }
+`;
 
 const useEmailSender = (formRef) => {
   const [isSending, setIsSending] = useState(false);
@@ -384,44 +581,20 @@ const SkillsSection = ({ containerRef, skillsVisible, skillsRef, onSkillClick, o
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
               {skills.map((item, skillIndex) => {
                 const globalIndex = PROFILE_ALL_SKILLS.findIndex((s) => s.name === item.name);
-                let animationClass = '';
-
-                if (skillIndex % 3 === 0) {
-                  animationClass = skillsVisible[globalIndex]
-                    ? 'translate-x-0 opacity-100'
-                    : '-translate-x-full opacity-0';
-                } else if (skillIndex % 3 === 2) {
-                  animationClass = skillsVisible[globalIndex]
-                    ? 'translate-x-0 opacity-100'
-                    : 'translate-x-full opacity-0';
-                } else {
-                  animationClass = skillsVisible[globalIndex]
-                    ? 'translate-y-0 opacity-100'
-                    : 'translate-y-full opacity-0';
-                }
+                const animationClass = getSkillAnimationClass({
+                  skillIndex,
+                  isVisible: Boolean(skillsVisible[globalIndex])
+                });
 
                 return (
-                  <button
+                  <SkillCard
                     key={`${item.name}-${category}`}
-                    ref={(el) => (skillsRef.current[globalIndex] = el)}
-                    onClick={() => onSkillClick(item.name)}
-                    className={`p-4 md:p-6 rounded-xl shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex items-center space-x-3 md:space-x-4 skill-card-hover cursor-pointer focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-opacity-50 transition-all duration-300 hover:scale-105 hover:bg-opacity-80 min-h-[60px] ${animationClass}`}
-                  >
-                    <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
-                      {item.customIcon ? (
-                        item.customIcon
-                      ) : (
-                        <img
-                          src={item.icon}
-                          alt={`${item.name} icon`}
-                          className="w-full h-full object-contain animate-spin-slow"
-                        />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-responsive-base md:text-xl lg:text-2xl font-bold text-left text-white">{item.name}</h3>
-                    </div>
-                  </button>
+                    item={item}
+                    category={category}
+                    animationClass={animationClass}
+                    onSkillClick={onSkillClick}
+                    setElRef={(el) => (skillsRef.current[globalIndex] = el)}
+                  />
                 );
               })}
             </div>
@@ -451,62 +624,12 @@ const ConnectSection = ({ containerRef, formRef, onSubmit, isSending, sendStatus
       </ScrollFloat>
 
       <div className="flex flex-col lg:flex-row items-center justify-center space-y-8 lg:space-y-0 lg:space-x-12 mt-12 md:mt-20">
-        <form
-          ref={formRef}
-          onSubmit={onSubmit}
-          className="w-full lg:w-1/2 p-4 md:p-8 rounded-lg shadow-lg bg-gray-800 bg-opacity-70 backdrop-blur-sm flex flex-col space-y-4"
-        >
-          <input
-            type="text"
-            name="user_name"
-            placeholder="Your Name"
-            required
-            className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
-          />
-          <input
-            type="email"
-            name="user_email"
-            placeholder="Your Email"
-            required
-            className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
-          />
-          <input
-            type="text"
-            name="subject"
-            placeholder="Subject"
-            required
-            className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 text-base"
-          />
-          <textarea
-            name="message"
-            placeholder="Your Message"
-            rows="5"
-            required
-            className="p-3 md:p-4 rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none transition-all duration-200 text-base"
-          ></textarea>
-          <button
-            type="submit"
-            disabled={isSending}
-            className="bg-blue-600 hover:bg-blue-700 transition-colors duration-200 text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-full disabled:bg-gray-500 disabled:cursor-not-allowed min-h-[48px] text-base md:text-lg"
-          >
-            {isSending ? 'Sending...' : 'Send Message'}
-          </button>
-          {sendStatus === 'success' && (
-            <p className="text-green-400 mt-2 text-sm md:text-base">Message sent successfully! I'll get back to you soon.</p>
-          )}
-          {sendStatus === 'error' && (
-            <p className="text-red-400 mt-2 text-sm md:text-base">
-              Failed to send message. Please try again or contact me via my social links.
-            </p>
-          )}
-        </form>
+        <ContactForm formRef={formRef} onSubmit={onSubmit} isSending={isSending} sendStatus={sendStatus} />
 
         <div className="w-full lg:w-1/2 flex flex-col items-center justify-center space-y-6 md:space-y-8">
-          <a
+          <SocialIconLink
             href="https://github.com/lavish112000"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub Profile"
+            ariaLabel="GitHub Profile"
             className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-1 p-2 rounded-full hover:bg-white hover:bg-opacity-10"
           >
             <svg
@@ -523,13 +646,11 @@ const ConnectSection = ({ containerRef, formRef, onSubmit, isSending, sendStatus
             >
               <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-          </a>
+          </SocialIconLink>
 
-          <a
+          <SocialIconLink
             href="https://linkedin.com/in/lalit11"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn Profile"
+            ariaLabel="LinkedIn Profile"
             className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-2 p-2 rounded-full hover:bg-blue-400 hover:bg-opacity-10"
           >
             <svg
@@ -548,13 +669,11 @@ const ConnectSection = ({ containerRef, formRef, onSubmit, isSending, sendStatus
               <rect x="2" y="9" width="4" height="12"></rect>
               <circle cx="4" cy="4" r="2"></circle>
             </svg>
-          </a>
+          </SocialIconLink>
 
-          <a
+          <SocialIconLink
             href="https://twitter.com/your-username"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Twitter Profile"
+            ariaLabel="Twitter Profile"
             className="transform transition-transform duration-300 hover:scale-110 animate-float-icon-3 p-2 rounded-full hover:bg-white hover:bg-opacity-10"
           >
             <svg
@@ -572,7 +691,7 @@ const ConnectSection = ({ containerRef, formRef, onSubmit, isSending, sendStatus
               <path d="M18 6 6 18"></path>
               <path d="m6 6 12 12"></path>
             </svg>
-          </a>
+          </SocialIconLink>
         </div>
       </div>
     </div>
@@ -581,93 +700,51 @@ const ConnectSection = ({ containerRef, formRef, onSubmit, isSending, sendStatus
 
 const ProfilePageStyles = () => {
   return (
-    <style>
-      {`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
-          body { font-family: 'Playfair Display', serif; }
-
-          @keyframes spin-slow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          .animate-spin-slow {
-            animation: spin-slow 5s linear infinite;
-          }
-
-          @keyframes glow {
-            0% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
-            50% { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
-            100% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
-          }
-          .animate-glow {
-            animation: glow 2s ease-in-out infinite;
-          }
-          @keyframes float-up-down {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0); }
-          }
-          .animate-float-icon-1 {
-            animation: float-up-down 2s ease-in-out infinite;
-          }
-          .animate-float-icon-2 {
-            animation: float-up-down 2.2s ease-in-out infinite;
-          }
-          .animate-float-icon-3 {
-            animation: float-up-down 2.4s ease-in-out infinite;
-          }
-          body.fade-out {
-            opacity: 0;
-            transform: scale(0.98);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          body.fade-in {
-            opacity: 1;
-            transform: scale(1);
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .page-transition {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .page-enter {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-
-          .page-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .page-exit {
-            opacity: 1;
-            transform: translateY(0);
-          }
-
-          .page-exit-active {
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .skill-card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-
-          .skill-card-hover:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-          }
-
-          @keyframes fade-in-slow { from { opacity:0 } to { opacity:1 } }
-          .animate-fade-in-slow { animation: fade-in-slow 2.5s ease forwards; }
-        `}
-    </style>
+    <style>{PROFILE_PAGE_CSS}</style>
   );
+};
+
+const navigateToSkillsetsPage = () => {
+  document.body.classList.add('fade-out');
+  setTimeout(() => {
+    window.location.href = 'stack.html';
+  }, 500);
+};
+
+const useScrollVisibilityObserver = ({ containerRef, skillsRef, setSkillsVisible, projectsRef, setProjectsVisible }) => {
+  useEffect(() => {
+    const currentContainer = containerRef.current;
+    if (!currentContainer) return;
+
+    const handleScroll = () => {
+      const viewportHeight = window.innerHeight;
+      updateVisibilityMap(skillsRef.current, viewportHeight, setSkillsVisible);
+      updateVisibilityMap(projectsRef.current, viewportHeight, setProjectsVisible);
+    };
+
+    currentContainer.addEventListener('scroll', handleScroll);
+    handleScroll();
+
+    return () => {
+      currentContainer.removeEventListener('scroll', handleScroll);
+    };
+  }, [containerRef, projectsRef, setProjectsVisible, setSkillsVisible, skillsRef]);
+};
+
+const useRestoreScrollPosition = ({ containerRef, previousScrollY, setPreviousScrollY }) => {
+  useEffect(() => {
+    if (!previousScrollY || !containerRef.current) return;
+
+    containerRef.current.scrollTop = previousScrollY;
+    setPreviousScrollY(0);
+  }, [containerRef, previousScrollY, setPreviousScrollY]);
+};
+
+const usePageViewTracking = (pagePath) => {
+  useEffect(() => {
+    if (!pagePath) return;
+    trackPageView(pagePath);
+  }, [pagePath]);
 };
 
 const ProfilePage = ({
@@ -685,12 +762,9 @@ const ProfilePage = ({
   const isMounted = useMountedAfterDelay(100);
   const { displayedText } = useScrambleRevealText({ enabled: isMounted, text: ABOUT_TEXT });
 
-  const handleSkillsetsClick = () => {
-    document.body.classList.add('fade-out');
-    setTimeout(() => {
-      window.location.href = 'stack.html';
-    }, 500);
-  };
+  const handleSkillsetsClick = useCallback(() => {
+    navigateToSkillsetsPage();
+  }, []);
 
   const [skillsVisible, setSkillsVisible] = useState({});
   const skillsRef = useRef([]);
@@ -700,36 +774,16 @@ const ProfilePage = ({
   const form = useRef();
   const { isSending, sendStatus, sendEmail } = useEmailSender(form);
 
-  useEffect(() => {
-    const currentContainer = containerRef.current;
-    if (!currentContainer) return;
+  useScrollVisibilityObserver({
+    containerRef,
+    skillsRef,
+    setSkillsVisible,
+    projectsRef,
+    setProjectsVisible
+  });
 
-    const handleScroll = () => {
-      const viewportHeight = window.innerHeight;
-      updateVisibilityMap(skillsRef.current, viewportHeight, setSkillsVisible);
-      updateVisibilityMap(projectsRef.current, viewportHeight, setProjectsVisible);
-    };
-
-    currentContainer.addEventListener('scroll', handleScroll);
-    handleScroll();
-
-    return () => {
-      currentContainer.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!previousScrollY || !containerRef.current) return;
-
-    containerRef.current.scrollTop = previousScrollY;
-    setPreviousScrollY(0);
-  }, [previousScrollY, setPreviousScrollY]);
-
-  useEffect(() => {
-    if (pagePath) {
-      trackPageView(pagePath);
-    }
-  }, [pagePath]);
+  useRestoreScrollPosition({ containerRef, previousScrollY, setPreviousScrollY });
+  usePageViewTracking(pagePath);
 
   const pageVisibilityClass = isMounted && isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none';
 
