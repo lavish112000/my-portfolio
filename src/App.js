@@ -22,6 +22,181 @@ import ProjectDetailsPage from './pages/ProjectDetailsPage';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+const HELLOS = [
+  'Hello',
+  '\u4F60\u597D',
+  '\u0928\u092E\u0938\u094D\u0924\u0947',
+  'Hola',
+  'Bonjour',
+  '\u0623\u0647\u0644\u0627\u064B',
+  '\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB',
+  'Ol\u00E1',
+  '\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435',
+  '\u0633\u0644\u0627\u0645'
+];
+
+const PROJECT_DATA = [
+  {
+    id: 1,
+    title: 'Scalable URL Shortener',
+    tech: 'JavaScript, Node.js, Express.js, MongoDB, React',
+    image: 'https://placehold.co/600x400/2E3192/fff?text=URL Shortener',
+    details:
+      "This project demonstrates a full-stack application for shortening URLs. The backend uses Node.js, Express.js, and MongoDB to handle URL redirection and storage. The frontend is built with React, providing a user-friendly interface for creating and managing short links. The project emphasizes scalability and performance.",
+    impact:
+      "Reduced link length by an average of 70%, improving user experience on a partner's social media platform. Handled over 10 million requests in the first month without downtime.",
+    keyFeatures: ['Custom short URLs', 'Link analytics (clicks, location)', 'User authentication', 'RESTful API']
+  },
+  {
+    id: 2,
+    title: 'Resume-Parser',
+    tech: 'HTML, CSS, Supabase, JavaScript',
+    image: ResumeParser,
+    details:
+      'Developed a responsive and interactive resume parser application. The site features a clean and attractive UI/UX design. Supabase was used to store user data and resume details, enabling efficient data management and a personalized experience.',
+    impact:
+      'Increased user engagement by 30% in the first quarter after launch. The new UI/UX design led to a 50% increase in user satisfaction and a 20% decrease in bounce rate.',
+    keyFeatures: ['Resume upload', 'Data extraction', 'User accounts', 'Analytics dashboard']
+  },
+  {
+    id: 3,
+    title: 'NeonFlux Portfolio Website',
+    tech: 'React, Tailwind CSS, Three.js',
+    image: NeonFlux,
+    details:
+      'A personal portfolio website built with modern technologies. It features a custom landing page with a 3D animated greeting, a dynamic homepage with a wave effect, and a profile page with animated sections. The site is fully responsive and designed for a smooth user experience.',
+    impact:
+      'Showcased my skills and projects to potential employers, leading to a 40% increase in interview requests. The animated and interactive design received positive feedback for its creativity and user engagement.',
+    keyFeatures: ['3D landing page', 'Dynamic wave effect', 'Animated skill sections', 'Responsive design']
+  },
+  {
+    id: 4,
+    title: 'Cosmic Video player',
+    tech: 'React Native, Node.js, Express.js, MongoDB',
+    image: videoPlayerProfileImage,
+    details:
+      'A mobile-first Cosmic Video player application with features like dynamic UI , Fast and smooth user experience, and comments. Built with React Native for cross-platform compatibility, a Node.js backend with Express.js for REST APIs, and MongoDB for flexible data storage. The project focuses on real-time updates and user engagement.',
+    impact:
+      'Achieved a high-performance video playback with minimal buffering, resulting in a 95% user satisfaction rate. The cross-platform nature of React Native allowed for a 50% reduction in development time and cost.',
+    keyFeatures: ['4K video playback', 'Dynamic UI', 'Real-time comments', 'Cross-platform compatibility']
+  },
+  {
+    id: 5,
+    title: 'Task Management Application',
+    tech: 'Python, Django, PostgreSQL, HTML, CSS',
+    image: TaskTracker,
+    details:
+      'A Mobile-based task management application that allows users to create, assign, and track tasks. The backend is powered by Django and Python, using PostgreSQL as the database. The front end is a simple, responsive design built with HTML and CSS, focusing on usability and organization.',
+    impact:
+      'Improved team productivity by 25% by providing a centralized platform for task management. The intuitive design and clear organization of tasks led to a significant reduction in missed deadlines.',
+    keyFeatures: ['Task creation and assignment', 'Task tracking', 'User roles and permissions', 'Email notifications']
+  },
+  {
+    id: 6,
+    title: 'Machine Learning Model API',
+    tech: 'Python, Flask, TensorFlow, AWS',
+    image: 'https://placehold.co/600x400/2E3192/fff?text=ML API',
+    details:
+      'Developed a REST API for a machine learning model. The model was trained using TensorFlow and Python, and the API was built with Flask. The application is deployed on AWS using Lambda and API Gateway, showcasing skills in cloud deployment and serving ML models.',
+    impact:
+      'Enabled real-time predictions with an average response time of 200ms. The serverless architecture on AWS resulted in a 60% cost saving compared to a traditional server-based deployment.',
+    keyFeatures: ['RESTful API for ML model', 'TensorFlow integration', 'AWS Lambda and API Gateway deployment', 'Scalable and cost-effective']
+  }
+];
+
+const isMobileUserAgent = (userAgent) => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+};
+
+const isMobileViewport = (width) => width <= 1024;
+
+const detectIsMobileDevice = () => {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const width = typeof window !== 'undefined' ? window.innerWidth : Number.POSITIVE_INFINITY;
+  return isMobileUserAgent(ua) || isMobileViewport(width);
+};
+
+const GyroscopeHint = ({ onClose }) => {
+  return (
+    <div className="fixed top-20 left-4 right-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4 rounded-lg shadow-2xl z-50 animate-pulse border border-white/20">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-3xl animate-spin">{'\u21BB'}</div>
+          <div>
+            <p className="text-white font-bold text-sm">Gyroscope Mode Active!</p>
+            <p className="text-blue-100 text-xs">
+              <span className="font-semibold">Tilt</span>{' '}your device to interact with the profile card
+            </p>
+            <p className="text-purple-100 text-xs mt-1">
+              <span className="font-semibold">Tap</span>{' '}the profile card on iOS for permission
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-white hover:text-gray-300 text-xl font-bold bg-white/10 rounded-full w-8 h-8 flex items-center justify-center"
+        >
+          {'\u00D7'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const PageContent = ({
+  currentPage,
+  hellos,
+  onLandingComplete,
+  onProjectClick,
+  previousScrollY,
+  setPreviousScrollY,
+  projectData,
+  onSkillClick,
+  isMobileDevice,
+  selectedProject,
+  onBackToProjects
+}) => {
+  switch (currentPage) {
+    case 'landing':
+      return (
+        <div className="page-transition page-enter-active">
+          <LandingPage hellos={hellos} onComplete={onLandingComplete} />
+        </div>
+      );
+
+    case 'home':
+    case 'profile':
+      return (
+        <div className="page-transition page-enter-active">
+          <ProfilePage
+            onProjectClick={onProjectClick}
+            previousScrollY={previousScrollY}
+            setPreviousScrollY={setPreviousScrollY}
+            isVisible={true}
+            projectData={projectData}
+            onSkillClick={onSkillClick}
+            isMobileDevice={isMobileDevice}
+            pagePath={`/${currentPage}`}
+          />
+        </div>
+      );
+
+    case 'project-details':
+      return (
+        <div className="page-transition page-enter-active">
+          <ProjectDetailsPage project={selectedProject} onBack={onBackToProjects} />
+        </div>
+      );
+
+    default:
+      return (
+        <div className="page-transition page-enter-active">
+          <LandingPage hellos={hellos} onComplete={onLandingComplete} />
+        </div>
+      );
+  }
+};
+
 const App = () => {
   const [currentPage, setCurrentPage] = useState('landing');
   const [selectedProject, setSelectedProject] = useState(null);
@@ -30,10 +205,7 @@ const App = () => {
   const [showGyroscopeHint, setShowGyroscopeHint] = useState(false);
 
   const isMobileDevice = useCallback(() => {
-    return (
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      (typeof window !== 'undefined' && window.innerWidth <= 1024)
-    );
+    return detectIsMobileDevice();
   }, []);
 
   useEffect(() => {
@@ -47,87 +219,6 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [isMobileDevice]);
 
-  const hellos = [
-    'Hello',
-    '\u4F60\u597D',
-    '\u0928\u092E\u0938\u094D\u0924\u0947',
-    'Hola',
-    'Bonjour',
-    '\u0623\u0647\u0644\u0627\u064B',
-    '\u09B9\u09CD\u09AF\u09BE\u09B2\u09CB',
-    'Ol\u00E1',
-    '\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435',
-    '\u0633\u0644\u0627\u0645'
-  ];
-
-  const projectData = [
-    {
-      id: 1,
-      title: 'Scalable URL Shortener',
-      tech: 'JavaScript, Node.js, Express.js, MongoDB, React',
-      image: 'https://placehold.co/600x400/2E3192/fff?text=URL Shortener',
-      details:
-        "This project demonstrates a full-stack application for shortening URLs. The backend uses Node.js, Express.js, and MongoDB to handle URL redirection and storage. The frontend is built with React, providing a user-friendly interface for creating and managing short links. The project emphasizes scalability and performance.",
-      impact:
-        "Reduced link length by an average of 70%, improving user experience on a partner's social media platform. Handled over 10 million requests in the first month without downtime.",
-      keyFeatures: ['Custom short URLs', 'Link analytics (clicks, location)', 'User authentication', 'RESTful API']
-    },
-    {
-      id: 2,
-      title: 'Resume-Parser',
-      tech: 'HTML, CSS, Supabase, JavaScript',
-      image: ResumeParser,
-      details:
-        'Developed a responsive and interactive resume parser application. The site features a clean and attractive UI/UX design. Supabase was used to store user data and resume details, enabling efficient data management and a personalized experience.',
-      impact:
-        'Increased user engagement by 30% in the first quarter after launch. The new UI/UX design led to a 50% increase in user satisfaction and a 20% decrease in bounce rate.',
-      keyFeatures: ['Resume upload', 'Data extraction', 'User accounts', 'Analytics dashboard']
-    },
-    {
-      id: 3,
-      title: 'NeonFlux Portfolio Website',
-      tech: 'React, Tailwind CSS, Three.js',
-      image: NeonFlux,
-      details:
-        'A personal portfolio website built with modern technologies. It features a custom landing page with a 3D animated greeting, a dynamic homepage with a wave effect, and a profile page with animated sections. The site is fully responsive and designed for a smooth user experience.',
-      impact:
-        'Showcased my skills and projects to potential employers, leading to a 40% increase in interview requests. The animated and interactive design received positive feedback for its creativity and user engagement.',
-      keyFeatures: ['3D landing page', 'Dynamic wave effect', 'Animated skill sections', 'Responsive design']
-    },
-    {
-      id: 4,
-      title: 'Cosmic Video player',
-      tech: 'React Native, Node.js, Express.js, MongoDB',
-      image: videoPlayerProfileImage,
-      details:
-        'A mobile-first Cosmic Video player application with features like dynamic UI , Fast and smooth user experience, and comments. Built with React Native for cross-platform compatibility, a Node.js backend with Express.js for REST APIs, and MongoDB for flexible data storage. The project focuses on real-time updates and user engagement.',
-      impact:
-        'Achieved a high-performance video playback with minimal buffering, resulting in a 95% user satisfaction rate. The cross-platform nature of React Native allowed for a 50% reduction in development time and cost.',
-      keyFeatures: ['4K video playback', 'Dynamic UI', 'Real-time comments', 'Cross-platform compatibility']
-    },
-    {
-      id: 5,
-      title: 'Task Management Application',
-      tech: 'Python, Django, PostgreSQL, HTML, CSS',
-      image: TaskTracker,
-      details:
-        'A Mobile-based task management application that allows users to create, assign, and track tasks. The backend is powered by Django and Python, using PostgreSQL as the database. The front end is a simple, responsive design built with HTML and CSS, focusing on usability and organization.',
-      impact:
-        'Improved team productivity by 25% by providing a centralized platform for task management. The intuitive design and clear organization of tasks led to a significant reduction in missed deadlines.',
-      keyFeatures: ['Task creation and assignment', 'Task tracking', 'User roles and permissions', 'Email notifications']
-    },
-    {
-      id: 6,
-      title: 'Machine Learning Model API',
-      tech: 'Python, Flask, TensorFlow, AWS',
-      image: 'https://placehold.co/600x400/2E3192/fff?text=ML API',
-      details:
-        'Developed a REST API for a machine learning model. The model was trained using TensorFlow and Python, and the API was built with Flask. The application is deployed on AWS using Lambda and API Gateway, showcasing skills in cloud deployment and serving ML models.',
-      impact:
-        'Enabled real-time predictions with an average response time of 200ms. The serverless architecture on AWS resulted in a 60% cost saving compared to a traditional server-based deployment.',
-      keyFeatures: ['RESTful API for ML model', 'TensorFlow integration', 'AWS Lambda and API Gateway deployment', 'Scalable and cost-effective']
-    }
-  ];
 
   const handleProjectClick = (project, containerRef) => {
     if (containerRef.current) {
@@ -228,11 +319,11 @@ const App = () => {
     setTimeout(() => {
       document.body.classList.remove('fade-in');
 
-      if (currentSection === 'skills') {
-        handleBackFromSkills();
-      } else if (currentSection === 'projects') {
-        handleBackToProjects();
-      }
+      const focusHandlers = {
+        skills: handleBackFromSkills,
+        projects: handleBackToProjects
+      };
+      focusHandlers[currentSection]?.();
 
       setCurrentSection('');
     }, 500);
@@ -261,77 +352,26 @@ const App = () => {
     });
   };
 
-  const PageContent = () => {
-    switch (currentPage) {
-      case 'landing':
-        return (
-          <div className="page-transition page-enter-active">
-            <LandingPage hellos={hellos} onComplete={handleLandingComplete} />
-          </div>
-        );
-
-      case 'home':
-      case 'profile':
-        return (
-          <div className="page-transition page-enter-active">
-            <ProfilePage
-              onProjectClick={handleProjectClick}
-              previousScrollY={previousScrollY}
-              setPreviousScrollY={setPreviousScrollY}
-              isVisible={true}
-              projectData={projectData}
-              onSkillClick={handleSkillClick}
-              isMobileDevice={isMobileDevice}
-              pagePath={`/${currentPage}`}
-            />
-          </div>
-        );
-
-      case 'project-details':
-        return (
-          <div className="page-transition page-enter-active">
-            <ProjectDetailsPage project={selectedProject} onBack={handleBackToProjects} />
-          </div>
-        );
-
-      default:
-        return (
-          <div className="page-transition page-enter-active">
-            <LandingPage hellos={hellos} onComplete={handleLandingComplete} />
-          </div>
-        );
-    }
-  };
-
   return (
     <div className="App ambient-light-container">
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <PageContent />
+        <PageContent
+          currentPage={currentPage}
+          hellos={HELLOS}
+          onLandingComplete={handleLandingComplete}
+          onProjectClick={handleProjectClick}
+          previousScrollY={previousScrollY}
+          setPreviousScrollY={setPreviousScrollY}
+          projectData={PROJECT_DATA}
+          onSkillClick={handleSkillClick}
+          isMobileDevice={isMobileDevice}
+          selectedProject={selectedProject}
+          onBackToProjects={handleBackToProjects}
+        />
       </div>
 
       {showGyroscopeHint && isMobileDevice() && (
-        <div className="fixed top-20 left-4 right-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 p-4 rounded-lg shadow-2xl z-50 animate-pulse border border-white/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="text-3xl animate-spin">{'\u21BB'}</div>
-              <div>
-                <p className="text-white font-bold text-sm">Gyroscope Mode Active!</p>
-                <p className="text-blue-100 text-xs">
-                  <span className="font-semibold">Tilt</span>{' '}your device to interact with the profile card
-                </p>
-                <p className="text-purple-100 text-xs mt-1">
-                  <span className="font-semibold">Tap</span>{' '}the profile card on iOS for permission
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowGyroscopeHint(false)}
-              className="text-white hover:text-gray-300 text-xl font-bold bg-white/10 rounded-full w-8 h-8 flex items-center justify-center"
-            >
-              {'\u00D7'}
-            </button>
-          </div>
-        </div>
+        <GyroscopeHint onClose={() => setShowGyroscopeHint(false)} />
       )}
     </div>
   );
