@@ -42,6 +42,430 @@ const setPanelClosedState = ({ itemEls, numberEls, socialTitle, socialLinks }) =
   if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
 };
 
+const STAGGERED_MENU_CSS = `
+.sm-scope .staggered-menu-wrapper { position: fixed; top: 0; right: 0; width: auto; height: 100vh; z-index: 40; pointer-events: none; }
+.sm-scope .staggered-menu-header { position: absolute; top: 0; right: 0; width: auto; display: flex; align-items: center; justify-content: flex-end; padding: 3em; background: transparent; pointer-events: none; z-index: 20; }
+.sm-scope .staggered-menu-header > * { pointer-events: auto; }
+.sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
+.sm-scope .sm-logo-img { display: block; height: 32px; width: auto; object-fit: contain; }
+.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: none; cursor: pointer; color: #e9e9ef; font-weight: 600; line-height: 1; overflow: visible; font-size: 1rem; }
+.sm-scope .sm-toggle:focus-visible { outline: 2px solid #000fffaa; outline-offset: 4px; border-radius: 4px; }
+.sm-scope .sm-line:last-of-type { margin-top: 6px; }
+.sm-scope .sm-toggle-textWrap { position: relative; display: inline-block; height: 1.2em; overflow: hidden; white-space: nowrap; width: auto; min-width: 3em; }
+.sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }
+.sm-scope .sm-toggle-line { display: block; height: 1.2em; line-height: 1.2; }
+.sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
+.sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
+.sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
+.sm-scope .sm-line { display: none !important; }
+.sm-scope .staggered-menu-panel { position: fixed; top: 0; right: 0; width: clamp(260px, 38vw, 420px); height: 100vh; background: white; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 10; pointer-events: auto; }
+.sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
+.sm-scope .sm-prelayers { position: fixed; top: 0; right: 0; bottom: 0; width: clamp(260px, 38vw, 420px); pointer-events: none; z-index: 5; }
+.sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }
+.sm-scope .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; transform: translateX(0); }
+.sm-scope .sm-panel-inner { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
+.sm-scope .sm-socials { margin-top: auto; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.sm-scope .sm-socials-title { margin: 0; font-size: 1rem; font-weight: 500; color: var(--sm-accent, #ff0000); }
+.sm-scope .sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sm-scope .sm-socials-list .sm-socials-link { opacity: 1; transition: opacity 0.3s ease; }
+.sm-scope .sm-socials-list:hover .sm-socials-link:not(:hover) { opacity: 0.35; }
+.sm-scope .sm-socials-list:focus-within .sm-socials-link:not(:focus-visible) { opacity: 0.35; }
+.sm-scope .sm-socials-list .sm-socials-link:hover,
+.sm-scope .sm-socials-list .sm-socials-link:focus-visible { opacity: 1; }
+.sm-scope .sm-socials-link:focus-visible { outline: 2px solid var(--sm-accent, #ff0000); outline-offset: 3px; }
+.sm-scope .sm-socials-link { font-size: 1.2rem; font-weight: 500; color: #111; text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; }
+.sm-scope .sm-socials-link:hover { color: var(--sm-accent, #ff0000); }
+.sm-scope .sm-panel-title { margin: 0; font-size: 1rem; font-weight: 600; color: #000; text-transform: uppercase; }
+.sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.sm-scope .sm-panel-item { position: relative; color: #000; font-weight: 600; font-size: 4rem; cursor: pointer; line-height: 1; letter-spacing: -2px; text-transform: uppercase; transition: background 0.25s, color 0.25s; display: inline-block; text-decoration: none; padding-right: 1.4em; }
+.sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
+.sm-scope .sm-panel-item:hover { color: var(--sm-accent, #ff0000); }
+.sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
+.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 3.2em; font-size: 18px; font-weight: 400; color: var(--sm-accent, #ff0000); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
+@media (max-width: 1024px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
+@media (max-width: 640px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
+`;
+
+const killRefTween = (ref) => {
+  ref?.current?.kill?.();
+};
+
+const killAndClearRef = (ref) => {
+  ref?.current?.kill?.();
+  if (ref) ref.current = null;
+};
+
+const getMenuButtonTargetColor = ({ isOpen, changeMenuColorOnOpen, openMenuButtonColor, menuButtonColor }) => {
+  if (!changeMenuColorOnOpen) return menuButtonColor;
+  return isOpen ? openMenuButtonColor : menuButtonColor;
+};
+
+const buildToggleTextSequence = ({ opening, cycles = 3 }) => {
+  const currentLabel = opening ? 'Menu' : 'Close';
+  const targetLabel = opening ? 'Close' : 'Menu';
+
+  const seq = [currentLabel];
+  let last = currentLabel;
+  for (let i = 0; i < cycles; i++) {
+    last = last === 'Menu' ? 'Close' : 'Menu';
+    seq.push(last);
+  }
+  if (last !== targetLabel) seq.push(targetLabel);
+  seq.push(targetLabel);
+
+  return seq;
+};
+
+const animateToggleIcon = ({ opening, icon, h, v, spinTweenRef }) => {
+  if (!areIconRefsReady({ icon, h, v })) return;
+
+  killRefTween(spinTweenRef);
+
+  if (opening) {
+    gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+    spinTweenRef.current = gsap
+      .timeline({ defaults: { ease: 'power4.out' } })
+      .to(h, { rotate: 45, duration: 0.5 }, 0)
+      .to(v, { rotate: -45, duration: 0.5 }, 0);
+    return;
+  }
+
+  spinTweenRef.current = gsap
+    .timeline({ defaults: { ease: 'power3.inOut' } })
+    .to(h, { rotate: 0, duration: 0.35 }, 0)
+    .to(v, { rotate: 90, duration: 0.35 }, 0)
+    .to(icon, { rotate: 0, duration: 0.001 }, 0);
+};
+
+const animateToggleColor = ({
+  opening,
+  btn,
+  colorTweenRef,
+  changeMenuColorOnOpen,
+  openMenuButtonColor,
+  menuButtonColor
+}) => {
+  if (!btn) return;
+
+  colorTweenRef.current?.kill?.();
+  if (!changeMenuColorOnOpen) {
+    gsap.set(btn, { color: menuButtonColor });
+    return;
+  }
+
+  const targetColor = opening ? openMenuButtonColor : menuButtonColor;
+  colorTweenRef.current = gsap.to(btn, { color: targetColor, delay: 0.18, duration: 0.3, ease: 'power2.out' });
+};
+
+const animateToggleText = ({ opening, inner, setTextLines, textCycleAnimRef }) => {
+  if (!inner) return;
+
+  killRefTween(textCycleAnimRef);
+
+  const seq = buildToggleTextSequence({ opening, cycles: 3 });
+  setTextLines(seq);
+  gsap.set(inner, { yPercent: 0 });
+
+  const lineCount = seq.length;
+  const finalShift = ((lineCount - 1) / lineCount) * 100;
+  textCycleAnimRef.current = gsap.to(inner, {
+    yPercent: -finalShift,
+    duration: 0.5 + lineCount * 0.07,
+    ease: 'power4.out'
+  });
+};
+
+const addPrelayersToTimeline = ({ tl, layerStates }) => {
+  layerStates.forEach((ls, i) => {
+    tl.fromTo(ls.el, { xPercent: ls.start }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
+  });
+};
+
+const computePanelInsertTimings = (layerCount) => {
+  const lastTime = layerCount ? (layerCount - 1) * 0.07 : 0;
+  const panelInsertTime = lastTime + (layerCount ? 0.08 : 0);
+  const panelDuration = 0.65;
+  return { panelInsertTime, panelDuration };
+};
+
+const addPanelSlideInToTimeline = ({ tl, panel, panelStart, panelInsertTime, panelDuration }) => {
+  tl.fromTo(
+    panel,
+    { xPercent: panelStart },
+    { xPercent: 0, duration: panelDuration, ease: 'power4.out' },
+    panelInsertTime
+  );
+};
+
+const addItemEntranceToTimeline = ({ tl, itemEls, numberEls, panelInsertTime, panelDuration }) => {
+  if (!itemEls.length) return;
+
+  const itemsStartRatio = 0.15;
+  const itemsStart = panelInsertTime + panelDuration * itemsStartRatio;
+
+  tl.to(
+    itemEls,
+    { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: { each: 0.1, from: 'start' } },
+    itemsStart
+  );
+
+  if (!numberEls.length) return;
+  tl.to(
+    numberEls,
+    { duration: 0.6, ease: 'power2.out', '--sm-num-opacity': 1, stagger: { each: 0.08, from: 'start' } },
+    itemsStart + 0.1
+  );
+};
+
+const addSocialEntranceToTimeline = ({ tl, socialTitle, socialLinks, panelInsertTime, panelDuration }) => {
+  const hasSocialTitle = Boolean(socialTitle);
+  const hasSocialLinks = socialLinks.length > 0;
+  if (!hasSocialTitle && !hasSocialLinks) return;
+
+  const socialsStart = panelInsertTime + panelDuration * 0.4;
+  if (hasSocialTitle) tl.to(socialTitle, { opacity: 1, duration: 0.5, ease: 'power2.out' }, socialsStart);
+  if (!hasSocialLinks) return;
+
+  tl.to(
+    socialLinks,
+    {
+      y: 0,
+      opacity: 1,
+      duration: 0.55,
+      ease: 'power3.out',
+      stagger: { each: 0.08, from: 'start' },
+      onComplete: () => gsap.set(socialLinks, { clearProps: 'opacity' })
+    },
+    socialsStart + 0.04
+  );
+};
+
+const createOpenTimeline = ({ panel, layers, position, openTlRef, closeTweenRef, itemEntranceTweenRef }) => {
+  if (!panel) return null;
+
+  killAndClearRef(openTlRef);
+  killAndClearRef(closeTweenRef);
+  killRefTween(itemEntranceTweenRef);
+
+  const { itemEls, numberEls, socialTitle, socialLinks } = queryPanelEls(panel);
+
+  const layerStates = layers.map((el) => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }));
+  const panelStart = Number(gsap.getProperty(panel, 'xPercent'));
+  setPanelClosedState({ itemEls, numberEls, socialTitle, socialLinks });
+
+  const tl = gsap.timeline({ paused: true });
+
+  addPrelayersToTimeline({ tl, layerStates });
+  const { panelInsertTime, panelDuration } = computePanelInsertTimings(layerStates.length);
+  addPanelSlideInToTimeline({ tl, panel, panelStart, panelInsertTime, panelDuration });
+  addItemEntranceToTimeline({ tl, itemEls, numberEls, panelInsertTime, panelDuration });
+  addSocialEntranceToTimeline({ tl, socialTitle, socialLinks, panelInsertTime, panelDuration });
+
+  openTlRef.current = tl;
+  return tl;
+};
+
+const createCloseTween = ({ panel, layers, position, closeTweenRef, busyRef }) => {
+  if (!panel) return;
+
+  const all = [...layers, panel];
+  killAndClearRef(closeTweenRef);
+
+  const offscreen = getOffscreenXPercent(position);
+  closeTweenRef.current = gsap.to(all, {
+    xPercent: offscreen,
+    duration: 0.32,
+    ease: 'power3.in',
+    overwrite: 'auto',
+    onComplete: () => {
+      setPanelClosedState(queryPanelEls(panel));
+      busyRef.current = false;
+    }
+  });
+};
+
+const useStaggeredMenuController = ({
+  position,
+  colors,
+  menuButtonColor,
+  openMenuButtonColor,
+  changeMenuColorOnOpen,
+  accentColor,
+  onMenuOpen,
+  onMenuClose
+}) => {
+  const [open, setOpen] = useState(false);
+  const openRef = useRef(false);
+
+  const panelRef = useRef(null);
+  const preLayersRef = useRef(null);
+  const preLayerElsRef = useRef([]);
+
+  const plusHRef = useRef(null);
+  const plusVRef = useRef(null);
+  const iconRef = useRef(null);
+
+  const textInnerRef = useRef(null);
+  const textWrapRef = useRef(null);
+  const [textLines, setTextLines] = useState(['Menu', 'Close']);
+
+  const openTlRef = useRef(null);
+  const closeTweenRef = useRef(null);
+  const spinTweenRef = useRef(null);
+  const textCycleAnimRef = useRef(null);
+  const colorTweenRef = useRef(null);
+
+  const toggleBtnRef = useRef(null);
+  const busyRef = useRef(false);
+
+  const itemEntranceTweenRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      const panel = panelRef.current;
+      const preContainer = preLayersRef.current;
+
+      const plusH = plusHRef.current;
+      const plusV = plusVRef.current;
+      const icon = iconRef.current;
+      const textInner = textInnerRef.current;
+
+      const refsReady = areInitialRefsReady({ panel, plusH, plusV, icon, textInner });
+      if (!refsReady) return;
+
+      const preLayers = queryPrelayers(preContainer);
+      preLayerElsRef.current = preLayers;
+
+      const offscreen = getOffscreenXPercent(position);
+      gsap.set([panel, ...preLayers], { xPercent: offscreen });
+
+      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
+      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
+      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+
+      gsap.set(textInner, { yPercent: 0 });
+
+      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
+    });
+    return () => ctx.revert();
+  }, [menuButtonColor, position]);
+
+  React.useEffect(() => {
+    const btn = toggleBtnRef.current;
+    if (!btn) return;
+    const targetColor = getMenuButtonTargetColor({
+      isOpen: openRef.current,
+      changeMenuColorOnOpen,
+      openMenuButtonColor,
+      menuButtonColor
+    });
+    gsap.set(btn, { color: targetColor });
+  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
+
+  const buildOpenTimeline = useCallback(() => {
+    return createOpenTimeline({
+      panel: panelRef.current,
+      layers: preLayerElsRef.current,
+      position,
+      openTlRef,
+      closeTweenRef,
+      itemEntranceTweenRef
+    });
+  }, [position]);
+
+  const playOpen = useCallback(() => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    const tl = buildOpenTimeline();
+    if (!tl) {
+      busyRef.current = false;
+      return;
+    }
+    tl.eventCallback('onComplete', () => {
+      busyRef.current = false;
+    });
+    tl.play(0);
+  }, [buildOpenTimeline]);
+
+  const playClose = useCallback(() => {
+    killAndClearRef(openTlRef);
+    killRefTween(itemEntranceTweenRef);
+
+    createCloseTween({
+      panel: panelRef.current,
+      layers: preLayerElsRef.current,
+      position,
+      closeTweenRef,
+      busyRef
+    });
+  }, [position]);
+
+  const runAnimateIcon = useCallback((opening) => {
+    animateToggleIcon({
+      opening,
+      icon: iconRef.current,
+      h: plusHRef.current,
+      v: plusVRef.current,
+      spinTweenRef
+    });
+  }, []);
+
+  const runAnimateColor = useCallback(
+    (opening) => {
+      animateToggleColor({
+        opening,
+        btn: toggleBtnRef.current,
+        colorTweenRef,
+        changeMenuColorOnOpen,
+        openMenuButtonColor,
+        menuButtonColor
+      });
+    },
+    [changeMenuColorOnOpen, openMenuButtonColor, menuButtonColor]
+  );
+
+  const runAnimateText = useCallback((opening) => {
+    animateToggleText({ opening, inner: textInnerRef.current, setTextLines, textCycleAnimRef });
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    const nextOpenState = !openRef.current;
+    openRef.current = nextOpenState;
+    setOpen(nextOpenState);
+
+    if (nextOpenState) {
+      onMenuOpen?.();
+      playOpen();
+    } else {
+      onMenuClose?.();
+      playClose();
+    }
+
+    runAnimateIcon(nextOpenState);
+    runAnimateColor(nextOpenState);
+    runAnimateText(nextOpenState);
+  }, [playOpen, playClose, runAnimateIcon, runAnimateColor, runAnimateText, onMenuOpen, onMenuClose]);
+
+  return {
+    open,
+    textLines,
+    toggleMenu,
+    refs: {
+      panelRef,
+      preLayersRef,
+      toggleBtnRef,
+      textWrapRef,
+      textInnerRef,
+      iconRef,
+      plusHRef,
+      plusVRef
+    },
+    style: accentColor ? { '--sm-accent': accentColor } : undefined,
+    position,
+    colors
+  };
+};
+
 const MenuPrelayers = ({ colors, position, preLayersRef }) => {
   const prelayerColors = getPrelayerColors(colors);
   const positionClass = position === 'left' ? 'left-0' : 'right-0';
@@ -198,351 +622,48 @@ export const StaggeredMenu = ({
   onMenuOpen,
   onMenuClose
 }) => {
-  const [open, setOpen] = useState(false);
-  const openRef = useRef(false);
-
-  const panelRef = useRef(null);
-  const preLayersRef = useRef(null);
-  const preLayerElsRef = useRef([]);
-
-  const plusHRef = useRef(null);
-  const plusVRef = useRef(null);
-  const iconRef = useRef(null);
-
-  const textInnerRef = useRef(null);
-  const textWrapRef = useRef(null);
-  const [textLines, setTextLines] = useState(['Menu', 'Close']);
-
-  const openTlRef = useRef(null);
-  const closeTweenRef = useRef(null);
-  const spinTweenRef = useRef(null);
-  const textCycleAnimRef = useRef(null);
-  const colorTweenRef = useRef(null);
-
-  const toggleBtnRef = useRef(null);
-  const busyRef = useRef(false);
-
-  const itemEntranceTweenRef = useRef(null);
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      const panel = panelRef.current;
-      const preContainer = preLayersRef.current;
-
-      const plusH = plusHRef.current;
-      const plusV = plusVRef.current;
-      const icon = iconRef.current;
-      const textInner = textInnerRef.current;
-
-      const refsReady = areInitialRefsReady({ panel, plusH, plusV, icon, textInner });
-      if (!refsReady) return;
-
-      const preLayers = queryPrelayers(preContainer);
-      preLayerElsRef.current = preLayers;
-
-      const offscreen = getOffscreenXPercent(position);
-      gsap.set([panel, ...preLayers], { xPercent: offscreen });
-
-      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
-      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
-      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-
-      gsap.set(textInner, { yPercent: 0 });
-
-      if (toggleBtnRef.current) gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-    });
-    return () => ctx.revert();
-  }, [menuButtonColor, position]);
-
-  const buildOpenTimeline = useCallback(() => {
-    const panel = panelRef.current;
-    const layers = preLayerElsRef.current;
-    if (!panel) return null;
-
-    openTlRef.current?.kill();
-    if (closeTweenRef.current) {
-      closeTweenRef.current.kill();
-      closeTweenRef.current = null;
-    }
-    itemEntranceTweenRef.current?.kill();
-
-    const { itemEls, numberEls, socialTitle, socialLinks } = queryPanelEls(panel);
-
-    const layerStates = layers.map(el => ({ el, start: Number(gsap.getProperty(el, 'xPercent')) }));
-    const panelStart = Number(gsap.getProperty(panel, 'xPercent'));
-
-    setPanelClosedState({ itemEls, numberEls, socialTitle, socialLinks });
-
-    const tl = gsap.timeline({ paused: true });
-
-    layerStates.forEach((ls, i) => {
-      tl.fromTo(ls.el, { xPercent: ls.start }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07);
-    });
-
-    const lastTime = layerStates.length ? (layerStates.length - 1) * 0.07 : 0;
-    const panelInsertTime = lastTime + (layerStates.length ? 0.08 : 0);
-    const panelDuration = 0.65;
-
-    tl.fromTo(
-      panel,
-      { xPercent: panelStart },
-      { xPercent: 0, duration: panelDuration, ease: 'power4.out' },
-      panelInsertTime
-    );
-
-    if (itemEls.length) {
-      const itemsStartRatio = 0.15;
-      const itemsStart = panelInsertTime + panelDuration * itemsStartRatio;
-
-      tl.to(
-        itemEls,
-        { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: { each: 0.1, from: 'start' } },
-        itemsStart
-      );
-
-      if (numberEls.length) {
-        tl.to(
-          numberEls,
-          { duration: 0.6, ease: 'power2.out', '--sm-num-opacity': 1, stagger: { each: 0.08, from: 'start' } },
-          itemsStart + 0.1
-        );
-      }
-    }
-
-    if (socialTitle || socialLinks.length) {
-      const socialsStart = panelInsertTime + panelDuration * 0.4;
-
-      if (socialTitle) tl.to(socialTitle, { opacity: 1, duration: 0.5, ease: 'power2.out' }, socialsStart);
-      if (socialLinks.length) {
-        tl.to(
-          socialLinks,
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.55,
-            ease: 'power3.out',
-            stagger: { each: 0.08, from: 'start' },
-            onComplete: () => gsap.set(socialLinks, { clearProps: 'opacity' })
-          },
-          socialsStart + 0.04
-        );
-      }
-    }
-
-    openTlRef.current = tl;
-    return tl;
-  }, []);
-
-  const playOpen = useCallback(() => {
-    if (busyRef.current) return;
-    busyRef.current = true;
-    const tl = buildOpenTimeline();
-    if (tl) {
-      tl.eventCallback('onComplete', () => {
-        busyRef.current = false;
-      });
-      tl.play(0);
-    } else {
-      busyRef.current = false;
-    }
-  }, [buildOpenTimeline]);
-
-  const playClose = useCallback(() => {
-    openTlRef.current?.kill();
-    openTlRef.current = null;
-    itemEntranceTweenRef.current?.kill();
-
-    const panel = panelRef.current;
-    const layers = preLayerElsRef.current;
-    if (!panel) return;
-
-    const all = [...layers, panel];
-    closeTweenRef.current?.kill();
-
-    const offscreen = getOffscreenXPercent(position);
-
-    closeTweenRef.current = gsap.to(all, {
-      xPercent: offscreen,
-      duration: 0.32,
-      ease: 'power3.in',
-      overwrite: 'auto',
-      onComplete: () => {
-        setPanelClosedState(queryPanelEls(panel));
-
-        busyRef.current = false;
-      }
-    });
-  }, [position]);
-
-  const animateIcon = useCallback(opening => {
-    const icon = iconRef.current;
-    const h = plusHRef.current;
-    const v = plusVRef.current;
-    if (!areIconRefsReady({ icon, h, v })) return;
-
-    spinTweenRef.current?.kill();
-
-    if (opening) {
-      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
-      spinTweenRef.current = gsap
-        .timeline({ defaults: { ease: 'power4.out' } })
-        .to(h, { rotate: 45, duration: 0.5 }, 0)
-        .to(v, { rotate: -45, duration: 0.5 }, 0);
-    } else {
-      spinTweenRef.current = gsap
-        .timeline({ defaults: { ease: 'power3.inOut' } })
-        .to(h, { rotate: 0, duration: 0.35 }, 0)
-        .to(v, { rotate: 90, duration: 0.35 }, 0)
-        .to(icon, { rotate: 0, duration: 0.001 }, 0);
-    }
-  }, []);
-
-  const animateColor = useCallback(
-    opening => {
-      const btn = toggleBtnRef.current;
-      if (!btn) return;
-      colorTweenRef.current?.kill();
-      if (changeMenuColorOnOpen) {
-        const targetColor = opening ? openMenuButtonColor : menuButtonColor;
-        colorTweenRef.current = gsap.to(btn, { color: targetColor, delay: 0.18, duration: 0.3, ease: 'power2.out' });
-      } else {
-        gsap.set(btn, { color: menuButtonColor });
-      }
-    },
-    [openMenuButtonColor, menuButtonColor, changeMenuColorOnOpen]
-  );
-
-  React.useEffect(() => {
-    if (toggleBtnRef.current) {
-      if (changeMenuColorOnOpen) {
-        const targetColor = openRef.current ? openMenuButtonColor : menuButtonColor;
-        gsap.set(toggleBtnRef.current, { color: targetColor });
-      } else {
-        gsap.set(toggleBtnRef.current, { color: menuButtonColor });
-      }
-    }
-  }, [changeMenuColorOnOpen, menuButtonColor, openMenuButtonColor]);
-
-  const animateText = useCallback(opening => {
-    const inner = textInnerRef.current;
-    if (!inner) return;
-
-    textCycleAnimRef.current?.kill();
-
-    const currentLabel = opening ? 'Menu' : 'Close';
-    const targetLabel = opening ? 'Close' : 'Menu';
-    const cycles = 3;
-
-    const seq = [currentLabel];
-    let last = currentLabel;
-    for (let i = 0; i < cycles; i++) {
-      last = last === 'Menu' ? 'Close' : 'Menu';
-      seq.push(last);
-    }
-    if (last !== targetLabel) seq.push(targetLabel);
-    seq.push(targetLabel);
-
-    setTextLines(seq);
-    gsap.set(inner, { yPercent: 0 });
-
-    const lineCount = seq.length;
-    const finalShift = ((lineCount - 1) / lineCount) * 100;
-
-    textCycleAnimRef.current = gsap.to(inner, {
-      yPercent: -finalShift,
-      duration: 0.5 + lineCount * 0.07,
-      ease: 'power4.out'
-    });
-  }, []);
-
-  const toggleMenu = useCallback(() => {
-    const nextOpenState = !openRef.current;
-    openRef.current = nextOpenState;
-    setOpen(nextOpenState);
-
-    const notify = nextOpenState ? onMenuOpen : onMenuClose;
-    const play = nextOpenState ? playOpen : playClose;
-    notify?.();
-    play();
-
-    animateIcon(nextOpenState);
-    animateColor(nextOpenState);
-    animateText(nextOpenState);
-  }, [playOpen, playClose, animateIcon, animateColor, animateText, onMenuOpen, onMenuClose]);
+  const controller = useStaggeredMenuController({
+    position,
+    colors,
+    menuButtonColor,
+    openMenuButtonColor,
+    changeMenuColorOnOpen,
+    accentColor,
+    onMenuOpen,
+    onMenuClose
+  });
 
   return (
     <div className="sm-scope w-full h-full">
-      <MenuPrelayers colors={colors} position={position} preLayersRef={preLayersRef} />
+      <MenuPrelayers colors={colors} position={position} preLayersRef={controller.refs.preLayersRef} />
 
       <MenuToggleButton
-        open={open}
-        toggleMenu={toggleMenu}
+        open={controller.open}
+        toggleMenu={controller.toggleMenu}
         refs={{
-          toggleBtnRef,
-          textWrapRef,
-          textInnerRef,
-          iconRef,
-          plusHRef,
-          plusVRef
+          toggleBtnRef: controller.refs.toggleBtnRef,
+          textWrapRef: controller.refs.textWrapRef,
+          textInnerRef: controller.refs.textInnerRef,
+          iconRef: controller.refs.iconRef,
+          plusHRef: controller.refs.plusHRef,
+          plusVRef: controller.refs.plusVRef
         }}
-        textLines={textLines}
+        textLines={controller.textLines}
         className={className}
         accentColor={accentColor}
         position={position}
       />
 
       <MenuPanel
-        open={open}
-        panelRef={panelRef}
+        open={controller.open}
+        panelRef={controller.refs.panelRef}
         items={items}
         displayItemNumbering={displayItemNumbering}
         displaySocials={displaySocials}
         socialItems={socialItems}
       />
 
-      <style>{`
-.sm-scope .staggered-menu-wrapper { position: fixed; top: 0; right: 0; width: auto; height: 100vh; z-index: 40; pointer-events: none; }
-.sm-scope .staggered-menu-header { position: absolute; top: 0; right: 0; width: auto; display: flex; align-items: center; justify-content: flex-end; padding: 3em; background: transparent; pointer-events: none; z-index: 20; }
-.sm-scope .staggered-menu-header > * { pointer-events: auto; }
-.sm-scope .sm-logo { display: flex; align-items: center; user-select: none; }
-.sm-scope .sm-logo-img { display: block; height: 32px; width: auto; object-fit: contain; }
-.sm-scope .sm-toggle { position: relative; display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: none; cursor: pointer; color: #e9e9ef; font-weight: 600; line-height: 1; overflow: visible; font-size: 1rem; }
-.sm-scope .sm-toggle:focus-visible { outline: 2px solid #000fffaa; outline-offset: 4px; border-radius: 4px; }
-.sm-scope .sm-line:last-of-type { margin-top: 6px; }
-.sm-scope .sm-toggle-textWrap { position: relative; display: inline-block; height: 1.2em; overflow: hidden; white-space: nowrap; width: auto; min-width: 3em; }
-.sm-scope .sm-toggle-textInner { display: flex; flex-direction: column; line-height: 1; }
-.sm-scope .sm-toggle-line { display: block; height: 1.2em; line-height: 1.2; }
-.sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
-.sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
-.sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%, -50%); will-change: transform; }
-.sm-scope .sm-line { display: none !important; }
-.sm-scope .staggered-menu-panel { position: fixed; top: 0; right: 0; width: clamp(260px, 38vw, 420px); height: 100vh; background: white; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; padding: 6em 2em 2em 2em; overflow-y: auto; z-index: 10; pointer-events: auto; }
-.sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
-.sm-scope .sm-prelayers { position: fixed; top: 0; right: 0; bottom: 0; width: clamp(260px, 38vw, 420px); pointer-events: none; z-index: 5; }
-.sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }
-.sm-scope .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; transform: translateX(0); }
-.sm-scope .sm-panel-inner { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
-.sm-scope .sm-socials { margin-top: auto; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.sm-scope .sm-socials-title { margin: 0; font-size: 1rem; font-weight: 500; color: var(--sm-accent, #ff0000); }
-.sm-scope .sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 1rem; flex-wrap: wrap; }
-.sm-scope .sm-socials-list .sm-socials-link { opacity: 1; transition: opacity 0.3s ease; }
-.sm-scope .sm-socials-list:hover .sm-socials-link:not(:hover) { opacity: 0.35; }
-.sm-scope .sm-socials-list:focus-within .sm-socials-link:not(:focus-visible) { opacity: 0.35; }
-.sm-scope .sm-socials-list .sm-socials-link:hover,
-.sm-scope .sm-socials-list .sm-socials-link:focus-visible { opacity: 1; }
-.sm-scope .sm-socials-link:focus-visible { outline: 2px solid var(--sm-accent, #ff0000); outline-offset: 3px; }
-.sm-scope .sm-socials-link { font-size: 1.2rem; font-weight: 500; color: #111; text-decoration: none; position: relative; padding: 2px 0; display: inline-block; transition: color 0.3s ease, opacity 0.3s ease; }
-.sm-scope .sm-socials-link:hover { color: var(--sm-accent, #ff0000); }
-.sm-scope .sm-panel-title { margin: 0; font-size: 1rem; font-weight: 600; color: #000; text-transform: uppercase; }
-.sm-scope .sm-panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
-.sm-scope .sm-panel-item { position: relative; color: #000; font-weight: 600; font-size: 4rem; cursor: pointer; line-height: 1; letter-spacing: -2px; text-transform: uppercase; transition: background 0.25s, color 0.25s; display: inline-block; text-decoration: none; padding-right: 1.4em; }
-.sm-scope .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
-.sm-scope .sm-panel-item:hover { color: var(--sm-accent, #ff0000); }
-.sm-scope .sm-panel-list[data-numbering] { counter-reset: smItem; }
-.sm-scope .sm-panel-list[data-numbering] .sm-panel-item::after { counter-increment: smItem; content: counter(smItem, decimal-leading-zero); position: absolute; top: 0.1em; right: 3.2em; font-size: 18px; font-weight: 400; color: var(--sm-accent, #ff0000); letter-spacing: 0; pointer-events: none; user-select: none; opacity: var(--sm-num-opacity, 0); }
-@media (max-width: 1024px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
-@media (max-width: 640px) { .sm-scope .staggered-menu-panel { width: 100%; left: 0; right: 0; } .sm-scope .staggered-menu-wrapper[data-open] .sm-logo-img { filter: invert(100%); } }
-      `}</style>
+      <style>{STAGGERED_MENU_CSS}</style>
     </div>
   );
 };
