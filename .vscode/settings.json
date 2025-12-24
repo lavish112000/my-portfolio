@@ -1,5 +1,6 @@
 {
     "geminicodeassist.agentDebugMode": true,
     "geminicodeassist.agentYoloMode": true,
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "codescene.authToken": "pat_eyJpZCI6ODE2NTQsInJhbmQiOiJxOTVzeXU5dUVSck9qNzFORWFxZWlwbUhHVlNRbHd5SyJ9"
 }
