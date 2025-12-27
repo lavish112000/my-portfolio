@@ -98,6 +98,44 @@ img {
   background: rgba(255, 255, 255, 0.5);
 }
 
+/* Shared animations (used across pages) */
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 5s linear infinite;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+  50% { box-shadow: 0 0 20px var(--glow-color), 0 0 40px var(--glow-color); }
+  100% { box-shadow: 0 0 5px var(--glow-color), 0 0 10px var(--glow-color); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes float-up-down {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+.animate-float-icon-1 {
+  animation: float-up-down 2s ease-in-out infinite;
+}
+
+.animate-float-icon-2 {
+  animation: float-up-down 2.2s ease-in-out infinite;
+}
+
+.animate-float-icon-3 {
+  animation: float-up-down 2.4s ease-in-out infinite;
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .bg-opacity-50 {
