@@ -7,8 +7,10 @@ import ProfileCard from '../components/ProfileCard';
 import ScrollFloat from '../ScrollFloat';
 import TextPressure from '../TextPressure';
 import { trackContactSubmission, trackPageView } from '../analytics';
+import Footer from '../components/Footer';
 
 const StaggeredMenu = lazy(() => import('../StaggeredMenu'));
+const GridScan = lazy(() => import('../components/GridScan'));
 
 const ABOUT_TEXT =
   "Hello, I am LALIT CHOUDHARY, a passionate and detail-oriented Full Stack developer with over 4 years of experience building beautiful and intuitive web applications. My expertise lies in crafting engaging user interfaces using modern technologies like React, Tailwind CSS, Next.js and Three.js to create dynamic and memorable digital experiences. I am dedicated to writing clean, efficient, and maintainable code that delivers both exceptional performance and user satisfaction.Currently building this portfolio site to showcase my work and skills!";
@@ -421,9 +423,34 @@ const ProfileHeroSection = ({
   isMobileDevice,
   onContactClick
 }) => {
+  const shouldRenderGrid = typeof window !== 'undefined' && process.env.NODE_ENV !== 'test';
+
   return (
     <section className="relative w-full flex items-center justify-center min-h-[92dvh] overflow-visible bg-gradient-to-b from-[#2E3192] to-[#00FFE9] px-4 py-8">
-      <div className="linear-gradient(to bottom, #2E3192, #00FFE9)" />
+      {shouldRenderGrid && (
+        <div className="absolute inset-0 z-0 opacity-80 mix-blend-screen">
+          <Suspense fallback={null}>
+            <GridScan
+              sensitivity={0.55}
+              lineThickness={1}
+              linesColor="#392e4e"
+              gridScale={0.1}
+              scanColor="#FF9FFC"
+              scanOpacity={0.4}
+              enablePost
+              bloomIntensity={0.6}
+              chromaticAberration={0.002}
+              noiseIntensity={0.01}
+              enablePointerTracking={false}
+              enableWebcam={false}
+              enableGyro={false}
+              scanOnClick={false}
+              className="w-full h-full"
+              style={{ pointerEvents: 'none' }}
+            />
+          </Suspense>
+        </div>
+      )}
       <div
         className={`relative z-10 transform transition-all duration-1000 ease-out w-full max-w-sm xs:max-w-md sm:max-w-lg md:max-w-xl ${
           isMounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
@@ -789,7 +816,7 @@ const ProfilePage = ({
 
   return (
     <div
-      className={`w-screen h-screen text-white font-sans overflow-auto bg-gradient-to-b from-[#2E3192] to-[#00FFE9] transition-opacity duration-1000 ease-in-out ${pageVisibilityClass}`}
+      className={`w-full h-screen text-white font-sans overflow-y-auto overflow-x-hidden bg-gradient-to-b from-[#2E3192] to-[#00FFE9] transition-opacity duration-1000 ease-in-out ${pageVisibilityClass}`}
       ref={containerRef}
     >
       <ProfileHeroSection
@@ -820,6 +847,10 @@ const ProfilePage = ({
         isSending={isSending}
         sendStatus={sendStatus}
       />
+
+      <div className="px-4 pb-8 md:px-10">
+        <Footer socialLinks={SOCIAL_ITEMS} />
+      </div>
       <ProfilePageStyles />
     </div>
   );
