@@ -22,6 +22,57 @@ import ProjectDetailsPage from './pages/ProjectDetailsPage';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+const BASE_PATH = (process.env.PUBLIC_URL || '').replace(/\/+$/, '');
+
+const ROUTES = {
+  landing: '/',
+  home: '/home',
+  profile: '/profile'
+};
+
+const withBasePath = (routePath) => {
+  const cleanRoute = routePath || ROUTES.landing;
+  if (!BASE_PATH) return cleanRoute;
+  if (cleanRoute === ROUTES.landing) return BASE_PATH || '/';
+  return `${BASE_PATH}${cleanRoute}`;
+};
+
+const getProjectRoute = (projectId) => `/project/${projectId}`;
+
+const parseAppRoute = (pathname, projectData) => {
+  const rawPath = typeof pathname === 'string' ? pathname : '/';
+  const pathWithoutBase = BASE_PATH && rawPath.startsWith(BASE_PATH) ? rawPath.slice(BASE_PATH.length) || '/' : rawPath;
+  const cleanPath = pathWithoutBase.replace(/\/+$/, '') || '/';
+
+  if (cleanPath === ROUTES.landing || cleanPath === '/landing') {
+    return { page: 'landing', project: null };
+  }
+
+  if (cleanPath === ROUTES.home) {
+    return { page: 'home', project: null };
+  }
+
+  if (cleanPath === ROUTES.profile) {
+    return { page: 'profile', project: null };
+  }
+
+  const projectMatch = cleanPath.match(/^\/project\/(\d+)$/);
+  if (projectMatch) {
+    const projectId = Number(projectMatch[1]);
+    const project = projectData.find((item) => item.id === projectId) || null;
+    return project ? { page: 'project-details', project } : { page: 'profile', project: null };
+  }
+
+  return { page: 'landing', project: null };
+};
+
+const pushRoute = (url) => {
+  if (typeof window === 'undefined') return;
+  const nextUrl = withBasePath(url || ROUTES.landing);
+  if (window.location.pathname === nextUrl) return;
+  window.history.pushState({}, '', nextUrl);
+};
+
 const HELLOS = [
   'Hello',
   '\u4F60\u597D',
@@ -49,36 +100,54 @@ const PROJECT_DATA = [
   },
   {
     id: 2,
-    title: 'Resume-Parser',
-    tech: 'HTML, CSS, Supabase, JavaScript',
+    title: 'ResumeForge (Resume Parser)',
+    tech: 'Next.Js, Tailwind CSS, JavaScript, Rest API',
     image: ResumeParser,
     details:
-      'Developed a responsive and interactive resume parser application. The site features a clean and attractive UI/UX design. Supabase was used to store user data and resume details, enabling efficient data management and a personalized experience.',
+      'Created an enterprise-style resume builder focused on ATS optimization with template-driven editing, type-safe validation, and export capabilities (PDF/DOCX). The app emphasizes a smooth multi-step UX, responsive layout, and measurable feedback (ATS scoring + suggestions) to help users ship stronger resumes faster.',
     impact:
-      'Increased user engagement by 30% in the first quarter after launch. The new UI/UX design led to a 50% increase in user satisfaction and a 20% decrease in bounce rate.',
-    keyFeatures: ['Resume upload', 'Data extraction', 'User accounts', 'Analytics dashboard']
+      'Improved completion rates through a guided workflow and reduced editing friction with reusable templates and validation-driven feedback, supporting a faster path from draft → export-ready resume.',
+    achievements: [
+      'Delivered an enterprise resume builder with 3 professional templates (Modern, Classic, ATS) and multi-step forms validated with Zod.',
+      'Implemented real-time ATS-focused guidance and high-fidelity export to 2 formats (PDF, DOCX), reducing iteration cycles for job seekers.',
+      'Integrated type-safe form handling (React Hook Form) and reusable UI components to improve accessibility and reliability across steps.',
+      'Established a quality pipeline (typecheck, ESLint, Jest/RTL) to ensure consistent behavior before release.'
+    ],
+    keyFeatures: ['ATS-friendly templates', 'Multi-step builder flow', 'Type-safe validation', 'PDF/DOCX export']
   },
   {
     id: 3,
-    title: 'NeonFlux Portfolio Website',
-    tech: 'React, Tailwind CSS, Three.js',
+    title: 'NeonFlux Portfolio',
+    tech: 'Next.Js, Tailwind CSS, Three.js',
     image: NeonFlux,
     details:
-      'A personal portfolio website built with modern technologies. It features a custom landing page with a 3D animated greeting, a dynamic homepage with a wave effect, and a profile page with animated sections. The site is fully responsive and designed for a smooth user experience.',
+      'Crafted a glassmorphism-first portfolio with modern motion, strong performance hygiene, and curated project storytelling. The experience emphasizes polished visuals (3D + micro-interactions) while keeping navigation and content structure maintainable.',
     impact:
-      'Showcased my skills and projects to potential employers, leading to a 40% increase in interview requests. The animated and interactive design received positive feedback for its creativity and user engagement.',
-    keyFeatures: ['3D landing page', 'Dynamic wave effect', 'Animated skill sections', 'Responsive design']
+      'Demonstrates modern UI engineering patterns and performance-first delivery for a portfolio experience that stays responsive across devices.',
+    achievements: [
+      'Built a glassmorphism portfolio with 5+ core sections and AI-powered project curation.',
+      'Implemented comprehensive quality tooling (typecheck, lint, format, tests) via “check-all” scripts to catch regressions early.',
+      'Integrated AI development workflows and Firebase client libraries to enable scalable AI features.',
+      'Optimized App Router performance with image optimization and fast dev tooling to improve developer velocity and runtime efficiency.'
+    ],
+    keyFeatures: ['Glassmorphism UI', '3D visual accents', 'Animated sections', 'Performance-focused UX']
   },
   {
     id: 4,
-    title: 'Cosmic Video player',
-    tech: 'React Native, Node.js, Express.js, MongoDB',
+    title: 'Cosmic Player',
+    tech: 'Next.Js, Tailwind CSS, JavaScript, GitHub',
     image: videoPlayerProfileImage,
     details:
-      'A mobile-first Cosmic Video player application with features like dynamic UI , Fast and smooth user experience, and comments. Built with React Native for cross-platform compatibility, a Node.js backend with Express.js for REST APIs, and MongoDB for flexible data storage. The project focuses on real-time updates and user engagement.',
+      'Developed a 4K-ready video player experience with a modern web UI and desktop packaging workflow. The project focuses on playback UX, maintainability, and release discipline via strong testing and code-quality gates.',
     impact:
-      'Achieved a high-performance video playback with minimal buffering, resulting in a 95% user satisfaction rate. The cross-platform nature of React Native allowed for a 50% reduction in development time and cost.',
-    keyFeatures: ['4K video playback', 'Dynamic UI', 'Real-time comments', 'Cross-platform compatibility']
+      'Improved delivery confidence via automated checks and repeatable builds, reducing regressions while iterating on UI and playback behaviors.',
+    achievements: [
+      'Developed a 4K-capable video player packaged for desktop (Electron + NSIS), extending reach beyond browsers.',
+      'Enforced a 10-point code review checklist and a 70%+ test coverage quality gate across CI (GitHub Actions) to raise release rigor.',
+      'Automated security audits, type checks, linting, formatting, and builds to reduce defects pre-merge and speed reviews.',
+      'Standardized UI with Tailwind + reusable components and typed interfaces for maintainable, scalable features.'
+    ],
+    keyFeatures: ['4K playback UX', 'Desktop packaging workflow', 'Quality gates (tests/lint)', 'Reusable player components']
   },
   {
     id: 5,
@@ -101,6 +170,74 @@ const PROJECT_DATA = [
     impact:
       'Enabled real-time predictions with an average response time of 200ms. The serverless architecture on AWS resulted in a 60% cost saving compared to a traditional server-based deployment.',
     keyFeatures: ['RESTful API for ML model', 'TensorFlow integration', 'AWS Lambda and API Gateway deployment', 'Scalable and cost-effective']
+  },
+  {
+    id: 7,
+    title: 'EconomyTimes',
+    tech: 'Next.Js, Tailwind CSS, JavaScript, Rest API',
+    image: 'https://placehold.co/600x400/111827/fff?text=EconomyTimes',
+    details:
+      'Delivered a modern finance/economy platform with dashboard-style experiences, calculators, and MDX-based content. The architecture balances content workflows with interactive UI while keeping performance and accessibility top-of-mind.',
+    impact:
+      'Supports scalable content publishing and interactive engagement (dashboards + calculators) with instrumentation designed to improve reliability and iteration speed.',
+    achievements: [
+      'Built 5 specialized dashboards (Investing, Banking, Fintech, Global Finance, Economy) and 2 calculators (SIP, EMI) to cover key financial user journeys.',
+      'Structured MDX content across 8 categories with auto TOC, reading time, and progress bars to lift content engagement quality.',
+      'Instrumented the app with OpenTelemetry SDK + exporters, enabling end-to-end tracing and faster diagnostics across routes/components.',
+      'Shipped responsive, accessible UX with Next.js App Router, Tailwind v4 patterns, and dark mode for cross-device usability.'
+    ],
+    keyFeatures: ['MDX content pipeline', 'Dashboards & calculators', 'API routes for market data', 'Observability-ready instrumentation']
+  },
+  {
+    id: 8,
+    title: 'Tech-Knowlogia (Blogging Platform)',
+    tech: 'Next.Js, Tailwind CSS, JavaScript, Three.js',
+    image: 'https://placehold.co/600x400/2E3192/fff?text=Tech-Knowlogia',
+    details:
+      'Engineered an SEO-first publishing platform with an MDX workflow and CMS-friendly content structure. The app separates public content from admin workflows and produces SEO artifacts like sitemaps and RSS for discoverability.',
+    impact:
+      'Improves editorial velocity and search visibility by automating SEO outputs and structuring content for scalable publishing.',
+    achievements: [
+      'Shipped an SEO-first platform with 2 admin surfaces (Decap CMS, Private Admin Dashboard) and 3 discovery assets (sitemap, Google News sitemap, RSS).',
+      'Implemented animated category pages using Three.js and motion patterns to elevate UX across 5 content categories.',
+      'Enabled optional persistence via MongoDB Atlas (Mongoose), plus role-based permissions for safer editorial operations.',
+      'Automated metadata, JSON-LD, canonical URLs, and sitemaps for scalable publishing.'
+    ],
+    keyFeatures: ['MDX publishing workflow', 'SEO utilities (sitemap/RSS)', 'Admin vs public surfaces', 'Optional MongoDB persistence']
+  },
+  {
+    id: 9,
+    title: 'Finance Website',
+    tech: 'Next.Js, Tailwind CSS, JavaScript, Rest API',
+    image: 'https://placehold.co/600x400/065F46/fff?text=Finance+Website',
+    details:
+      'Built a finance media platform optimized for Discover/News-style SEO with a content pipeline and dynamic SEO assets. The project focuses on structured metadata, fast rendering, and repeatable publishing workflows.',
+    impact:
+      'Boosts search readiness via automated RSS/sitemaps and consistent metadata/OG generation, enabling scalable content operations.',
+    achievements: [
+      'Built a finance media platform that automates 3 SEO assets (dynamic OG images, News sitemap, RSS), accelerating distribution and visibility.',
+      'Implemented role-based admin across 3 roles (Admin, Editor, Analyst) with private dashboards and editorial workflows to streamline publishing.',
+      'Achieved Core Web Vitals optimization with Lighthouse 95+ targets via image optimization and code splitting strategies.',
+      'Structured MDX content for 5 categories with trending and breaking systems to enable prioritized surfacing of high-impact articles.'
+    ],
+    keyFeatures: ['News/Discover SEO readiness', 'Dynamic OG/RSS/sitemaps', 'MDX-friendly content utilities', 'Performance-focused UI']
+  },
+  {
+    id: 10,
+    title: 'Erp-Wala (School Chale Hum)',
+    tech: 'HTML, CSS, JavaScript, Tailwind CSS',
+    image: 'https://placehold.co/600x400/7C3AED/fff?text=Erp-Wala',
+    details:
+      'Shipped a responsive, animation-rich educational ERP marketing site with multiple module pages and form flows. The implementation stays lightweight while still delivering a polished product experience.',
+    impact:
+      'Demonstrates strong static-site delivery with practical serverless form handling and accessibility-minded UI composition.',
+    achievements: [
+      'Shipped a responsive static ERP site comprising 7 core module pages + 3 themed lead forms (10+ pages total) with accessible UX.',
+      'Integrated serverless email forms via FormSubmit (honeypot, table-format emails) with 0 secrets required and one-time email verification.',
+      'Implemented 8+ CSS keyframe animations and 6+ interaction patterns (scroll reveal, hover effects) to improve engagement.',
+      'Documented multiple deployment paths (GitHub Pages, Netlify, Vercel) and performance targets (90+ Lighthouse) for repeatable launches.'
+    ],
+    keyFeatures: ['Multi-page module site', 'Responsive layout', 'Serverless form handling', 'No-backend deployment simplicity']
   }
 ];
 
@@ -219,6 +356,25 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [isMobileDevice]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const applyRouteToState = () => {
+      const { page, project } = parseAppRoute(window.location.pathname, PROJECT_DATA);
+      setSelectedProject(project);
+      setCurrentPage(page);
+    };
+
+    applyRouteToState();
+
+    const onPopState = () => {
+      applyRouteToState();
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
 
   const handleProjectClick = (project, containerRef) => {
     if (containerRef.current) {
@@ -235,15 +391,18 @@ const App = () => {
       setSelectedProject(project);
       setCurrentPage('project-details');
       setCurrentSection('projects');
+      pushRoute(getProjectRoute(project.id));
       trackProjectView(project.title);
     }, 200);
   };
 
-  const handleBackToProjects = () => {
+  const handleBackToProjects = (options = {}) => {
+    const { skipHistory } = options;
     const mainContent = document.querySelector('.main-content');
     if (!mainContent) {
       setCurrentPage('profile');
       setSelectedProject(null);
+      if (!skipHistory) pushRoute(ROUTES.profile);
       setTimeout(() => {
         const projectsElement = document.getElementById('projects');
         projectsElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -258,6 +417,7 @@ const App = () => {
       onComplete: () => {
         setCurrentPage('profile');
         setSelectedProject(null);
+        if (!skipHistory) pushRoute(ROUTES.profile);
 
         gsap.to(mainContent, {
           opacity: 1,
@@ -321,7 +481,7 @@ const App = () => {
 
       const focusHandlers = {
         skills: handleBackFromSkills,
-        projects: handleBackToProjects
+        projects: () => handleBackToProjects({ skipHistory: true })
       };
       focusHandlers[currentSection]?.();
 
@@ -338,6 +498,7 @@ const App = () => {
     const appElement = document.querySelector('.App');
     if (!appElement) {
       setCurrentPage('home');
+      pushRoute(ROUTES.home);
       return;
     }
 
@@ -347,6 +508,7 @@ const App = () => {
       ease: 'power2.out',
       onComplete: () => {
         setCurrentPage('home');
+        pushRoute(ROUTES.home);
         gsap.to(appElement, { opacity: 1, duration: 0.4, ease: 'power2.in' });
       }
     });
