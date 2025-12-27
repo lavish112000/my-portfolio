@@ -157,6 +157,7 @@ const setupPanelInteractivity = (panel) => {
 const ProjectDetailsPage = ({ project, onBack }) => {
   const panelRefs = useRef([]);
   const particleLayers = useRef([]);
+  const achievements = Array.isArray(project?.achievements) ? project.achievements.filter(Boolean) : [];
 
   useEffect(() => {
     const panels = panelRefs.current.filter(Boolean);
@@ -201,7 +202,17 @@ const ProjectDetailsPage = ({ project, onBack }) => {
               <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Project Impact</h4>
               <p className="text-gray-300 text-responsive-base md:text-lg leading-relaxed">{project.impact}</p>
             </div>
-            <div ref={(el) => (panelRefs.current[2] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
+            {achievements.length > 0 && (
+              <div ref={(el) => (panelRefs.current[2] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
+                <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Key Achievements</h4>
+                <ul className="list-disc list-inside text-gray-300 text-responsive-base md:text-lg space-y-2">
+                  {achievements.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div ref={(el) => (panelRefs.current[3] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
               <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Key Features</h4>
               <ul className="list-disc list-inside text-gray-300 text-responsive-base md:text-lg space-y-2">
                 {project.keyFeatures.map((feature) => (
@@ -209,7 +220,7 @@ const ProjectDetailsPage = ({ project, onBack }) => {
                 ))}
               </ul>
             </div>
-            <div ref={(el) => (panelRefs.current[3] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
+            <div ref={(el) => (panelRefs.current[4] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm mb-6 md:mb-8">
               <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-4">Technologies Used</h4>
               <div className="flex flex-wrap gap-2 md:gap-4">
                 {project.tech.split(',').map((techName, index) => {
@@ -221,9 +232,15 @@ const ProjectDetailsPage = ({ project, onBack }) => {
                         className="flex items-center space-x-2 bg-gray-700 bg-opacity-50 px-3 py-2 rounded-lg animate-float-icon-1"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
-                        {tech.customIcon ? tech.customIcon : (
-                          <img src={tech.icon} alt={tech.name} className="w-8 h-8 animate-spin-slow" />
-                        )}
+                        <div className="w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
+                          {tech.customIcon ? tech.customIcon : (
+                            <img
+                              src={tech.icon}
+                              alt={`${tech.name} icon`}
+                              className="w-full h-full object-contain animate-spin-slow"
+                            />
+                          )}
+                        </div>
                         <span className="text-white font-bold">{tech.name}</span>
                       </div>
                     );
@@ -236,7 +253,7 @@ const ProjectDetailsPage = ({ project, onBack }) => {
         </div>
 
         <div className="mt-12">
-          <div ref={(el) => (panelRefs.current[4] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
+          <div ref={(el) => (panelRefs.current[5] = el)} className="pd-panel p-4 md:p-8 rounded-xl shadow-2xl bg-gray-800/60 backdrop-blur-sm">
             <h4 className="text-responsive-xl md:text-2xl lg:text-3xl font-bold mb-6 text-center">Gallery</h4>
             <RollingGallery autoplay={true} pauseOnHover={true} />
           </div>
